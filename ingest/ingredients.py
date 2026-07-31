@@ -942,6 +942,12 @@ _NAME_INFERENCE = [
     (["nem lai vung"], ["pork", "rice", "garlic"], "substr"),
     (["menudo"], ["pork", "tomato"], "word"),
     (["churri"], ["yogurt", "buttermilk", "chili"], "word"),
+    (["beer", "cerveza", "birra", "bière", "bier", "pils", "stout", "lager",
+      "stella artois", "heineken", "jupiler", "leffe", "tuborg",
+      "nastro azzurro", "μπύρα", "пиво", "бира"],
+     ["barley", "hops", "yeast"], "word"),
+    (["sake", "saké", "junmai", "nigori", "nihonshu"],
+     ["rice", "yeast"], "substr"),
 ]
 
 _SUBSTRATE_PRIORITY = {

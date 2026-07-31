@@ -40,6 +40,10 @@ CATEGORIES = {
     "canned-vegetables": 100,
     "tuna": 100,
     "water-kefir": 17,
+    "beers": 150,
+    "sakes": 50,
+    "pickled-onions": 80,
+    "pickled-eggs": 25,
 }
 
 _CATEGORY_DEFAULT = {
@@ -71,11 +75,17 @@ _CATEGORY_DEFAULT = {
     "canned-vegetables": ["conserva_esterilizada"],
     "tuna": ["conserva_esterilizada"],
     "water-kefir": ["fermento_mixto"],
+    "beers": ["fermento_alcoholico"],
+    "sakes": ["fermento_alcoholico"],
+    "pickled-onions": ["encurtido_vinagre"],
+    "pickled-eggs": ["encurtido_vinagre"],
 }
 
 _TAG_MAP = (
     ("sauerkraut", "encurtido_fermentado"),
     ("kimchi", "encurtido_fermentado"),
+    ("pickled-onion", "encurtido_vinagre"),
+    ("pickled-egg", "encurtido_vinagre"),
     ("pickled", "encurtido_fermentado"),
     ("pickle", "encurtido_fermentado"),
     ("tsukemono", "encurtido_fermentado"),
@@ -91,6 +101,7 @@ _TAG_MAP = (
     ("cheese", "fermento_lactico"),
     ("kombucha", "fermento_alcoholico"),
     ("beer", "fermento_alcoholico"),
+    ("sake", "fermento_alcoholico"),
     ("wine", "fermento_alcoholico"),
     ("cider", "fermento_alcoholico"),
     ("vinegar", "fermento_acetico"),

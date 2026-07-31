@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conservas del Mundo — Fermentos y Encurtidos Tradicionales</title>
     <meta name="description" content="Explora y descubre más de 3400 fermentos, encurtidos y conservas del mundo. Encuentra recetas según los ingredientes que tienes en tu despensa.">
+    <meta name="theme-color" content="#2d5a3f">
+    <link rel="manifest" href="/static/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -60,6 +62,9 @@
             </div>
 
             <div class="pantry-actions">
+                <button type="button" id="export-pantry-btn" class="btn btn-sm btn-outline">💾 Guardar / Exportar</button>
+                <button type="button" id="import-pantry-btn" class="btn btn-sm btn-outline">📥 Cargar Despensa</button>
+                <input type="file" id="import-file-input" accept=".json" style="display:none">
                 <button type="button" id="recommend-btn" class="btn btn-primary btn-glow">
                     🔍 ¿Qué puedo preparar hoy?
                 </button>
@@ -99,6 +104,7 @@
                     </select>
                 </div>
                 <div class="form-actions">
+                    <button type="button" id="fav-filter-btn" class="btn btn-outline">❤️ Mis Favoritos (<span id="fav-count">0</span>)</button>
                     <button type="submit" class="btn btn-primary">Buscar</button>
                     <button type="button" id="random-btn" class="btn btn-accent">🎲 Sorpréndeme</button>
                 </div>
@@ -124,6 +130,19 @@
         <div class="modal-card">
             <button class="modal-close" onclick="closeDetail()" aria-label="Cerrar modal">&times;</button>
             <div id="detail-body"></div>
+        </div>
+    </div>
+
+    <!-- Modal Lista de Compras -->
+    <div id="shopping-modal" class="modal-overlay hidden" onclick="closeShoppingModal(event)">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeShoppingModal()">&times;</button>
+            <h2>🛒 Lista de Compras Requerida</h2>
+            <p style="color:var(--text-secondary)">Ingredientes necesarios para preparar las recetas seleccionadas:</p>
+            <ul id="shopping-list-items" class="shopping-list"></ul>
+            <div style="margin-top:1.5rem; text-align:right">
+                <button type="button" id="copy-shopping-btn" class="btn btn-primary">📋 Copiar Lista</button>
+            </div>
         </div>
     </div>
 

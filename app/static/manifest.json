@@ -1,0 +1,16 @@
+{
+  "name": "Conservas del Mundo",
+  "short_name": "Conservas",
+  "description": "Base de datos mundial de conservas, fermentos y encurtidos tradicionales.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f8f6f0",
+  "theme_color": "#2d5a3f",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🏺</text></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

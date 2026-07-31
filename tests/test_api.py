@@ -43,6 +43,11 @@ def test_filter_by_continent(client):
     assert resp.json()["total"] == 1
 
 
+def test_filter_by_fermentation_time(client):
+    resp = client.get("/products?fermentation_time=weeks")
+    assert resp.status_code == 200
+
+
 def test_search(client):
     resp = client.get("/products?q=col")
     assert resp.status_code == 200

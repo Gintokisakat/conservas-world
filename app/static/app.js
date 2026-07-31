@@ -4,10 +4,46 @@ const state = {
     continent: "",
     country: "",
     source: "",
+    onlyFavs: false,
     page: 1,
     pageSize: 20,
     total: 0,
 };
+
+// Register Service Worker for PWA / Offline support
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/static/sw.js").catch(() => {});
+    });
+}
+
+const favorites = new Set(JSON.parse(localStorage.getItem("pantry_favs") || "[]"));
+
+function saveFavorites() {
+    localStorage.setItem("pantry_favs", JSON.stringify(Array.from(favorites)));
+    updateFavBadge();
+}
+
+function updateFavBadge() {
+    const badge = document.getElementById("fav-count");
+    if (badge) badge.textContent = favorites.size;
+}
+
+function toggleFavorite(id, event) {
+    if (event) event.stopPropagation();
+    if (favorites.has(id)) {
+        favorites.delete(id);
+    } else {
+        favorites.add(id);
+    }
+    saveFavorites();
+    if (state.onlyFavs) {
+        renderFavorites();
+    } else {
+        const btn = document.querySelector(`.fav-toggle[data-id="${id}"]`);
+        if (btn) btn.textContent = favorites.has(id) ? "❤️" : "🤍";
+    }
+}
 
 async function api(path) {
     const resp = await fetch(path);
@@ -89,6 +125,8 @@ function buildQuery(page) {
 }
 
 async function search(page = 1) {
+    state.onlyFavs = false;
+    document.getElementById("fav-filter-btn").classList.remove("active");
     state.page = page;
     const list = document.getElementById("product-list");
     list.innerHTML = `<li class="empty">Buscando fermentos y conservas...</li>`;
@@ -102,6 +140,31 @@ async function search(page = 1) {
     }
 }
 
+async function renderFavorites() {
+    state.onlyFavs = true;
+    document.getElementById("fav-filter-btn").classList.add("active");
+    const list = document.getElementById("product-list");
+    const favIds = Array.from(favorites);
+    if (!favIds.length) {
+        document.getElementById("count").textContent = "0 favoritos";
+        list.innerHTML = `<li class="empty">Aún no tienes productos marcados como favoritos. Haz clic en el corazón ❤️ de cualquier producto para guardarlo aquí.</li>`;
+        updatePagination(0);
+        return;
+    }
+
+    list.innerHTML = `<li class="empty">Cargando tus favoritos...</li>`;
+    try {
+        const items = await Promise.all(favIds.map((id) => api(`/products/${id}`).catch(() => null)));
+        const validItems = items.filter(Boolean);
+        state.total = validItems.length;
+        document.getElementById("count").textContent = `${validItems.length} favorito${validItems.length === 1 ? "" : "s"}`;
+        renderResults(validItems);
+        updatePagination(1);
+    } catch (e) {
+        list.innerHTML = `<li class="empty">Error al cargar tus favoritos.</li>`;
+    }
+}
+
 function renderResults(items) {
     const list = document.getElementById("product-list");
     document.getElementById("count").textContent =
@@ -110,10 +173,17 @@ function renderResults(items) {
         list.innerHTML = `<li class="empty">No encontramos fermentos con esos criterios. Prueba ajustando los filtros.</li>`;
         return;
     }
-    list.innerHTML = items.map((p) => `
+    list.innerHTML = items.map((p) => {
+        const isFav = favorites.has(p.id);
+        return `
         <li class="product-card" onclick="openDetail(${p.id})">
             <div>
-                <h3>${esc(p.name)}</h3>
+                <div class="card-header-row">
+                    <h3>${esc(p.name)}</h3>
+                    <button type="button" class="fav-toggle" data-id="${p.id}" onclick="toggleFavorite(${p.id}, event)" title="Marcar como favorito">
+                        ${isFav ? "❤️" : "🤍"}
+                    </button>
+                </div>
                 <p class="desc">${esc(p.description || "Sin descripción disponible.")}</p>
             </div>
             <div class="tags">
@@ -123,14 +193,15 @@ function renderResults(items) {
                 ${p.source_tag ? tag(p.source_tag, "source") : ""}
             </div>
         </li>
-    `).join("");
+        `;
+    }).join("");
 }
 
-function updatePagination() {
-    const pages = Math.max(1, Math.ceil(state.total / state.pageSize));
+function updatePagination(overridePages) {
+    const pages = overridePages !== undefined ? overridePages : Math.max(1, Math.ceil(state.total / state.pageSize));
     document.getElementById("page-info").textContent = `Página ${state.page} de ${pages}`;
-    document.getElementById("prev-btn").disabled = state.page <= 1;
-    document.getElementById("next-btn").disabled = state.page >= pages;
+    document.getElementById("prev-btn").disabled = state.page <= 1 || state.onlyFavs;
+    document.getElementById("next-btn").disabled = state.page >= pages || state.onlyFavs;
 }
 
 async function openDetail(id) {
@@ -139,6 +210,7 @@ async function openDetail(id) {
     document.getElementById("detail").classList.remove("hidden");
     try {
         const p = await api(`/products/${id}`);
+        const isFav = favorites.has(p.id);
         const section = (title, items) =>
             items && items.length ? `
                 <div class="detail-section">
@@ -155,7 +227,12 @@ async function openDetail(id) {
             </div>` : "";
             
         body.innerHTML = `
-            <h2>${esc(p.name)}</h2>
+            <div class="card-header-row" style="align-items:center">
+                <h2>${esc(p.name)}</h2>
+                <button type="button" class="btn btn-outline btn-sm" onclick="toggleFavorite(${p.id}); this.textContent = favorites.has(${p.id}) ? '❤️ Guardado' : '🤍 Favorito'">
+                    ${isFav ? "❤️ Guardado" : "🤍 Favorito"}
+                </button>
+            </div>
             ${p.description ? `<p style="font-size:1.05rem; color:var(--text-secondary); margin-bottom:1rem">${esc(p.description)}</p>` : ""}
             ${p.method ? `<p style="background:var(--bg-page); padding:0.8rem; border-radius:var(--radius-sm)"><strong>Método tradicional:</strong> ${esc(p.method)}</p>` : ""}
             ${p.fermentation_time ? `<p><strong>⏱️ Tiempo estimado:</strong> ${esc(p.fermentation_time)}</p>` : ""}
@@ -183,9 +260,15 @@ function closeDetail(event) {
     document.getElementById("detail").classList.add("hidden");
 }
 
+function closeShoppingModal(event) {
+    if (event && event.target.id !== "shopping-modal" && !event.target.classList.contains("modal-close")) return;
+    document.getElementById("shopping-modal").classList.add("hidden");
+}
+
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
         document.getElementById("detail").classList.add("hidden");
+        document.getElementById("shopping-modal").classList.add("hidden");
     }
 });
 
@@ -197,6 +280,14 @@ document.getElementById("search-form").addEventListener("submit", (e) => {
     state.country = document.getElementById("country").value;
     state.source = document.getElementById("source").value;
     search(1);
+});
+
+document.getElementById("fav-filter-btn").addEventListener("click", () => {
+    if (state.onlyFavs) {
+        search(1);
+    } else {
+        renderFavorites();
+    }
 });
 
 document.getElementById("prev-btn").addEventListener("click", () => search(state.page - 1));
@@ -278,6 +369,53 @@ document.getElementById("prod-add").addEventListener("click", () => addFromInput
     }
 });
 
+// Exportar / Importar Despensa en JSON
+document.getElementById("export-pantry-btn").addEventListener("click", () => {
+    const data = {
+        pantry,
+        favorites: Array.from(favorites),
+        exported_at: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mi_despensa_conservas_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+});
+
+document.getElementById("import-pantry-btn").addEventListener("click", () => {
+    document.getElementById("import-file-input").click();
+});
+
+document.getElementById("import-file-input").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const data = JSON.parse(event.target.result);
+            if (data.pantry) {
+                if (Array.isArray(data.pantry.ingredients)) pantry.ingredients = data.pantry.ingredients;
+                if (Array.isArray(data.pantry.products)) pantry.products = data.pantry.products;
+                savePantry();
+                renderPantry();
+            }
+            if (Array.isArray(data.favorites)) {
+                data.favorites.forEach((id) => favorites.add(id));
+                saveFavorites();
+            }
+            alert("¡Despensa y favoritos importados exitosamente!");
+        } catch (err) {
+            alert("Error al leer el archivo JSON.");
+        }
+    };
+    reader.readAsText(file);
+});
+
+let missingIngredientsGlobal = [];
+
 async function loadRecommendations() {
     const box = document.getElementById("recommendations");
     box.classList.remove("hidden");
@@ -291,6 +429,12 @@ async function loadRecommendations() {
     }
     try {
         const data = await api(`/recommendations?${params.toString()}`);
+        missingIngredientsGlobal = [];
+        data.make.forEach((p) => {
+            if (p.missing) missingIngredientsGlobal.push(...p.missing);
+        });
+        missingIngredientsGlobal = Array.from(new Set(missingIngredientsGlobal));
+
         const card = (p, extra = "") => `
             <li class="product-card rec-card" onclick="openDetail(${p.id})">
                 <div>
@@ -304,9 +448,17 @@ async function loadRecommendations() {
                 ${extra}
             </li>`;
             
+        const shoppingBtnHtml = missingIngredientsGlobal.length ? `
+            <div style="margin-bottom:1rem">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="showShoppingList()">
+                    🛒 Ver Lista de Compras recomendada (${missingIngredientsGlobal.length} ingredientes faltantes)
+                </button>
+            </div>` : "";
+
         const makeHtml = data.make.length ? `
             <div class="rec-group">
                 <h3>🍲 Puedes preparar (${data.make.length} opciones)</h3>
+                ${shoppingBtnHtml}
                 <ul class="products-grid">${data.make.map((p) => {
                     const missing = p.missing && p.missing.length
                         ? `<div class="rec-extra">Te falta: ${p.missing.map((m) => tag(m, "missing")).join("")}</div>`
@@ -332,8 +484,37 @@ async function loadRecommendations() {
     }
 }
 
+function showShoppingList() {
+    const listEl = document.getElementById("shopping-list-items");
+    if (!listEl) return;
+    listEl.innerHTML = missingIngredientsGlobal.map((item) => `
+        <li>
+            <span>🛒 ${esc(item)}</span>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="addIngredientToPantry('${esc(item)}')">+ Agregar a despensa</button>
+        </li>
+    `).join("");
+    document.getElementById("shopping-modal").classList.remove("hidden");
+}
+
+function addIngredientToPantry(item) {
+    if (!pantry.ingredients.some((x) => x.toLowerCase() === item.toLowerCase())) {
+        pantry.ingredients.push(item);
+        savePantry();
+        renderPantry();
+    }
+    showShoppingList();
+}
+
+document.getElementById("copy-shopping-btn").addEventListener("click", () => {
+    const text = missingIngredientsGlobal.map((i) => `- ${i}`).join("\n");
+    navigator.clipboard.writeText(`Lista de compras Conservas del Mundo:\n${text}`).then(() => {
+        alert("¡Lista copiada al portapapeles!");
+    });
+});
+
 document.getElementById("recommend-btn").addEventListener("click", loadRecommendations);
 
+updateFavBadge();
 renderPantry();
 loadStats();
 loadCategories();

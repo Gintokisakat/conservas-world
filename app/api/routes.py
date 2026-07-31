@@ -100,6 +100,7 @@ def list_products(
     continent: str | None = None,
     ingredient: str | None = None,
     source: str | None = None,
+    fermentation_time: str | None = None,
     status: str | None = None,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=200),
@@ -110,6 +111,10 @@ def list_products(
         selectinload(models.Product.countries),
     )
     count_query = select(func.count()).select_from(models.Product)
+
+    if fermentation_time:
+        query = query.where(func.lower(models.Product.fermentation_time).contains(fermentation_time.lower()))
+        count_query = count_query.where(func.lower(models.Product.fermentation_time).contains(fermentation_time.lower()))
 
     if category:
         cat_query = (

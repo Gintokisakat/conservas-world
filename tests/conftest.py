@@ -66,7 +66,7 @@ def _seed(session):
                     "continent": "Asia",
                 }
             ],
-            "ingredients": [{"name": "soy", "category": "legumbre"}, {"name": "rice", "category": "cereal"}],
+            "ingredients": [{"name": "soybean", "category": "legumbre"}, {"name": "rice", "category": "cereal"}],
             "categories": ["fermento_koji"],
             "references": [
                 {

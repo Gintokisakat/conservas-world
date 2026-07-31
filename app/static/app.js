@@ -182,6 +182,124 @@ document.getElementById("random-btn").addEventListener("click", async () => {
     } catch (e) { /* ignore */ }
 });
 
+// ---- Dashboard: Mi despensa ----
+
+const pantry = {
+    ingredients: JSON.parse(localStorage.getItem("pantry_ing") || "[]"),
+    products: JSON.parse(localStorage.getItem("pantry_prod") || "[]"),
+};
+
+function savePantry() {
+    localStorage.setItem("pantry_ing", JSON.stringify(pantry.ingredients));
+    localStorage.setItem("pantry_prod", JSON.stringify(pantry.products));
+}
+
+function renderChips(list, containerId, onRemove) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = list.map((item, i) => `
+        <span class="chip">${esc(item)}
+            <button type="button" class="chip-remove" data-index="${i}" title="Quitar">×</button>
+        </span>
+    `).join("");
+    container.querySelectorAll(".chip-remove").forEach((btn) => {
+        btn.addEventListener("click", () => onRemove(Number(btn.dataset.index)));
+    });
+}
+
+function renderPantry() {
+    renderChips(pantry.ingredients, "ing-chips", (i) => {
+        pantry.ingredients.splice(i, 1);
+        savePantry();
+        renderPantry();
+    });
+    renderChips(pantry.products, "prod-chips", (i) => {
+        pantry.products.splice(i, 1);
+        savePantry();
+        renderPantry();
+    });
+}
+
+function addFromInput(inputId, listKey) {
+    const input = document.getElementById(inputId);
+    const values = input.value.split(",").map((v) => v.trim()).filter(Boolean);
+    if (!values.length) return;
+    for (const v of values) {
+        const key = v.toLowerCase();
+        if (!pantry[listKey].some((x) => x.toLowerCase() === key)) {
+            pantry[listKey].push(v);
+        }
+    }
+    input.value = "";
+    savePantry();
+    renderPantry();
+}
+
+document.getElementById("ing-add").addEventListener("click", () => addFromInput("ing-input", "ingredients"));
+document.getElementById("prod-add").addEventListener("click", () => addFromInput("prod-input", "products"));
+
+["ing-input", "prod-input"].forEach((id) => {
+    document.getElementById(id).addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            if (id === "ing-input") addFromInput("ing-input", "ingredients");
+            else addFromInput("prod-input", "products");
+        }
+    });
+});
+
+async function loadRecommendations() {
+    const box = document.getElementById("recommendations");
+    box.classList.remove("hidden");
+    box.innerHTML = `<p>Cargando…</p>`;
+    const params = new URLSearchParams();
+    if (pantry.ingredients.length) params.set("ingredients", pantry.ingredients.join(","));
+    if (pantry.products.length) params.set("products", pantry.products.join(","));
+    if (!pantry.ingredients.length && !pantry.products.length) {
+        box.innerHTML = `<p>Agregá al menos un ingrediente o fermentado a tu despensa.</p>`;
+        return;
+    }
+    try {
+        const data = await api(`/recommendations?${params.toString()}`);
+        const card = (p, extra = "") => `
+            <li class="product-card rec-card" onclick="openDetail(${p.id})">
+                <h3>${esc(p.name)}</h3>
+                <p class="desc">${esc(p.description || "")}</p>
+                <div class="tags">
+                    ${p.substrate ? `<span class="tag substrate">${esc(p.substrate)}</span>` : ""}
+                    ${p.categories.map((c) => tag(c.name)).join("")}
+                </div>
+                ${extra}
+            </li>`;
+        const makeHtml = data.make.length ? `
+            <div class="rec-group">
+                <h3>Puedes hacer ${data.make.length}</h3>
+                <ul class="product-list">${data.make.map((p) => {
+                    const missing = p.missing && p.missing.length
+                        ? ` <div class="rec-extra">Te falta: ${p.missing.map((m) => tag(m, "missing")).join("")}</div>`
+                        : ` <div class="rec-extra">¡Tenés todo lo esencial!</div>`;
+                    const matched = p.matched && p.matched.length
+                        ? `<div class="rec-extra">Coincide con: ${p.matched.map((m) => tag(m, "ok")).join("")}</div>`
+                        : "";
+                    return card(p, matched + missing);
+                }).join("")}</ul>
+            </div>` : (pantry.ingredients.length ? `<p class="rec-empty">Con esos sustratos no hay coincidencias directas.</p>` : "");
+        const useHtml = data.use.length ? `
+            <div class="rec-group">
+                <h3>Puedes usar con lo fermentado ${data.use.length}</h3>
+                <ul class="product-list">${data.use.map((p) => card(p, `
+                    <div class="rec-extra">Usa: ${p.uses_products.map((u) => tag(u, "ok")).join("")}</div>
+                `)).join("")}</ul>
+            </div>` : (pantry.products.length ? `<p class="rec-empty">No encontramos preparaciones que usen esos fermentados.</p>` : "");
+        box.innerHTML = makeHtml + useHtml;
+    } catch (e) {
+        box.innerHTML = `<p>Error al consultar recomendaciones.</p>`;
+    }
+}
+
+document.getElementById("recommend-btn").addEventListener("click", loadRecommendations);
+
+renderPantry();
+
 loadStats();
 loadCategories();
 loadCountries();

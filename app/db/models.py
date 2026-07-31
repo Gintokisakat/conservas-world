@@ -54,6 +54,28 @@ product_reference = Table(
 )
 
 
+class ProductUse(Base):
+    """El producto `product` usa al producto `used_product` como ingrediente."""
+
+    __tablename__ = "product_uses"
+    __table_args__ = (UniqueConstraint("product_id", "used_product_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey("products.id", ondelete="CASCADE"), index=True
+    )
+    used_product_id: Mapped[int] = mapped_column(
+        ForeignKey("products.id", ondelete="CASCADE"), index=True
+    )
+
+    product: Mapped["Product"] = relationship(
+        foreign_keys=[product_id], back_populates="uses"
+    )
+    used_product: Mapped["Product"] = relationship(
+        foreign_keys=[used_product_id], back_populates="used_by"
+    )
+
+
 class Product(Base):
     __tablename__ = "products"
 
@@ -64,6 +86,7 @@ class Product(Base):
     fermentation_time: Mapped[str | None] = mapped_column(String(100))
     status: Mapped[str] = mapped_column(String(20), default="imported")
     source_tag: Mapped[str | None] = mapped_column(String(50), index=True)
+    substrate: Mapped[str | None] = mapped_column(String(150), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), onupdate=func.now()
@@ -86,6 +109,12 @@ class Product(Base):
     )
     references: Mapped[list["Reference"]] = relationship(
         secondary=product_reference, back_populates="products"
+    )
+    uses: Mapped[list["ProductUse"]] = relationship(
+        back_populates="product", cascade="all, delete-orphan", foreign_keys="ProductUse.product_id"
+    )
+    used_by: Mapped[list["ProductUse"]] = relationship(
+        back_populates="used_product", foreign_keys="ProductUse.used_product_id"
     )
 
 

@@ -61,12 +61,15 @@ class ProductOut(BaseModel):
     fermentation_time: str | None
     status: str
     source_tag: str | None
+    substrate: str | None
     aliases: list[AliasOut] = []
     countries: list[CountryOut] = []
     ingredients: list[IngredientOut] = []
     categories: list[CategoryOut] = []
     microbes: list[MicrobeOut] = []
     references: list[ReferenceOut] = []
+    uses: list[str] = []
+    used_by: list[str] = []
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -76,6 +79,7 @@ class ProductListItem(BaseModel):
     name: str
     description: str | None
     source_tag: str | None
+    substrate: str | None
     categories: list[CategoryOut] = []
     countries: list[CountryOut] = []
 
@@ -89,6 +93,34 @@ class PaginatedProducts(BaseModel):
     items: list[ProductListItem]
 
 
+class RecommendationOut(BaseModel):
+    id: int
+    name: str
+    description: str | None
+    source_tag: str | None
+    substrate: str | None
+    categories: list[CategoryOut] = []
+    countries: list[CountryOut] = []
+    matched: list[str] = []
+    missing: list[str] = []
+
+
+class UseRecommendationOut(BaseModel):
+    id: int
+    name: str
+    description: str | None
+    source_tag: str | None
+    substrate: str | None
+    categories: list[CategoryOut] = []
+    countries: list[CountryOut] = []
+    uses_products: list[str] = []
+
+
+class Recommendations(BaseModel):
+    make: list[RecommendationOut] = []
+    use: list[UseRecommendationOut] = []
+
+
 class Stats(BaseModel):
     products: int
     countries: int
@@ -96,6 +128,9 @@ class Stats(BaseModel):
     categories: int
     references: int
     microbes: int
+    products_with_ingredients: int
+    products_with_substrate: int
+    uses: int
     by_category: dict[str, int]
     by_continent: dict[str, int]
     by_source: dict[str, int]

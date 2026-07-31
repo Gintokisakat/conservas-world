@@ -4,10 +4,9 @@ from pathlib import Path
 import pandas as pd
 
 from ingest.normalize import (
-    categorize_ingredient,
     fermdb_categories,
+    find_ingredients,
     resolve_country,
-    split_materials,
 )
 
 FERMDB_URL = "https://raw.githubusercontent.com/bokulich-lab/FermDB/main/FermDB_data.tsv"
@@ -54,16 +53,7 @@ def _parse_ingredients(row) -> list[dict]:
     raw = row.get("Raw material")
     if not raw or str(raw).strip() in {"nan", ""}:
         raw = row.get("Raw material ontology")
-    names = split_materials(raw)
-    ingredients = []
-    for name in names:
-        clean = name.strip().lower()
-        if not clean or clean in {"nan", "none", "n/a"}:
-            continue
-        ingredients.append(
-            {"name": clean, "category": categorize_ingredient(clean)}
-        )
-    return ingredients
+    return find_ingredients(str(raw or ""))
 
 
 def _load_rows() -> list[dict]:

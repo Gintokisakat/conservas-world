@@ -40,21 +40,22 @@ uv run uvicorn app.main:app --host 0.0.0.0 --port 8000
 # Abrir http://localhost:8000
 ```
 
-Permite buscar, filtrar por categoría/continente/país/fuente, ver detalles (ingredientes, microbios, referencias) y un producto aleatorio.
+Permite buscar, filtrar por categoría/continente/país/fuente, ver detalles (ingredientes, microbios, referencias) y un producto aleatorio. Incluye un panel "Mi despensa": cargás qué ingredientes y fermentados tenés, y te recomienda qué podés *hacer* (por sustrato disponible) y qué podés *usar* (fermentados que consumen lo que ya tenés). La despensa se guarda en tu navegador (localStorage).
 
 ## API
 
 | Endpoint | Descripción |
 |---|---|
 | `GET /products` | Lista paginada con filtros `q`, `category`, `country`, `continent`, `ingredient`, `source`, `status`, `page`, `page_size` |
-| `GET /products/{id}` | Detalle completo (alias, países, ingredientes, categorías, microbios, referencias) |
+| `GET /products/{id}` | Detalle completo (alias, países, ingredientes, categorías, microbios, referencias, sustrato y usos) |
 | `GET /products/random` | Producto aleatorio |
 | `GET /products/{id}/related` | Productos relacionados por categoría compartida |
+| `GET /recommendations` | Recomendaciones con `ingredients` (sustratos que tenés) y `products` (fermentados que tenés): devuelve `make` (qué podés hacer) y `use` (qué podés preparar con lo fermentado) |
 | `GET /categories` | Taxonomía de categorías |
 | `GET /countries` | Países (filtrable por `continent`) |
-| `GET /ingredients` | Ingredientes |
+| `GET /ingredients` | Ingredientes canónicos |
 | `GET /references` | Referencias |
-| `GET /stats` | Estadísticas globales |
+| `GET /stats` | Estadísticas globales (incluye cobertura de ingredientes y vínculos de uso) |
 
 ## Fuentes de datos y licencias
 
@@ -65,7 +66,9 @@ Permite buscar, filtrar por categoría/continente/país/fuente, ver detalles (in
 | Open Food Facts (11 categorías de fermentados/encurtidos) | Productos comerciales, con tope por categoría | ODbL |
 | Wikidata (categorías EN + ES de fermentados, encurtidos y bebidas) | Enriquecido con label, descripción y país de origen | CC0 |
 
-Estado actual del seed: **2554 productos** (FermDB 605, Wikipedia 715, Open Food Facts 1145, Wikidata 89), 133 países, ~490 ingredientes, ~20 microbios, ~2400 referencias.
+Estado actual del seed: **2554 productos** (FermDB 605, Wikipedia 715, Open Food Facts 1145, Wikidata 89), 133 países, ~2400 referencias.
+
+Cobertura de datos: **86% de los productos con ≥1 ingrediente** (192 ingredientes canónicos, normalizados con vocabulario EN + aliases ES/FR, tipografías corregidas), **82% con sustrato principal** identificado (lo que fermentás: repollo, leche, soja…) y **~1900 vínculos de uso** entre productos (qué fermentado usa qué otro como ingrediente).
 
 Distribución de categorías: fermento_lactico 1335, encurtido_fermentado 497, fermento_koji 383, fermento_alcoholico 290, fermento_acetico 140, otros ~55.
 

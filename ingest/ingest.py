@@ -60,6 +60,8 @@ def run(sources: list[str], reset: bool = False):
                 if product is not None:
                     total += 1
         session.commit()
+        added, updated = loader.enrich_ingredients(session)
+        uses = loader.build_product_uses(session)
         loader.create_full_text_table()
     finally:
         session.close()
@@ -67,6 +69,8 @@ def run(sources: list[str], reset: bool = False):
     print(f"\nFilas por fuente: {by_source}")
     print(f"Duplicados saltados: {skipped}")
     print(f"Productos insertados: {total}")
+    print(f"Ingredientes enriquecidos: {added} (+{updated} sustratos)")
+    print(f"Vinculos de uso entre productos: {uses}")
     print("Base de datos lista en data/build.db")
 
 

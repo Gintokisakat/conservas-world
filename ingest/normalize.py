@@ -4,6 +4,7 @@ import unicodedata
 import pycountry
 
 from ingest.categories import CATEGORY_BY_CODE
+from ingest.ingredients import match_ingredients
 
 
 def normalize_name(name: str) -> str:
@@ -216,77 +217,8 @@ def categorize_ingredient(name: str) -> str | None:
     return None
 
 
-_NAMED_INGREDIENTS = [
-    ("cabbage", "vegetal"),
-    ("sauerkraut", "vegetal"),
-    ("cucumber", "vegetal"),
-    ("radish", "vegetal"),
-    ("carrot", "vegetal"),
-    ("garlic", "vegetal"),
-    ("onion", "vegetal"),
-    ("ginger", "vegetal"),
-    ("chili", "vegetal"),
-    ("chilli", "vegetal"),
-    ("pepper", "vegetal"),
-    ("mushroom", "hongo"),
-    ("bamboo", "vegetal"),
-    ("mustard", "vegetal"),
-    ("turnip", "vegetal"),
-    ("beet", "vegetal"),
-    ("eggplant", "vegetal"),
-    ("olive", "vegetal"),
-    ("tomato", "vegetal"),
-    ("mango", "fruta"),
-    ("durian", "fruta"),
-    ("lemon", "fruta"),
-    ("lime", "fruta"),
-    ("apple", "fruta"),
-    ("plum", "fruta"),
-    ("papaya", "fruta"),
-    ("pineapple", "fruta"),
-    ("banana", "fruta"),
-    ("rice", "cereal"),
-    ("wheat", "cereal"),
-    ("barley", "cereal"),
-    ("millet", "cereal"),
-    ("sorghum", "cereal"),
-    ("maize", "cereal"),
-    ("corn", "cereal"),
-    ("cassava", "raiz"),
-    ("potato", "raiz"),
-    ("soybean", "legumbre"),
-    ("soy", "legumbre"),
-    ("bean", "legumbre"),
-    ("pea", "legumbre"),
-    ("milk", "lacteo"),
-    ("cheese", "lacteo"),
-    ("yogurt", "lacteo"),
-    ("yoghurt", "lacteo"),
-    ("kefir", "lacteo"),
-    ("fish", "pescado"),
-    ("anchovy", "pescado"),
-    ("herring", "pescado"),
-    ("shrimp", "marisco"),
-    ("prawn", "marisco"),
-    ("crab", "marisco"),
-    ("oyster", "marisco"),
-    ("pork", "carne"),
-    ("beef", "carne"),
-    ("chicken", "carne"),
-    ("tea", "bebida"),
-    ("grapes", "fruta"),
-]
-
-
 def find_ingredients(text: str) -> list[dict]:
-    t = text.lower()
-    found = []
-    seen = set()
-    for name, category in _NAMED_INGREDIENTS:
-        if name in t and name not in seen:
-            seen.add(name)
-            found.append({"name": name, "category": category})
-    return found
+    return match_ingredients(text)
 
 
 def split_materials(raw: str | None) -> list[str]:

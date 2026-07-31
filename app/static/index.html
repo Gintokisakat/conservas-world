@@ -14,6 +14,33 @@
     </header>
 
     <main>
+        <section class="dashboard" id="dashboard">
+            <h2>Mi despensa</h2>
+            <p class="subtitle">Decime qué tenés y te digo qué fermento/conserva podés hacer.</p>
+
+            <div class="pantry">
+                <label class="pantry-label">
+                    <span>Ingredientes / sustratos (repollo, leche, soja…)</span>
+                    <div class="chips" id="ing-chips"></div>
+                    <div class="chips-input">
+                        <input type="text" id="ing-input" placeholder="Ej: repollo, zanahoria, sal" autocomplete="off">
+                        <button type="button" class="secondary" id="ing-add">Agregar</button>
+                    </div>
+                </label>
+                <label class="pantry-label">
+                    <span>Fermentados que ya tenés (miso, kimchi…)</span>
+                    <div class="chips" id="prod-chips"></div>
+                    <div class="chips-input">
+                        <input type="text" id="prod-input" placeholder="Ej: miso, kimchi" autocomplete="off">
+                        <button type="button" class="secondary" id="prod-add">Agregar</button>
+                    </div>
+                </label>
+            </div>
+
+            <button type="button" id="recommend-btn" class="primary-btn">¿Qué puedo hacer?</button>
+            <div id="recommendations" class="recommendations hidden"></div>
+        </section>
+
         <section class="filters">
             <form id="search-form">
                 <input type="search" id="q" placeholder="Buscar (ej. kimchi, miso, sauerkraut…)" autocomplete="off">
@@ -35,6 +62,8 @@
                     <option value="">Todas las fuentes</option>
                     <option value="fermdb">FermDB</option>
                     <option value="wikipedia">Wikipedia</option>
+                    <option value="openfoodfacts">Open Food Facts</option>
+                    <option value="wikidata">Wikidata</option>
                 </select>
                 <button type="submit">Buscar</button>
                 <button type="button" id="random-btn" class="secondary">Aleatorio</button>

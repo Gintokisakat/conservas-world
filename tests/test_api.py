@@ -64,7 +64,7 @@ def test_get_product_detail(client):
     data = resp.json()
     assert data["name"] == "Miso"
     assert data["countries"][0]["continent"] == "Asia"
-    assert {i["name"] for i in data["ingredients"]} == {"soy", "rice"}
+    assert {i["name"] for i in data["ingredients"]} == {"soybean", "rice"}
     assert data["references"][0]["url"] == "https://example.org"
 
 
@@ -88,6 +88,40 @@ def test_related_products(client):
 def test_related_products_not_found(client):
     resp = client.get("/products/999/related")
     assert resp.status_code == 404
+
+
+def test_recommendations_make_by_substrate(client):
+    resp = client.get("/recommendations?ingredients=cabbage")
+    assert resp.status_code == 200
+    data = resp.json()
+    names = {m["name"] for m in data["make"]}
+    assert "Sauerkraut" in names
+    sauerkraut = next(m for m in data["make"] if m["name"] == "Sauerkraut")
+    assert sauerkraut["substrate"] == "cabbage"
+    assert sauerkraut["matched"] == ["cabbage"]
+    assert sauerkraut["missing"] == []
+
+
+def test_recommendations_alias_spanish(client):
+    resp = client.get("/recommendations?ingredients=repollo")
+    assert resp.status_code == 200
+    names = {m["name"] for m in resp.json()["make"]}
+    assert "Sauerkraut" in names
+
+
+def test_recommendations_soybean_matches_miso(client):
+    resp = client.get("/recommendations?ingredients=soja,arroz")
+    assert resp.status_code == 200
+    names = {m["name"] for m in resp.json()["make"]}
+    assert "Miso" in names
+
+
+def test_recommendations_empty(client):
+    resp = client.get("/recommendations")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["make"] == []
+    assert data["use"] == []
 
 
 def test_unknown_filter_returns_empty(client):

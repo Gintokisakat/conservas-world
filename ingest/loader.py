@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.db import models
 from app.db.database import init_db
 from ingest.categories import CATEGORIES
+from ingest.ingredients import pick_substrate
 from ingest.normalize import extract_microbes, normalize_name
 
 
@@ -113,6 +114,7 @@ def upsert_product(session: Session, record: dict) -> models.Product | None:
         fermentation_time=record.get("fermentation_time"),
         status="imported",
         source_tag=record.get("source_tag"),
+        substrate=pick_substrate(record.get("ingredients", [])),
     )
     session.add(product)
     session.flush()
@@ -146,6 +148,104 @@ def upsert_product(session: Session, record: dict) -> models.Product | None:
         product.references.append(_get_or_create_reference(session, info))
 
     return product
+
+
+# Productos cuyo nombre es demasiado generico como para considerarlos un
+# "ingrediente usado" cuando se menciona en la descripcion de otro producto.
+_USE_STOPWORDS = {
+    "beer", "wine", "cheese", "yogurt", "yoghurt", "bread", "tea", "vinegar",
+    "salt", "sugar", "water", "sauce", "jam", "butter", "cream", "milk",
+    "curd", "meat", "fish", "sour cream", "condiment", "condiments", "fruit",
+    "fruits", "sausage", "sausages", "fermented fish", "spice", "spices",
+    "seasoning", "seasonings", "dish", "dessert", "snack", "drink", "beverage",
+    "vegetable", "vegetables", "ingredient", "product", "flour", "grain",
+    "grains", "nuts", "pickle", "pickles", "herbs",
+}
+
+
+def enrich_ingredients(session: Session) -> int:
+    """Re-extrae ingredientes sobre los productos ya persistidos (nombre +
+    descripcion + metodo) y agrega los que falten, sin duplicar."""
+    from ingest.ingredients import match_ingredients
+
+    added = 0
+    updated_substrate = 0
+    for product in session.query(models.Product).all():
+        text = " ".join(
+            filter(
+                None,
+                [product.name, product.description, product.method],
+            )
+        )
+        matched = match_ingredients(text)
+        if not matched:
+            continue
+        current = {i.name for i in product.ingredients}
+        for info in matched:
+            if info["name"] in current:
+                continue
+            ingredient = _get_or_create_ingredient(session, info)
+            product.ingredients.append(ingredient)
+            current.add(info["name"])
+            added += 1
+        new_substrate = pick_substrate(matched)
+        if new_substrate and product.substrate is None:
+            product.substrate = new_substrate
+            updated_substrate += 1
+    session.commit()
+    return added, updated_substrate
+
+
+def build_product_uses(session: Session) -> int:
+    """Vincula producto->producto cuando el nombre de uno aparece mencionado
+    como ingrediente en la descripcion/metodo del otro (sentido 'usar')."""
+    import re
+
+    products = session.query(models.Product).all()
+    by_name: dict[str, models.Product] = {}
+    for product in products:
+        key = normalize_name(product.name)
+        if len(key) >= 4 and key not in _USE_STOPWORDS and key not in by_name:
+            by_name[key] = product
+    names = sorted(by_name.keys(), key=len, reverse=True)
+    pattern = re.compile(
+        r"(?<![a-z0-9])(" + "|".join(re.escape(n) for n in names) + r")(?![a-z0-9])"
+    )
+
+    created = 0
+    for product in products:
+        text = normalize_name(
+            " ".join(
+                filter(
+                    None,
+                    [
+                        product.description,
+                        product.method,
+                        " ".join(i.name for i in product.ingredients),
+                    ],
+                )
+            )
+        )
+        if not text:
+            continue
+        mentioned = set()
+        for m in pattern.finditer(text):
+            used = by_name[m.group(1)]
+            if used.id != product.id:
+                mentioned.add(used.id)
+        for used_id in mentioned:
+            existing = (
+                session.query(models.ProductUse)
+                .filter_by(product_id=product.id, used_product_id=used_id)
+                .first()
+            )
+            if existing is None:
+                session.add(
+                    models.ProductUse(product_id=product.id, used_product_id=used_id)
+                )
+                created += 1
+    session.commit()
+    return created
 
 
 def create_full_text_table():

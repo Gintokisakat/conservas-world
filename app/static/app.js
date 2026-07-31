@@ -275,11 +275,17 @@ function closeMicrobesModal(event) {
     document.getElementById("microbes-modal").classList.add("hidden");
 }
 
+function closeTroubleModal(event) {
+    if (event && event.target.id !== "trouble-modal" && !event.target.classList.contains("modal-close")) return;
+    document.getElementById("trouble-modal").classList.add("hidden");
+}
+
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
         document.getElementById("detail").classList.add("hidden");
         document.getElementById("shopping-modal").classList.add("hidden");
         document.getElementById("microbes-modal").classList.add("hidden");
+        document.getElementById("trouble-modal").classList.add("hidden");
     }
 });
 
@@ -329,6 +335,144 @@ function updateBrineCalculator() {
 document.getElementById("calc-weight").addEventListener("input", updateBrineCalculator);
 document.getElementById("calc-target").addEventListener("change", updateBrineCalculator);
 
+// ---- Temporizadores de Fermentación (F1 / F2) ----
+
+let timers = JSON.parse(localStorage.getItem("pantry_timers") || "[]");
+
+function saveTimers() {
+    localStorage.setItem("pantry_timers", JSON.stringify(timers));
+}
+
+function renderTimers() {
+    const container = document.getElementById("timers-list");
+    if (!container) return;
+    if (!timers.length) {
+        container.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem; grid-column:1/-1">No tienes frascos activos en fermentación. Agrega uno arriba para darle seguimiento.</p>`;
+        return;
+    }
+
+    const now = Date.now();
+    container.innerHTML = timers.map((t, idx) => {
+        const start = t.startDate;
+        const totalMs = t.days * 86400000;
+        const elapsedMs = now - start;
+        const remainingMs = totalMs - elapsedMs;
+
+        const remainingDays = Math.max(0, Math.ceil(remainingMs / 86400000));
+        const pct = Math.min(100, Math.max(0, Math.round((elapsedMs / totalMs) * 100)));
+
+        const isReady = remainingMs <= 0;
+
+        return `
+            <div class="timer-item-card">
+                <div class="timer-item-head">
+                    <h4>🫙 ${esc(t.name)}</h4>
+                    <button type="button" class="chip-remove" onclick="removeTimer(${idx})" title="Eliminar frasco">&times;</button>
+                </div>
+                <div class="progress-bar-bg">
+                    <div class="progress-bar-fill" style="width: ${pct}%; background-color: ${isReady ? '#2e7d52' : 'var(--color-primary)'}"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:var(--text-secondary)">
+                    <span>${pct}% completado</span>
+                    <span>${isReady ? '🎉 ¡Listo para consumir/probar!' : `Quedan ${remainingDays} día${remainingDays === 1 ? '' : 's'}`}</span>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+function addTimer() {
+    const nameEl = document.getElementById("timer-name");
+    const daysEl = document.getElementById("timer-days");
+
+    const name = nameEl.value.trim();
+    const days = parseInt(daysEl.value, 10);
+
+    if (!name || isNaN(days) || days < 1) {
+        alert("Por favor ingresa un nombre y cantidad de días válidos.");
+        return;
+    }
+
+    timers.push({
+        name,
+        days,
+        startDate: Date.now()
+    });
+    saveTimers();
+    renderTimers();
+
+    nameEl.value = "";
+}
+
+function removeTimer(idx) {
+    timers.splice(idx, 1);
+    saveTimers();
+    renderTimers();
+}
+
+document.getElementById("add-timer-btn").addEventListener("click", addTimer);
+
+// ---- Diagnóstico de Problemas (Troubleshooting) ----
+
+function openTroubleModal() {
+    document.getElementById("trouble-outcome").classList.add("hidden");
+    document.getElementById("trouble-modal").classList.remove("hidden");
+}
+
+function closeTroubleModal(event) {
+    if (event && event.target.id !== "trouble-modal" && !event.target.classList.contains("modal-close")) return;
+    document.getElementById("trouble-modal").classList.add("hidden");
+}
+
+function diagnoseTrouble(type) {
+    const outcomeEl = document.getElementById("trouble-outcome");
+    outcomeEl.classList.remove("hidden", "safe", "warning", "danger");
+
+    if (type === "kahm") {
+        outcomeEl.classList.add("warning");
+        outcomeEl.innerHTML = `
+            <h3>⚪ Diagnóstico: Levadura Kahm (Kahm Yeast)</h3>
+            <p><strong>Estado:</strong> Inofensivo pero puede alterar el sabor si se deja acumular.</p>
+            <p><strong>Explicación:</strong> Es una levadura salvaje silvestre que crece en la superficie en presencia de oxígeno cuando la acidez aún es baja.</p>
+            <p><strong>Solución:</strong> Retira suavemente la película blanca con una cuchara limpia y desinfectada. Asegúrate de submergir todos los vegetales bajo la salmuera usando un peso.</p>
+        `;
+    } else if (type === "mold") {
+        outcomeEl.classList.add("danger");
+        outcomeEl.innerHTML = `
+            <h3>🟢 Diagnóstico: Moho Hongo (Mold)</h3>
+            <p><strong>Estado:</strong> ⚠️ PELIGROSO — Desechar la preparación.</p>
+            <p><strong>Explicación:</strong> Las esporas de moho forman estructuras vellosas de color verde, negro o azul. Producen micotoxinas que penetran todo el líquido.</p>
+            <p><strong>Recomendación:</strong> Por tu seguridad, desecha todo el contenido del frasco, lava e higieniza profundamente el frasco con agua hirviendo antes de reutilizarlo.</p>
+        `;
+    } else if (type === "cloudy") {
+        outcomeEl.classList.add("safe");
+        outcomeEl.innerHTML = `
+            <h3>🌫️ Diagnóstico: Salmuera Turbia</h3>
+            <p><strong>Estado:</strong> ✅ COMPLETAMENTE NORMAL Y SALUDABLE.</p>
+            <p><strong>Explicación:</strong> El color blanquecino o turbio en el líquido es una señal positiva de multiplicación masiva de bacterias ácido-lácticas (LAB) sanas.</p>
+            <p><strong>Recomendación:</strong> No hagas nada, tu fermento avanza perfectamente.</p>
+        `;
+    } else if (type === "foul") {
+        outcomeEl.classList.add("danger");
+        outcomeEl.innerHTML = `
+            <h3>🤢 Diagnóstico: Contaminación o Putrefacción</h3>
+            <p><strong>Estado:</strong> ⚠️ DESECHAR EL FERMENTO.</p>
+            <p><strong>Explicación:</strong> Un fermento saludable huele ácido, agrio o encurtido. Si huele a alcantarilla, basura o carne podrida, significa que bacterias putrefactivas se multiplicaron.</p>
+            <p><strong>Recomendación:</strong> Desecha el contenido inmediatamente.</p>
+        `;
+    } else if (type === "soft") {
+        outcomeEl.classList.add("warning");
+        outcomeEl.innerHTML = `
+            <h3>🥬 Diagnóstico: Vegetales Blandos</h3>
+            <p><strong>Estado:</strong> Comestible pero de baja calidad de textura.</p>
+            <p><strong>Explicación:</strong> Ocurre por insuficiente concentración de sal, temperatura ambiente muy alta (>24°C) o la acción de enzimas pectinolíticas.</p>
+            <p><strong>Solución:</strong> En futuros fermentos, mantén la temperatura entre 18-22°C y asegura al menos 2.5% de salinidad.</p>
+        `;
+    }
+}
+
+document.getElementById("trouble-btn").addEventListener("click", openTroubleModal);
+
 // ---- Enciclopedia de Microbios ----
 
 async function loadMicrobesModal() {
@@ -366,6 +510,7 @@ document.getElementById("export-pantry-btn").addEventListener("click", () => {
     const data = {
         pantry,
         favorites: Array.from(favorites),
+        timers,
         exported_at: new Date().toISOString()
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -398,7 +543,12 @@ document.getElementById("import-file-input").addEventListener("change", (e) => {
                 data.favorites.forEach((id) => favorites.add(id));
                 saveFavorites();
             }
-            alert("¡Despensa y favoritos importados exitosamente!");
+            if (Array.isArray(data.timers)) {
+                timers = data.timers;
+                saveTimers();
+                renderTimers();
+            }
+            alert("¡Despensa, favoritos y temporizadores importados exitosamente!");
         } catch (err) {
             alert("Error al leer el archivo JSON.");
         }
@@ -577,6 +727,7 @@ document.getElementById("recommend-btn").addEventListener("click", loadRecommend
 
 updateFavBadge();
 updateBrineCalculator();
+renderTimers();
 renderPantry();
 loadStats();
 loadCategories();

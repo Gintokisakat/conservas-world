@@ -73,6 +73,20 @@
             <div id="recommendations" class="recommendations-container hidden"></div>
         </section>
 
+        <!-- Temporizador de Fermentos Activos -->
+        <section class="timer-card">
+            <div class="timer-header">
+                <h2>⏱️ Mis Fermentos en Proceso</h2>
+                <p class="timer-desc">Monitorea tus frascos en primera (F1) o segunda fermentación (F2).</p>
+            </div>
+            <div class="timer-input-row">
+                <input type="text" id="timer-name" placeholder="Nombre (ej. Kimchi de repollo)" autocomplete="off">
+                <input type="number" id="timer-days" placeholder="Días (ej. 7)" min="1" max="365" value="7">
+                <button type="button" id="add-timer-btn" class="btn btn-secondary">+ Iniciar Frasco</button>
+            </div>
+            <div id="timers-list" class="timers-grid"></div>
+        </section>
+
         <!-- Calculadora de Salmuera y Salinidad -->
         <section class="calc-card">
             <div class="calc-header">
@@ -134,6 +148,7 @@
                     </select>
                 </div>
                 <div class="form-actions">
+                    <button type="button" id="trouble-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43">🚨 ¿Problemas con tu fermento?</button>
                     <button type="button" id="microbes-btn" class="btn btn-outline">🔬 Microbios Fermentadores</button>
                     <button type="button" id="fav-filter-btn" class="btn btn-outline">❤️ Mis Favoritos (<span id="fav-count">0</span>)</button>
                     <button type="submit" class="btn btn-primary">Buscar</button>
@@ -184,6 +199,35 @@
             <h2>🔬 Enciclopedia de Microbios Fermentadores</h2>
             <p style="color:var(--text-secondary)">Bacterias, hongos y levaduras involucrados en la fermentación tradicional:</p>
             <div id="microbes-list" class="microbes-grid"></div>
+        </div>
+    </div>
+
+    <!-- Modal Diagnóstico de Problemas (Troubleshooting) -->
+    <div id="trouble-modal" class="modal-overlay hidden" onclick="closeTroubleModal(event)">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeTroubleModal()">&times;</button>
+            <h2>🚨 Diagnóstico de Problemas en Fermentación</h2>
+            <p style="color:var(--text-secondary)">Selecciona el síntoma visual o de olor que presenta tu frasco:</p>
+            
+            <div class="trouble-symptoms-list">
+                <button type="button" class="btn btn-outline trouble-opt" onclick="diagnoseTrouble('kahm')">
+                    ⚪ Película fina, plana y blanquecina en la superficie
+                </button>
+                <button type="button" class="btn btn-outline trouble-opt" onclick="diagnoseTrouble('mold')">
+                    🟢 Pelusa verde, negra, azul o blanca sobre vegetales flotantes
+                </button>
+                <button type="button" class="btn btn-outline trouble-opt" onclick="diagnoseTrouble('cloudy')">
+                    🌫️ Líquido / salmuera turbia u opaca
+                </button>
+                <button type="button" class="btn btn-outline trouble-opt" onclick="diagnoseTrouble('foul')">
+                    🤢 Olor fétido o putrefacto (a podrido)
+                </button>
+                <button type="button" class="btn btn-outline trouble-opt" onclick="diagnoseTrouble('soft')">
+                    🥬 Vegetales blandos o sin crocancia
+                </button>
+            </div>
+
+            <div id="trouble-outcome" class="trouble-outcome-box hidden"></div>
         </div>
     </div>
 

@@ -170,7 +170,9 @@ def enrich_ingredients(session: Session) -> int:
 
     added = 0
     updated_substrate = 0
-    for product in session.query(models.Product).all():
+    for product in session.query(models.Product).filter(
+        models.Product.status != "discarded"
+    ).all():
         text = " ".join(
             filter(
                 None,
@@ -202,8 +204,18 @@ def build_product_uses(session: Session) -> int:
     import re
 
     products = session.query(models.Product).all()
+    active = [p for p in products if p.status != "discarded"]
+    active_ids = {p.id for p in active}
+    stale = (
+        session.query(models.ProductUse)
+        .filter(
+            (models.ProductUse.product_id.notin_(active_ids))
+            | (models.ProductUse.used_product_id.notin_(active_ids))
+        )
+        .delete(synchronize_session=False)
+    )
     by_name: dict[str, models.Product] = {}
-    for product in products:
+    for product in active:
         key = normalize_name(product.name)
         if len(key) >= 4 and key not in _USE_STOPWORDS and key not in by_name:
             by_name[key] = product
@@ -213,7 +225,7 @@ def build_product_uses(session: Session) -> int:
     )
 
     created = 0
-    for product in products:
+    for product in active:
         text = normalize_name(
             " ".join(
                 filter(

@@ -145,6 +145,74 @@ def _best_key(p):
     return (-len(p.description or ""), -len(p.ingredients), -len(p.name))
 
 
+def _absorb_into(keep, dup, seen_aliases):
+    if normalize_name(dup.name) not in seen_aliases:
+        keep.aliases.append(models.ProductAlias(name=dup.name, language=None))
+        seen_aliases.add(normalize_name(dup.name))
+    for alias in dup.aliases:
+        if normalize_name(alias.name) not in seen_aliases:
+            keep.aliases.append(models.ProductAlias(name=alias.name, language=alias.language))
+            seen_aliases.add(normalize_name(alias.name))
+    for ref in dup.references:
+        if ref not in keep.references:
+            keep.references.append(ref)
+    for item in dup.ingredients:
+        if item not in keep.ingredients:
+            keep.ingredients.append(item)
+    for item in dup.countries:
+        if item not in keep.countries:
+            keep.countries.append(item)
+    for item in dup.categories:
+        if item not in keep.categories:
+            keep.categories.append(item)
+    for item in dup.microbes:
+        if item not in keep.microbes:
+            keep.microbes.append(item)
+    dup.status = "discarded"
+
+
+def merge_curated(session) -> tuple[int, int]:
+    """Fusiona los grupos de CURATED_MERGES: variantes con grafías/lenguas
+    distintas del mismo producto (coincidencia exacta de nombre normalizado)."""
+    prods = session.execute(
+        select(models.Product)
+        .options(
+            selectinload(models.Product.aliases),
+            selectinload(models.Product.references),
+            selectinload(models.Product.ingredients),
+            selectinload(models.Product.countries),
+            selectinload(models.Product.categories),
+            selectinload(models.Product.microbes),
+        )
+        .where(models.Product.status != "discarded")
+    ).scalars().all()
+
+    by_name: dict[str, list] = {}
+    for p in prods:
+        by_name.setdefault(normalize_name(p.name), []).append(p)
+
+    groups = 0
+    merged = 0
+    for canonical, variants in CURATED_MERGES:
+        candidates = {}
+        for variant in [canonical, *variants]:
+            for p in by_name.get(normalize_name(variant), []):
+                candidates[p.id] = p
+        active = [p for p in candidates.values() if p.status != "discarded"]
+        if len(active) < 2:
+            continue
+        active.sort(key=_best_key)
+        keep, *rest = active
+        seen_aliases = {normalize_name(keep.name)} | {
+            normalize_name(a.name) for a in keep.aliases
+        }
+        for dup in rest:
+            _absorb_into(keep, dup, seen_aliases)
+            merged += 1
+        groups += 1
+    return groups, merged
+
+
 def merge_off_variants(session) -> tuple[int, int]:
     prods = session.execute(
         select(models.Product)
@@ -156,7 +224,10 @@ def merge_off_variants(session) -> tuple[int, int]:
             selectinload(models.Product.categories),
             selectinload(models.Product.microbes),
         )
-        .where(models.Product.source_tag == "openfoodfacts")
+        .where(
+            models.Product.source_tag == "openfoodfacts",
+            models.Product.status != "discarded",
+        )
     ).scalars().all()
 
     groups: dict[str, list] = {}
@@ -170,30 +241,11 @@ def merge_off_variants(session) -> tuple[int, int]:
     for members in groups.values():
         members.sort(key=_best_key)
         keep, *rest = members
+        seen_aliases = {normalize_name(keep.name)} | {
+            normalize_name(a.name) for a in keep.aliases
+        }
         for dup in rest:
-            seen_aliases = {normalize_name(a.name) for a in keep.aliases}
-            if normalize_name(dup.name) not in seen_aliases:
-                keep.aliases.append(models.ProductAlias(name=dup.name, language=None))
-            for alias in dup.aliases:
-                if normalize_name(alias.name) not in seen_aliases:
-                    keep.aliases.append(models.ProductAlias(name=alias.name, language=alias.language))
-                    seen_aliases.add(normalize_name(alias.name))
-            for ref in dup.references:
-                if ref not in keep.references:
-                    keep.references.append(ref)
-            for item in dup.ingredients:
-                if item not in keep.ingredients:
-                    keep.ingredients.append(item)
-            for item in dup.countries:
-                if item not in keep.countries:
-                    keep.countries.append(item)
-            for item in dup.categories:
-                if item not in keep.categories:
-                    keep.categories.append(item)
-            for item in dup.microbes:
-                if item not in keep.microbes:
-                    keep.microbes.append(item)
-            dup.status = "discarded"
+            _absorb_into(keep, dup, seen_aliases)
             merged += 1
     return len(groups), merged
 
@@ -264,6 +316,8 @@ def run_apply():
 
     session = SessionLocal()
     try:
+        groups, merged = merge_curated(session)
+        print(f"Grupos curados fusionados: {merged} productos descartados en {groups} grupos")
         groups, merged = merge_off_variants(session)
         print(f"Variantes OFF fusionadas: {merged} productos descartados en {groups} grupos")
         renamed = title_case_names(session)

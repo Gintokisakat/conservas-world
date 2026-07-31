@@ -163,6 +163,9 @@ def list_products(
     if status:
         query = query.where(models.Product.status == status)
         count_query = count_query.where(models.Product.status == status)
+    else:
+        query = query.where(models.Product.status != "discarded")
+        count_query = count_query.where(models.Product.status != "discarded")
 
     if q:
         fts_ids = _fts_matches(session, q.strip())
@@ -224,7 +227,10 @@ def recommendations(
         matched = session.execute(
             select(models.Product)
             .options(*opts)
-            .where(models.Product.substrate.in_(user_ingredients))
+            .where(
+                models.Product.substrate.in_(user_ingredients),
+                models.Product.status != "discarded",
+            )
         ).scalars().all()
         for product in matched:
             names = {i.name for i in product.ingredients}
@@ -251,7 +257,9 @@ def recommendations(
     if product_tokens:
         user_product_ids = set()
         for product in session.execute(
-            select(models.Product).options(selectinload(models.Product.aliases))
+            select(models.Product)
+            .options(selectinload(models.Product.aliases))
+            .where(models.Product.status != "discarded")
         ).scalars().all():
             keys = [normalize_name(product.name)] + [
                 normalize_name(a.name) for a in product.aliases
@@ -263,7 +271,10 @@ def recommendations(
             rows = session.execute(
                 select(models.ProductUse, models.Product)
                 .join(models.Product, models.Product.id == models.ProductUse.product_id)
-                .where(models.ProductUse.used_product_id.in_(user_product_ids))
+                .where(
+                    models.ProductUse.used_product_id.in_(user_product_ids),
+                    models.Product.status != "discarded",
+                )
             ).all()
             for product_use, using_product in rows:
                 used_map.setdefault(using_product.id, []).append(
@@ -295,7 +306,10 @@ def recommendations(
 @router.get("/products/random", response_model=ProductOut)
 def random_product(session: Session = Depends(get_session)):
     product_id = session.execute(
-        select(models.Product.id).order_by(func.random()).limit(1)
+        select(models.Product.id)
+        .where(models.Product.status != "discarded")
+        .order_by(func.random())
+        .limit(1)
     ).scalar_one_or_none()
     if product_id is None:
         raise HTTPException(status_code=404, detail="No hay productos")
@@ -339,7 +353,7 @@ def related_products(
             selectinload(models.Product.categories),
             selectinload(models.Product.countries),
         )
-        .where(models.Product.id.in_(ids))
+        .where(models.Product.id.in_(ids), models.Product.status != "discarded")
     ).scalars().unique().all()
     order = {pid: i for i, pid in enumerate(ids)}
     return sorted(related, key=lambda p: order[p.id])
@@ -387,10 +401,19 @@ def stats(session: Session = Depends(get_session)):
     def count(model):
         return session.execute(select(func.count()).select_from(model)).scalar_one()
 
+    def active_count(model, *criteria):
+        return session.execute(
+            select(func.count())
+            .select_from(model)
+            .where(model.status != "discarded", *criteria)
+        ).scalar_one()
+
     by_category = dict(
         session.execute(
             select(models.Category.code, func.count(models.product_category.c.product_id))
             .join(models.product_category, models.product_category.c.category_id == models.Category.id)
+            .join(models.Product, models.Product.id == models.product_category.c.product_id)
+            .where(models.Product.status != "discarded")
             .group_by(models.Category.code)
         ).all()
     )
@@ -399,6 +422,8 @@ def stats(session: Session = Depends(get_session)):
         for k, v in session.execute(
             select(models.Country.continent, func.count(models.product_country.c.product_id))
             .join(models.product_country, models.product_country.c.country_id == models.Country.id)
+            .join(models.Product, models.Product.id == models.product_country.c.product_id)
+            .where(models.Product.status != "discarded")
             .group_by(models.Country.continent)
         ).all()
         if k
@@ -406,11 +431,12 @@ def stats(session: Session = Depends(get_session)):
     by_source = dict(
         session.execute(
             select(models.Product.source_tag, func.count())
+            .where(models.Product.status != "discarded")
             .group_by(models.Product.source_tag)
         ).all()
     )
     return Stats(
-        products=count(models.Product),
+        products=active_count(models.Product),
         countries=count(models.Country),
         ingredients=count(models.Ingredient),
         categories=count(models.Category),
@@ -418,13 +444,18 @@ def stats(session: Session = Depends(get_session)):
         microbes=count(models.Microbe),
         products_with_ingredients=session.execute(
             select(func.count(func.distinct(models.product_ingredient.c.product_id)))
+            .join(models.Product, models.Product.id == models.product_ingredient.c.product_id)
+            .where(models.Product.status != "discarded")
         ).scalar_one(),
-        products_with_substrate=session.execute(
-            select(func.count()).select_from(models.Product).where(
-                models.Product.substrate.isnot(None)
-            )
+        products_with_substrate=active_count(
+            models.Product, models.Product.substrate.isnot(None)
+        ),
+        uses=session.execute(
+            select(func.count())
+            .select_from(models.ProductUse)
+            .join(models.Product, models.Product.id == models.ProductUse.product_id)
+            .where(models.Product.status != "discarded")
         ).scalar_one(),
-        uses=count(models.ProductUse),
         by_category=by_category,
         by_continent=by_continent,
         by_source=by_source,

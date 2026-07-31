@@ -66,11 +66,15 @@ Permite buscar, filtrar por categoría/continente/país/fuente, ver detalles (in
 | Open Food Facts (16 categorías de fermentados, encurtidos y conservas) | Productos comerciales, con tope por categoría | ODbL |
 | Wikidata (categorías EN + ES de fermentados, encurtidos y bebidas) | Enriquecido con label, descripción y país de origen | CC0 |
 
-Estado actual del seed: **2895 productos** (FermDB 605, Wikipedia 715, Open Food Facts 1590, Wikidata 89), 133 países, ~2400 referencias.
+Estado actual del seed: **2895 productos** (2784 activos + 111 descartados por curaduría: FermDB 605, Wikipedia 715, Open Food Facts 1590, Wikidata 89), 133 países, ~2400 referencias.
 
 Cobertura de datos: **86% de los productos con ≥1 ingrediente** (193 ingredientes canónicos, normalizados con vocabulario EN + aliases ES/FR, tipografías corregidas), **82% con sustrato principal** identificado (lo que fermentás: repollo, leche, soja…) y **~1900 vínculos de uso** entre productos (qué fermentado usa qué otro como ingrediente).
 
 Distribución de categorías: fermento_lactico 1335, encurtido_fermentado 516, fermento_koji 383, fermento_alcoholico 291, conserva_azucar 309 (mermeladas, frutas confitadas), encurtido_vinagre 138 (pepinillos, alcaparras, escabeches), fermento_acetico 140, otros ~55.
+
+### Curaduría
+
+`uv run python -m ingest.curation --apply` limpia la base: fusiona variantes del mismo producto (alias + absorción de datos, marcando los duplicados como `discarded`), capitaliza nombres, y descarta ruido (p.ej. aceite de hígado de bacalao). Incluye ~65 grupos curados a mano (`CURATED_MERGES`: grafías y lenguas distintas tipo *Choucroute cuisinée*/*La Choucroute cuisinée*, *Miso Paste dunkel*/*Misopaste dunkel*) y fusión automática de variantes OFF (mismas marcas con diferencias de formato). La API y la ingesta ignoran los productos descartados; el reporte de pares similares pendientes se genera con `--report`.
 
 El código se publica bajo licencia MIT (ver `LICENSE`). Los datos agregados provienen de fuentes abiertas que requieren atribución: FermDB (CC BY 4.0), Wikipedia (CC BY-SA 4.0), Open Food Facts (ODbL) y Wikidata (CC0). La base de datos compilada (`data/build.db`) no se distribuye en el repositorio; se genera con `uv run python -m ingest.ingest`.
 

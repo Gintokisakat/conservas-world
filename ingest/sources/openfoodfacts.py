@@ -28,6 +28,18 @@ CATEGORIES = {
     "candied-fruits": 80,
     "gherkins": 80,
     "capers": 60,
+    "sardines": 100,
+    "anchovies": 80,
+    "prosciutto": 20,
+    "jerky": 17,
+    "dried-fish": 8,
+    "dried-meat": 100,
+    "smoked-fish": 100,
+    "smoked-salmon": 80,
+    "olives": 120,
+    "canned-vegetables": 100,
+    "tuna": 100,
+    "water-kefir": 17,
 }
 
 _CATEGORY_DEFAULT = {
@@ -36,7 +48,7 @@ _CATEGORY_DEFAULT = {
     "kimchi": ["encurtido_fermentado"],
     "miso": ["fermento_koji"],
     "tempeh": ["fermento_koji"],
-    "natto": ["fermento_lactico"],
+    "natto": ["fermento_alcalino"],
     "kombucha": ["fermento_alcoholico"],
     "fermented-milk-drinks": ["fermento_lactico"],
     "vinegars": ["fermento_acetico"],
@@ -47,6 +59,18 @@ _CATEGORY_DEFAULT = {
     "candied-fruits": ["conserva_azucar"],
     "gherkins": ["encurtido_vinagre"],
     "capers": ["encurtido_vinagre"],
+    "sardines": ["conserva_aceite"],
+    "anchovies": ["curado_sal"],
+    "prosciutto": ["curado_sal"],
+    "jerky": ["secado"],
+    "dried-fish": ["secado"],
+    "dried-meat": ["secado"],
+    "smoked-fish": ["ahumado"],
+    "smoked-salmon": ["ahumado"],
+    "olives": ["encurtido_salmuera"],
+    "canned-vegetables": ["conserva_esterilizada"],
+    "tuna": ["conserva_esterilizada"],
+    "water-kefir": ["fermento_mixto"],
 }
 
 _TAG_MAP = (
@@ -58,7 +82,7 @@ _TAG_MAP = (
     ("miso", "fermento_koji"),
     ("tempeh", "fermento_koji"),
     ("soy-sauce", "fermento_koji"),
-    ("natto", "fermento_lactico"),
+    ("natto", "fermento_alcalino"),
     ("kefir", "fermento_lactico"),
     ("yogurt", "fermento_lactico"),
     ("fermented-milk", "fermento_lactico"),
@@ -79,6 +103,17 @@ _TAG_MAP = (
     ("cornichon", "encurtido_vinagre"),
     ("caper", "encurtido_vinagre"),
     ("escabeche", "encurtido_vinagre"),
+    ("sardine", "conserva_aceite"),
+    ("anchovy", "curado_sal"),
+    ("prosciutto", "curado_sal"),
+    ("jerky", "secado"),
+    ("dried-fish", "secado"),
+    ("dried-meat", "secado"),
+    ("smoked", "ahumado"),
+    ("olive", "encurtido_salmuera"),
+    ("canned", "conserva_esterilizada"),
+    ("tuna", "conserva_esterilizada"),
+    ("water-kefir", "fermento_mixto"),
 )
 
 _FIELDS = [

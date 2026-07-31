@@ -259,6 +259,11 @@ def infer_categories(text: str) -> list[str]:
     codes = set()
     if re.search(r"\b(wine|beer|alcohol|pulque|kombucha|vine beverage)\b", t):
         codes.add("fermento_alcoholico")
+    if re.search(
+        r"\b(water kefir|tibicos|ginger beer plant|scoby|symbiotic|mixed culture|sourdough)\b",
+        t,
+    ):
+        codes.add("fermento_mixto")
     if re.search(r"\bvinegar\b", t):
         codes.add("fermento_acetico")
     if re.search(r"\b(koji|mold|mould|tempeh|miso|soy sauce|soya sauce|shoyu|tamari)\b", t):

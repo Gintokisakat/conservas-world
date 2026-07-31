@@ -63,14 +63,14 @@ Permite buscar, filtrar por categoría/continente/país/fuente, ver detalles (in
 |---|---|---|
 | FermDB (ETH Zurich) | Fermentos tradicionales del mundo | CC BY 4.0 |
 | Wikipedia (7 listas: fermentados, encurtidos, lácteos, leche fermentada, quesos, soja) | Entries adicionales | CC BY-SA 4.0 |
-| Open Food Facts (16 categorías de fermentados, encurtidos y conservas) | Productos comerciales, con tope por categoría | ODbL |
+| Open Food Facts (27 categorías de fermentados, encurtidos y conservas) | Productos comerciales, con tope por categoría | ODbL |
 | Wikidata (categorías EN + ES de fermentados, encurtidos y bebidas) | Enriquecido con label, descripción y país de origen | CC0 |
 
-Estado actual del seed: **2895 productos** (2784 activos + 111 descartados por curaduría: FermDB 605, Wikipedia 715, Open Food Facts 1590, Wikidata 89), 133 países, ~2400 referencias.
+Estado actual del seed: **3472 productos** (3361 activos + 111 descartados por curaduría: FermDB 605, Wikipedia 715, Open Food Facts 2208, Wikidata 89), 133 países, ~2400 referencias.
 
-Cobertura de datos: **86% de los productos con ≥1 ingrediente** (193 ingredientes canónicos, normalizados con vocabulario EN + aliases ES/FR, tipografías corregidas), **82% con sustrato principal** identificado (lo que fermentás: repollo, leche, soja…) y **~1900 vínculos de uso** entre productos (qué fermentado usa qué otro como ingrediente).
+Cobertura de datos: **87% de los productos con ≥1 ingrediente** (193 ingredientes canónicos, normalizados con vocabulario EN + aliases ES/FR, tipografías corregidas), **83% con sustrato principal** identificado (lo que fermentás: repollo, leche, soja…) y **~1900 vínculos de uso** entre productos (qué fermentado usa qué otro como ingrediente).
 
-Distribución de categorías: fermento_lactico 1335, encurtido_fermentado 516, fermento_koji 383, fermento_alcoholico 291, conserva_azucar 309 (mermeladas, frutas confitadas), encurtido_vinagre 138 (pepinillos, alcaparras, escabeches), fermento_acetico 140, otros ~55.
+Distribución de categorías (16/16 con productos): fermento_lactico 1317, encurtido_fermentado 571, fermento_koji 356, conserva_azucar 306, fermento_alcoholico 285, conserva_esterilizada 260 (conservas en lata), encurtido_salmuera 150 (aceitunas), encurtido_vinagre 131, fermento_acetico 125, ahumado 102, conserva_aceite 89 (sardinas), secado 83 (jerky, pescado seco), curado_sal 51 (anchoas, prosciutto), fermento_mixto 23 (tibicos, sourdough, water kefir), fermento_alcalino 4 (natto), otros ~55.
 
 ### Curaduría
 

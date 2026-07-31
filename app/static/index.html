@@ -3,89 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conservas del Mundo</title>
+    <title>Conservas del Mundo — Fermentos y Encurtidos Tradicionales</title>
+    <meta name="description" content="Explora y descubre más de 3400 fermentos, encurtidos y conservas del mundo. Encuentra recetas según los ingredientes que tienes en tu despensa.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <header>
-        <h1>Conservas del Mundo</h1>
-        <p class="subtitle">Base de datos mundial de conservas, fermentos y encurtidos</p>
-        <div id="stats" class="stats"></div>
+    <header class="site-header">
+        <div class="header-container">
+            <div class="brand">
+                <span class="brand-icon">🏺</span>
+                <div>
+                    <h1>Conservas del Mundo</h1>
+                    <p class="subtitle">Catálogo global de fermentos, encurtidos y recetas tradicionales</p>
+                </div>
+            </div>
+            <div id="stats" class="stats-grid">
+                <div class="stat-skeleton">Cargando estadísticas…</div>
+            </div>
+        </div>
     </header>
 
-    <main>
-        <section class="dashboard" id="dashboard">
-            <h2>Mi despensa</h2>
-            <p class="subtitle">Decime qué tenés y te digo qué fermento/conserva podés hacer.</p>
-
-            <div class="pantry">
-                <label class="pantry-label">
-                    <span>Ingredientes / sustratos (repollo, leche, soja…)</span>
-                    <div class="chips" id="ing-chips"></div>
-                    <div class="chips-input">
-                        <input type="text" id="ing-input" placeholder="Ej: repollo, zanahoria, sal" autocomplete="off">
-                        <button type="button" class="secondary" id="ing-add">Agregar</button>
-                    </div>
-                </label>
-                <label class="pantry-label">
-                    <span>Fermentados que ya tenés (miso, kimchi…)</span>
-                    <div class="chips" id="prod-chips"></div>
-                    <div class="chips-input">
-                        <input type="text" id="prod-input" placeholder="Ej: miso, kimchi" autocomplete="off">
-                        <button type="button" class="secondary" id="prod-add">Agregar</button>
-                    </div>
-                </label>
+    <main class="app-container">
+        <!-- Sección Mi Despensa -->
+        <section class="pantry-card" id="dashboard">
+            <div class="pantry-header">
+                <h2>✨ Mi Despensa Interactiva</h2>
+                <p class="pantry-desc">Carga qué ingredientes o fermentados tienes a mano y te mostraremos qué puedes preparar.</p>
             </div>
 
-            <button type="button" id="recommend-btn" class="primary-btn">¿Qué puedo hacer?</button>
-            <div id="recommendations" class="recommendations hidden"></div>
+            <div class="pantry-inputs-grid">
+                <div class="pantry-group">
+                    <label for="ing-input">
+                        <span class="label-title">🥦 Sustratos e Ingredientes (repollo, leche, soja…)</span>
+                    </label>
+                    <div class="chips" id="ing-chips"></div>
+                    <div class="input-with-button">
+                        <input type="text" id="ing-input" list="ingredient-list" placeholder="Ej: repollo, zanahoria, sal..." autocomplete="off">
+                        <datalist id="ingredient-list"></datalist>
+                        <button type="button" class="btn btn-secondary" id="ing-add">+ Agregar</button>
+                    </div>
+                </div>
+
+                <div class="pantry-group">
+                    <label for="prod-input">
+                        <span class="label-title">🧪 Fermentados que ya posees (miso, kimchi, kéfir…)</span>
+                    </label>
+                    <div class="chips" id="prod-chips"></div>
+                    <div class="input-with-button">
+                        <input type="text" id="prod-input" placeholder="Ej: miso, kimchi, masa madre..." autocomplete="off">
+                        <button type="button" class="btn btn-secondary" id="prod-add">+ Agregar</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pantry-actions">
+                <button type="button" id="recommend-btn" class="btn btn-primary btn-glow">
+                    🔍 ¿Qué puedo preparar hoy?
+                </button>
+            </div>
+
+            <div id="recommendations" class="recommendations-container hidden"></div>
         </section>
 
-        <section class="filters">
-            <form id="search-form">
-                <input type="search" id="q" placeholder="Buscar (ej. kimchi, miso, sauerkraut…)" autocomplete="off">
-                <select id="category">
-                    <option value="">Todas las categorías</option>
-                </select>
-                <select id="continent">
-                    <option value="">Todos los continentes</option>
-                    <option>Asia</option>
-                    <option>Europe</option>
-                    <option>Africa</option>
-                    <option>Americas</option>
-                    <option>Oceania</option>
-                </select>
-                <select id="country">
-                    <option value="">Todos los países</option>
-                </select>
-                <select id="source">
-                    <option value="">Todas las fuentes</option>
-                    <option value="fermdb">FermDB</option>
-                    <option value="wikipedia">Wikipedia</option>
-                    <option value="openfoodfacts">Open Food Facts</option>
-                    <option value="wikidata">Wikidata</option>
-                </select>
-                <button type="submit">Buscar</button>
-                <button type="button" id="random-btn" class="secondary">Aleatorio</button>
+        <!-- Barra de Búsqueda y Filtros -->
+        <section class="filters-card">
+            <form id="search-form" class="filters-form">
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="search" id="q" placeholder="Buscar por nombre o descripción (ej. kimchi, sauerkraut, choucroute...)" autocomplete="off">
+                </div>
+                <div class="selects-group">
+                    <select id="category">
+                        <option value="">Todas las categorías</option>
+                    </select>
+                    <select id="continent">
+                        <option value="">Todos los continentes</option>
+                        <option value="Asia">Asia</option>
+                        <option value="Europe">Europa</option>
+                        <option value="Africa">África</option>
+                        <option value="Americas">América</option>
+                        <option value="Oceania">Oceanía</option>
+                    </select>
+                    <select id="country">
+                        <option value="">Todos los países</option>
+                    </select>
+                    <select id="source">
+                        <option value="">Todas las fuentes</option>
+                        <option value="fermdb">FermDB</option>
+                        <option value="wikipedia">Wikipedia</option>
+                        <option value="openfoodfacts">Open Food Facts</option>
+                        <option value="wikidata">Wikidata</option>
+                    </select>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Buscar</button>
+                    <button type="button" id="random-btn" class="btn btn-accent">🎲 Sorpréndeme</button>
+                </div>
             </form>
         </section>
 
-        <section id="results">
+        <!-- Lista de Resultados -->
+        <section id="results" class="results-section">
             <div class="results-head">
-                <span id="count"></span>
-                <span class="pagination">
-                    <button id="prev-btn" disabled>← Anterior</button>
-                    <span id="page-info"></span>
-                    <button id="next-btn" disabled>Siguiente →</button>
-                </span>
+                <span id="count" class="count-badge">Cargando resultados...</span>
+                <div class="pagination">
+                    <button id="prev-btn" class="btn btn-sm" disabled>← Anterior</button>
+                    <span id="page-info" class="page-indicator">Página 1</span>
+                    <button id="next-btn" class="btn btn-sm" disabled>Siguiente →</button>
+                </div>
             </div>
-            <ul id="product-list" class="product-list"></ul>
+            <ul id="product-list" class="products-grid"></ul>
         </section>
     </main>
 
-    <div id="detail" class="overlay hidden" onclick="closeDetail(event)">
-        <div class="detail-panel">
-            <button class="close" onclick="closeDetail()">×</button>
+    <!-- Modal Detalle del Producto -->
+    <div id="detail" class="modal-overlay hidden" onclick="closeDetail(event)">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeDetail()" aria-label="Cerrar modal">&times;</button>
             <div id="detail-body"></div>
         </div>
     </div>

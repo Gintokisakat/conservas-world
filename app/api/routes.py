@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session, selectinload
 
@@ -169,22 +169,19 @@ def list_products(
 
     if q:
         fts_ids = _fts_matches(session, q.strip())
-        if fts_ids is not None:
-            if not fts_ids:
-                total = 0
-                return PaginatedProducts(total=0, page=page, page_size=page_size, items=[])
+        if fts_ids is not None and fts_ids:
             query = query.where(models.Product.id.in_(fts_ids))
             count_query = count_query.where(models.Product.id.in_(fts_ids))
         else:
             term = q.strip().lower()
-            query = query.where(
+            norm_term = normalize_name(q.strip())
+            search_clause = (
                 func.lower(models.Product.name).contains(term)
                 | func.lower(func.coalesce(models.Product.description, "")).contains(term)
+                | func.lower(models.Product.name).contains(norm_term)
             )
-            count_query = count_query.where(
-                func.lower(models.Product.name).contains(term)
-                | func.lower(func.coalesce(models.Product.description, "")).contains(term)
-            )
+            query = query.where(search_clause)
+            count_query = count_query.where(search_clause)
 
     total = session.execute(count_query).scalar_one()
     query = (
@@ -365,7 +362,8 @@ def get_product(product_id: int, session: Session = Depends(get_session)):
 
 
 @router.get("/categories", response_model=list[CategoryOut])
-def list_categories(session: Session = Depends(get_session)):
+def list_categories(response: Response, session: Session = Depends(get_session)):
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return session.execute(
         select(models.Category).order_by(models.Category.name)
     ).scalars().all()
@@ -373,9 +371,11 @@ def list_categories(session: Session = Depends(get_session)):
 
 @router.get("/countries", response_model=list[CountryOut])
 def list_countries(
+    response: Response,
     continent: str | None = None,
     session: Session = Depends(get_session),
 ):
+    response.headers["Cache-Control"] = "public, max-age=3600"
     query = select(models.Country).order_by(models.Country.name)
     if continent:
         query = query.where(models.Country.continent == continent)
@@ -383,14 +383,16 @@ def list_countries(
 
 
 @router.get("/ingredients", response_model=list[IngredientOut])
-def list_ingredients(session: Session = Depends(get_session)):
+def list_ingredients(response: Response, session: Session = Depends(get_session)):
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return session.execute(
         select(models.Ingredient).order_by(models.Ingredient.name)
     ).scalars().all()
 
 
 @router.get("/references", response_model=list[ReferenceOut])
-def list_references(session: Session = Depends(get_session)):
+def list_references(response: Response, session: Session = Depends(get_session)):
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return session.execute(
         select(models.Reference).order_by(models.Reference.title)
     ).scalars().all()

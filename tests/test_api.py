@@ -133,6 +133,14 @@ def test_unknown_filter_returns_empty(client):
 def test_list_categories(client):
     resp = client.get("/categories")
     assert resp.status_code == 200
+    assert resp.headers.get("Cache-Control") == "public, max-age=3600"
     codes = {c["code"] for c in resp.json()}
     assert "fermento_lactico" in codes
     assert "encurtido_vinagre" in codes
+
+
+def test_list_ingredients_cache_header(client):
+    resp = client.get("/ingredients")
+    assert resp.status_code == 200
+    assert resp.headers.get("Cache-Control") == "public, max-age=3600"
+

@@ -364,6 +364,15 @@ function closeChartsModal(event) {
     document.getElementById("charts-modal").classList.add("hidden");
 }
 
+function openGuideModal() {
+    document.getElementById("guide-modal").classList.remove("hidden");
+}
+
+function closeGuideModal(event) {
+    if (event && event.target.id !== "guide-modal" && !event.target.classList.contains("modal-close")) return;
+    document.getElementById("guide-modal").classList.add("hidden");
+}
+
 function openLabelModal(name, dateStr, timeStr, storageStr) {
     document.getElementById("lbl-title").textContent = name;
     document.getElementById("lbl-date").textContent = dateStr;
@@ -483,8 +492,12 @@ document.addEventListener("keydown", (e) => {
         document.getElementById("trouble-modal").classList.add("hidden");
         document.getElementById("label-modal").classList.add("hidden");
         document.getElementById("charts-modal").classList.add("hidden");
+        document.getElementById("guide-modal").classList.add("hidden");
     }
 });
+
+const guideBtn = document.getElementById("guide-btn");
+if (guideBtn) guideBtn.addEventListener("click", openGuideModal);
 
 document.getElementById("search-form").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -576,6 +589,7 @@ function renderTimers() {
 
         const isReady = remainingMs <= 0;
         const startDateStr = new Date(start).toISOString().slice(0, 10);
+        const notesHtml = t.notes ? `<div style="font-size:0.82rem; color:var(--color-primary); background:rgba(45,90,63,0.06); padding:0.3rem 0.5rem; border-radius:4px; margin-top:0.3rem">📝 <strong>${state.lang === 'en' ? 'Notes:' : 'Notas:'}</strong> ${esc(t.notes)}</div>` : "";
 
         return `
             <div class="timer-item-card">
@@ -586,7 +600,8 @@ function renderTimers() {
                         <button type="button" class="chip-remove" onclick="removeTimer(${idx})" title="Eliminar frasco">&times;</button>
                     </div>
                 </div>
-                <div class="progress-bar-bg">
+                ${notesHtml}
+                <div class="progress-bar-bg" style="margin-top:0.5rem">
                     <div class="progress-bar-fill" style="width: ${pct}%; background-color: ${isReady ? '#2e7d52' : 'var(--color-primary)'}"></div>
                 </div>
                 <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:var(--text-secondary)">
@@ -601,9 +616,11 @@ function renderTimers() {
 function addTimer() {
     const nameEl = document.getElementById("timer-name");
     const daysEl = document.getElementById("timer-days");
+    const notesEl = document.getElementById("timer-notes");
 
     const name = nameEl.value.trim();
     const days = parseInt(daysEl.value, 10);
+    const notes = notesEl ? notesEl.value.trim() : "";
 
     if (!name || isNaN(days) || days < 1) {
         alert(state.lang === 'en' ? "Please enter a valid jar name and number of days." : "Por favor ingresa un nombre y cantidad de días válidos.");
@@ -613,12 +630,14 @@ function addTimer() {
     timers.push({
         name,
         days,
+        notes,
         startDate: Date.now()
     });
     saveTimers();
     renderTimers();
 
     nameEl.value = "";
+    if (notesEl) notesEl.value = "";
 }
 
 function removeTimer(idx) {

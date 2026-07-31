@@ -90,6 +90,7 @@
             <div class="timer-input-row">
                 <input type="text" id="timer-name" placeholder="Nombre (ej. Kimchi de repollo)" autocomplete="off">
                 <input type="number" id="timer-days" placeholder="Días (ej. 7)" min="1" max="365" value="7">
+                <input type="text" id="timer-notes" placeholder="Notas de lote (ej. 2.5% sal rosa, ajo, laurel)" autocomplete="off" style="flex:1">
                 <button type="button" id="add-timer-btn" class="btn btn-secondary">+ Iniciar Frasco</button>
             </div>
             <div id="timers-list" class="timers-grid"></div>
@@ -179,6 +180,7 @@
                     </select>
                 </div>
                 <div class="form-actions">
+                    <button type="button" id="guide-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">📖 Manual del Fermentador</button>
                     <button type="button" id="trouble-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43">🚨 Diagnóstico de Problemas</button>
                     <button type="button" id="microbes-btn" class="btn btn-outline">🔬 Microbios Fermentadores</button>
                     <button type="button" id="fav-filter-btn" class="btn btn-outline">❤️ Mis Favoritos (<span id="fav-count">0</span>)</button>
@@ -317,6 +319,54 @@
                     <div class="chart-canvas-container">
                         <canvas id="chart-categories"></canvas>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Manual Científico del Fermentador -->
+    <div id="guide-modal" class="modal-overlay hidden" onclick="closeGuideModal(event)">
+        <div class="modal-card modal-lg">
+            <button class="modal-close" onclick="closeGuideModal()">&times;</button>
+            <h2>📖 Manual Científico para Fermentadores</h2>
+            <p style="color:var(--text-secondary); margin-bottom:1.2rem">Guía técnica y de inocuidad alimentaria para la elaboración artesanal de conservas y fermentos.</p>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.2rem">
+                <div style="background:var(--bg-page); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-color)">
+                    <h3 style="color:var(--color-primary); margin-bottom:0.5rem">🧪 1. Esterilización e Higiene</h3>
+                    <p style="font-size:0.9rem; color:var(--text-secondary)">
+                        • <strong>Agua Hirviendo:</strong> Sumérgete frascos y tapas limpia por 10 minutos a 100°C.<br>
+                        • <strong>Vapor:</strong> Mantener frascos boca abajo 15 minutos en vaporera.<br>
+                        • <strong>Desinfección alcohol 70°:</strong> Pulverizar el interior y dejar secar al aire.<br>
+                        • <em>Importante:</em> Lavarse las manos adecuadamente antes de masajear vegetales.
+                    </p>
+                </div>
+
+                <div style="background:var(--bg-page); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-color)">
+                    <h3 style="color:var(--color-primary); margin-bottom:0.5rem">🧂 2. Salinidad Recomendada</h3>
+                    <p style="font-size:0.9rem; color:var(--text-secondary)">
+                        • <strong>Chucrut / Kimchi (Salado seco):</strong> 2.0% - 2.5% del peso vegetal.<br>
+                        • <strong>Pepinillos / Zanahorias (Salmuera):</strong> 3.0% - 3.5% del peso total (agua+vegetal).<br>
+                        • <strong>Chiles / Salsas picantes:</strong> 3.5% - 4.5% para fermentaciones largas.<br>
+                        • <strong>Aceitunas verdes:</strong> 6.0% - 8.0% para desamargar y curar.
+                    </p>
+                </div>
+
+                <div style="background:var(--bg-page); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-color)">
+                    <h3 style="color:var(--color-primary); margin-bottom:0.5rem">🍃 3. Conservar la Textura Crocante</h3>
+                    <p style="font-size:0.9rem; color:var(--text-secondary)">
+                        Las enzimas pectinolíticas ablandan los vegetales. Para mantener un crocante perfecto:<br>
+                        • Añadir <strong>taninos naturales</strong>: 1 hoja de roble, hoja de parra, hoja de frambuesa o 1 bolsa de té negro sin usar.<br>
+                        • Mantener la temperatura entre 18°C y 22°C.
+                    </p>
+                </div>
+
+                <div style="background:var(--bg-page); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-color)">
+                    <h3 style="color:var(--color-primary); margin-bottom:0.5rem">🛡️ 4. Control de Oxígeno & Airlocks</h3>
+                    <p style="font-size:0.9rem; color:var(--text-secondary)">
+                        • Mantener siempre los vegetales <strong>100% sumergidos</strong> bajo la salmuera con un peso de cristal o cerámica limpia.<br>
+                        • Utilizar válvulas de escape de gas (<em>Airlocks</em>) o aflojar la tapa 1 segundo al día para purgar el CO₂ sobrante.
+                    </p>
                 </div>
             </div>
         </div>

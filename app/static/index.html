@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Conservas del Mundo</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>Conservas del Mundo</h1>
+        <p class="subtitle">Base de datos mundial de conservas, fermentos y encurtidos</p>
+        <div id="stats" class="stats"></div>
+    </header>
+
+    <main>
+        <section class="filters">
+            <form id="search-form">
+                <input type="search" id="q" placeholder="Buscar (ej. kimchi, miso, sauerkraut…)" autocomplete="off">
+                <select id="category">
+                    <option value="">Todas las categorías</option>
+                </select>
+                <select id="continent">
+                    <option value="">Todos los continentes</option>
+                    <option>Asia</option>
+                    <option>Europe</option>
+                    <option>Africa</option>
+                    <option>Americas</option>
+                    <option>Oceania</option>
+                </select>
+                <select id="country">
+                    <option value="">Todos los países</option>
+                </select>
+                <select id="source">
+                    <option value="">Todas las fuentes</option>
+                    <option value="fermdb">FermDB</option>
+                    <option value="wikipedia">Wikipedia</option>
+                </select>
+                <button type="submit">Buscar</button>
+                <button type="button" id="random-btn" class="secondary">Aleatorio</button>
+            </form>
+        </section>
+
+        <section id="results">
+            <div class="results-head">
+                <span id="count"></span>
+                <span class="pagination">
+                    <button id="prev-btn" disabled>← Anterior</button>
+                    <span id="page-info"></span>
+                    <button id="next-btn" disabled>Siguiente →</button>
+                </span>
+            </div>
+            <ul id="product-list" class="product-list"></ul>
+        </section>
+    </main>
+
+    <div id="detail" class="overlay hidden" onclick="closeDetail(event)">
+        <div class="detail-panel">
+            <button class="close" onclick="closeDetail()">×</button>
+            <div id="detail-body"></div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

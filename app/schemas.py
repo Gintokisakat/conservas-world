@@ -59,6 +59,7 @@ class ProductOut(BaseModel):
     description: str | None
     method: str | None
     fermentation_time: str | None
+    storage_life: str | None = None
     status: str
     source_tag: str | None
     substrate: str | None

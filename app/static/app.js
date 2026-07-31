@@ -235,7 +235,8 @@ async function openDetail(id) {
             </div>
             ${p.description ? `<p style="font-size:1.05rem; color:var(--text-secondary); margin-bottom:1rem">${esc(p.description)}</p>` : ""}
             ${p.method ? `<p style="background:var(--bg-page); padding:0.8rem; border-radius:var(--radius-sm)"><strong>Método tradicional:</strong> ${esc(p.method)}</p>` : ""}
-            ${p.fermentation_time ? `<p><strong>⏱️ Tiempo estimado:</strong> ${esc(p.fermentation_time)}</p>` : ""}
+            ${p.fermentation_time ? `<p><strong>⏱️ Tiempo de fermentación:</strong> ${esc(p.fermentation_time)}</p>` : ""}
+            ${p.storage_life ? `<p><strong>🧊 Conservación y almacenamiento:</strong> ${esc(p.storage_life)}</p>` : ""}
             
             <div class="tags" style="margin-top: 0.8rem">
                 ${p.substrate ? tag(`Sustrato: ${p.substrate}`, "substrate") : ""}

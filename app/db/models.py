@@ -84,6 +84,7 @@ class Product(Base):
     description: Mapped[str | None] = mapped_column(Text)
     method: Mapped[str | None] = mapped_column(Text)
     fermentation_time: Mapped[str | None] = mapped_column(String(100))
+    storage_life: Mapped[str | None] = mapped_column(String(150))
     status: Mapped[str] = mapped_column(String(20), default="imported")
     source_tag: Mapped[str | None] = mapped_column(String(50), index=True)
     substrate: Mapped[str | None] = mapped_column(String(150), index=True)

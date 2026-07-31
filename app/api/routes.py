@@ -73,6 +73,7 @@ def _product_out(product: models.Product) -> ProductOut:
         "description": product.description,
         "method": product.method,
         "fermentation_time": product.fermentation_time,
+        "storage_life": product.storage_life,
         "status": product.status,
         "source_tag": product.source_tag,
         "substrate": product.substrate,

@@ -143,7 +143,7 @@ async function openDetail(id) {
             items && items.length ? `
                 <div class="detail-section">
                     <h4>${title}</h4>
-                    <ul>${items.map((i) => `<li>${esc(i.name || i.title)}</li>`).join("")}</ul>
+                    <ul>${items.map((i) => `<li>${esc(typeof i === "string" ? i : (i.name || i.title))}</li>`).join("")}</ul>
                 </div>` : "";
         
         const refs = p.references && p.references.length ? `
@@ -169,6 +169,8 @@ async function openDetail(id) {
             ${section("Alias / Nombres locales", p.aliases)}
             ${section("Ingredientes clave", p.ingredients)}
             ${section("Microbios fermentadores", p.microbes)}
+            ${section("Utiliza como ingrediente", p.uses)}
+            ${section("Es ingrediente de", p.used_by)}
             ${refs}
         `;
     } catch (e) {

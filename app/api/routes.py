@@ -67,10 +67,25 @@ def _load_product(session: Session, product_id: int) -> models.Product:
 
 
 def _product_out(product: models.Product) -> ProductOut:
-    out = ProductOut.model_validate(product)
-    out.uses = sorted({u.used_product.name for u in product.uses})
-    out.used_by = sorted({u.product.name for u in product.used_by})
-    return out
+    data = {
+        "id": product.id,
+        "name": product.name,
+        "description": product.description,
+        "method": product.method,
+        "fermentation_time": product.fermentation_time,
+        "status": product.status,
+        "source_tag": product.source_tag,
+        "substrate": product.substrate,
+        "aliases": product.aliases,
+        "countries": product.countries,
+        "ingredients": product.ingredients,
+        "categories": product.categories,
+        "microbes": product.microbes,
+        "references": product.references,
+        "uses": sorted({u.used_product.name for u in product.uses if u.used_product}),
+        "used_by": sorted({u.product.name for u in product.used_by if u.product}),
+    }
+    return ProductOut.model_validate(data)
 
 
 def _split_terms(raw: str) -> list[str]:

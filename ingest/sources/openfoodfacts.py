@@ -23,6 +23,11 @@ CATEGORIES = {
     "vinegars": 200,
     "soy-sauces": 200,
     "fish-sauces": 100,
+    "jams": 200,
+    "marmalades": 100,
+    "candied-fruits": 80,
+    "gherkins": 80,
+    "capers": 60,
 }
 
 _CATEGORY_DEFAULT = {
@@ -37,6 +42,11 @@ _CATEGORY_DEFAULT = {
     "vinegars": ["fermento_acetico"],
     "soy-sauces": ["fermento_koji"],
     "fish-sauces": ["fermento_lactico"],
+    "jams": ["conserva_azucar"],
+    "marmalades": ["conserva_azucar"],
+    "candied-fruits": ["conserva_azucar"],
+    "gherkins": ["encurtido_vinagre"],
+    "capers": ["encurtido_vinagre"],
 }
 
 _TAG_MAP = (
@@ -60,6 +70,15 @@ _TAG_MAP = (
     ("wine", "fermento_alcoholico"),
     ("cider", "fermento_alcoholico"),
     ("vinegar", "fermento_acetico"),
+    ("jam", "conserva_azucar"),
+    ("marmalade", "conserva_azucar"),
+    ("candied", "conserva_azucar"),
+    ("compote", "conserva_azucar"),
+    ("fruit-preserve", "conserva_azucar"),
+    ("gherkin", "encurtido_vinagre"),
+    ("cornichon", "encurtido_vinagre"),
+    ("caper", "encurtido_vinagre"),
+    ("escabeche", "encurtido_vinagre"),
 )
 
 _FIELDS = [

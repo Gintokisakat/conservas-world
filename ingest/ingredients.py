@@ -87,6 +87,10 @@ CANONICAL_INGREDIENTS = [
     {"name": "artichoke", "category": "vegetal", "aliases": [
         "artichoke", "artichokes", "alcachofa", "artichaut", "globe artichoke",
     ]},
+    {"name": "caper", "category": "vegetal", "aliases": [
+        "caper", "capers", "alcaparra", "alcaparras", "câpre", "câpres",
+        "capper", "cappers", "alcaparrones",
+    ]},
     {"name": "spinach", "category": "vegetal", "aliases": [
         "spinach", "espinaca", "epinard", "spinach leaves", "red spinach",
     ]},

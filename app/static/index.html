@@ -19,11 +19,17 @@
                 <span class="brand-icon">🏺</span>
                 <div>
                     <h1>Conservas del Mundo</h1>
-                    <p class="subtitle">Catálogo global de fermentos, encurtidos y recetas tradicionales</p>
+                    <p class="subtitle" data-i18n="header_sub">Catálogo global de fermentos, encurtidos y recetas tradicionales</p>
                 </div>
             </div>
-            <div id="stats" class="stats-grid">
-                <div class="stat-skeleton">Cargando estadísticas…</div>
+            <div style="display:flex; align-items:center; gap:1rem">
+                <div id="stats" class="stats-grid">
+                    <div class="stat-skeleton">Cargando estadísticas…</div>
+                </div>
+                <select id="lang-select" class="lang-picker" title="Cambiar idioma">
+                    <option value="es">🇪🇸 Español</option>
+                    <option value="en">🇬🇧 English</option>
+                </select>
             </div>
         </div>
     </header>
@@ -87,35 +93,58 @@
             <div id="timers-list" class="timers-grid"></div>
         </section>
 
-        <!-- Calculadora de Salmuera y Salinidad -->
-        <section class="calc-card">
-            <div class="calc-header">
-                <h2>🧮 Calculadora de Salinidad y Salmuera</h2>
-                <p class="calc-desc">Calcula la cantidad exacta de sal para una fermentación segura y libre de bacterias patógenas.</p>
-            </div>
-            <div class="calc-grid">
-                <div class="calc-input-group">
-                    <label for="calc-weight" class="label-title">Peso del Vegetal / Agua (gramos):</label>
-                    <input type="number" id="calc-weight" min="50" max="50000" value="1000" step="50">
+        <!-- Calculadoras: Salmuera y ABV Alcohólico -->
+        <div class="calcs-wrapper">
+            <section class="calc-card">
+                <div class="calc-header">
+                    <h2>🧮 Calculadora de Salinidad</h2>
+                    <p class="calc-desc">Gramos de sal para fermentación láctica segura.</p>
                 </div>
-                <div class="calc-input-group">
-                    <label for="calc-target" class="label-title">Tipo de Fermentación / Salinidad:</label>
-                    <select id="calc-target">
-                        <option value="2.0">Chucrut / Kimchi Suave (2.0%)</option>
-                        <option value="2.5" selected>Chucrut / Kimchi Estándar (2.5%)</option>
-                        <option value="3.0">Hortalizas Firmes / Pepinillos (3.0%)</option>
-                        <option value="4.0">Salsa de Ají / Chiles (4.0%)</option>
-                        <option value="6.0">Salmuera Fuerte / Aceitunas (6.0%)</option>
-                        <option value="8.0">Curado en Salmuera Alta (8.0%)</option>
-                    </select>
+                <div class="calc-grid">
+                    <div class="calc-input-group">
+                        <label for="calc-weight" class="label-title">Peso Vegetal/Agua (g):</label>
+                        <input type="number" id="calc-weight" min="50" max="50000" value="1000" step="50">
+                    </div>
+                    <div class="calc-input-group">
+                        <label for="calc-target" class="label-title">Salinidad Target:</label>
+                        <select id="calc-target">
+                            <option value="2.0">Chucrut / Kimchi Suave (2.0%)</option>
+                            <option value="2.5" selected>Chucrut / Kimchi Estándar (2.5%)</option>
+                            <option value="3.0">Hortalizas / Pepinillos (3.0%)</option>
+                            <option value="4.0">Salsa de Chiles (4.0%)</option>
+                            <option value="6.0">Aceitunas / Salmuera (6.0%)</option>
+                        </select>
+                    </div>
+                    <div class="calc-result-box">
+                        <span class="calc-result-label">Sal necesaria:</span>
+                        <strong id="calc-result-grams" class="calc-result-val">25 g</strong>
+                        <span class="calc-result-tip">💡 Usar sal marina sin yodo.</span>
+                    </div>
                 </div>
-                <div class="calc-result-box">
-                    <span class="calc-result-label">Sal necesaria:</span>
-                    <strong id="calc-result-grams" class="calc-result-val">25 g</strong>
-                    <span class="calc-result-tip">💡 Utiliza sal marina o sal de roca sin yodo ni antiaglomerantes.</span>
+            </section>
+
+            <section class="calc-card">
+                <div class="calc-header">
+                    <h2>🍺 Calculadora de Alcohol (% ABV)</h2>
+                    <p class="calc-desc">Estimación para hidromiel, sidra, kvas o cerveza.</p>
                 </div>
-            </div>
-        </section>
+                <div class="calc-grid">
+                    <div class="calc-input-group">
+                        <label for="abv-og" class="label-title">Densidad Inicial (OG):</label>
+                        <input type="number" id="abv-og" step="0.001" min="1.000" max="1.200" value="1.050">
+                    </div>
+                    <div class="calc-input-group">
+                        <label for="abv-fg" class="label-title">Densidad Final (FG):</label>
+                        <input type="number" id="abv-fg" step="0.001" min="0.990" max="1.100" value="1.010">
+                    </div>
+                    <div class="calc-result-box">
+                        <span class="calc-result-label">Alcohol por volumen:</span>
+                        <strong id="abv-result-val" class="calc-result-val">5.25 %</strong>
+                        <span class="calc-result-tip">🍺 Fórmula: (OG - FG) × 131.25</span>
+                    </div>
+                </div>
+            </section>
+        </div>
 
         <!-- Barra de Búsqueda y Filtros -->
         <section class="filters-card">
@@ -148,7 +177,7 @@
                     </select>
                 </div>
                 <div class="form-actions">
-                    <button type="button" id="trouble-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43">🚨 ¿Problemas con tu fermento?</button>
+                    <button type="button" id="trouble-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43">🚨 Diagnóstico de Problemas</button>
                     <button type="button" id="microbes-btn" class="btn btn-outline">🔬 Microbios Fermentadores</button>
                     <button type="button" id="fav-filter-btn" class="btn btn-outline">❤️ Mis Favoritos (<span id="fav-count">0</span>)</button>
                     <button type="submit" class="btn btn-primary">Buscar</button>
@@ -228,6 +257,32 @@
             </div>
 
             <div id="trouble-outcome" class="trouble-outcome-box hidden"></div>
+        </div>
+    </div>
+
+    <!-- Modal Generación e Impresión de Etiquetas para Frascos -->
+    <div id="label-modal" class="modal-overlay hidden" onclick="closeLabelModal(event)">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeLabelModal()">&times;</button>
+            <h2>🏷️ Etiqueta de Frasco Imprimible</h2>
+            <p style="color:var(--text-secondary)">Previsualización lista para imprimir o pegar en tu frasco:</p>
+            
+            <div id="printable-jar-label" class="jar-label-badge">
+                <div class="jar-label-header">
+                    <span class="jar-label-icon">🏺</span>
+                    <strong id="lbl-title">Kimchi de Repollo</strong>
+                </div>
+                <div class="jar-label-details">
+                    <p><strong>📅 Fecha de elaboración:</strong> <span id="lbl-date">2026-07-31</span></p>
+                    <p><strong>⏱️ Fermentación estimada:</strong> <span id="lbl-time">7 a 14 días</span></p>
+                    <p><strong>🧊 Conservación:</strong> <span id="lbl-storage">3 a 6 meses refrigerado</span></p>
+                    <p><strong>🛡️ Estado de Seguridad:</strong> <span id="lbl-ph">pH seguro &lt; 4.6</span></p>
+                </div>
+            </div>
+
+            <div style="margin-top:1.5rem; display:flex; justify-content:flex-end; gap:0.5rem">
+                <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ Imprimir Etiqueta</button>
+            </div>
         </div>
     </div>
 

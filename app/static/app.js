@@ -8,6 +8,7 @@ const state = {
     page: 1,
     pageSize: 20,
     total: 0,
+    lang: localStorage.getItem("pantry_lang") || "es"
 };
 
 // Register Service Worker for PWA / Offline support
@@ -229,9 +230,14 @@ async function openDetail(id) {
         body.innerHTML = `
             <div class="card-header-row" style="align-items:center">
                 <h2>${esc(p.name)}</h2>
-                <button type="button" class="btn btn-outline btn-sm" onclick="toggleFavorite(${p.id}); this.textContent = favorites.has(${p.id}) ? '❤️ Guardado' : '🤍 Favorito'">
-                    ${isFav ? "❤️ Guardado" : "🤍 Favorito"}
-                </button>
+                <div style="display:flex; gap:0.4rem">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="openLabelModal('${esc(p.name)}', '${new Date().toISOString().slice(0,10)}', '${esc(p.fermentation_time || '7-14 días')}', '${esc(p.storage_life || 'Refrigerado')}')">
+                        🏷️ Imprimir Etiqueta
+                    </button>
+                    <button type="button" class="btn btn-outline btn-sm" onclick="toggleFavorite(${p.id}); this.textContent = favorites.has(${p.id}) ? '❤️ Guardado' : '🤍 Favorito'">
+                        ${isFav ? "❤️ Guardado" : "🤍 Favorito"}
+                    </button>
+                </div>
             </div>
             ${p.description ? `<p style="font-size:1.05rem; color:var(--text-secondary); margin-bottom:1rem">${esc(p.description)}</p>` : ""}
             ${p.method ? `<p style="background:var(--bg-page); padding:0.8rem; border-radius:var(--radius-sm)"><strong>Método tradicional:</strong> ${esc(p.method)}</p>` : ""}
@@ -280,12 +286,26 @@ function closeTroubleModal(event) {
     document.getElementById("trouble-modal").classList.add("hidden");
 }
 
+function closeLabelModal(event) {
+    if (event && event.target.id !== "label-modal" && !event.target.classList.contains("modal-close")) return;
+    document.getElementById("label-modal").classList.add("hidden");
+}
+
+function openLabelModal(name, dateStr, timeStr, storageStr) {
+    document.getElementById("lbl-title").textContent = name;
+    document.getElementById("lbl-date").textContent = dateStr;
+    document.getElementById("lbl-time").textContent = timeStr;
+    document.getElementById("lbl-storage").textContent = storageStr;
+    document.getElementById("label-modal").classList.remove("hidden");
+}
+
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
         document.getElementById("detail").classList.add("hidden");
         document.getElementById("shopping-modal").classList.add("hidden");
         document.getElementById("microbes-modal").classList.add("hidden");
         document.getElementById("trouble-modal").classList.add("hidden");
+        document.getElementById("label-modal").classList.add("hidden");
     }
 });
 
@@ -317,7 +337,7 @@ document.getElementById("random-btn").addEventListener("click", async () => {
     } catch (e) { /* ignore */ }
 });
 
-// ---- Calculadora de Salmuera ----
+// ---- Calculadora de Salmuera y ABV ----
 
 function updateBrineCalculator() {
     const weightEl = document.getElementById("calc-weight");
@@ -332,8 +352,24 @@ function updateBrineCalculator() {
     resultEl.textContent = `${grams.endsWith(".0") ? Math.round(grams) : grams} g`;
 }
 
+function updateABVCalculator() {
+    const ogEl = document.getElementById("abv-og");
+    const fgEl = document.getElementById("abv-fg");
+    const resultEl = document.getElementById("abv-result-val");
+
+    if (!ogEl || !fgEl || !resultEl) return;
+    const og = parseFloat(ogEl.value) || 1.050;
+    const fg = parseFloat(fgEl.value) || 1.010;
+
+    const abv = Math.max(0, (og - fg) * 131.25).toFixed(2);
+    resultEl.textContent = `${abv} %`;
+}
+
 document.getElementById("calc-weight").addEventListener("input", updateBrineCalculator);
 document.getElementById("calc-target").addEventListener("change", updateBrineCalculator);
+
+document.getElementById("abv-og").addEventListener("input", updateABVCalculator);
+document.getElementById("abv-fg").addEventListener("input", updateABVCalculator);
 
 // ---- Temporizadores de Fermentación (F1 / F2) ----
 
@@ -362,12 +398,16 @@ function renderTimers() {
         const pct = Math.min(100, Math.max(0, Math.round((elapsedMs / totalMs) * 100)));
 
         const isReady = remainingMs <= 0;
+        const startDateStr = new Date(start).toISOString().slice(0, 10);
 
         return `
             <div class="timer-item-card">
                 <div class="timer-item-head">
                     <h4>🫙 ${esc(t.name)}</h4>
-                    <button type="button" class="chip-remove" onclick="removeTimer(${idx})" title="Eliminar frasco">&times;</button>
+                    <div style="display:flex; gap:0.3rem; align-items:center">
+                        <button type="button" class="btn btn-outline btn-sm" onclick="openLabelModal('${esc(t.name)}', '${startDateStr}', '${t.days} días', 'Refrigerado en F1/F2')" title="Imprimir etiqueta">🏷️</button>
+                        <button type="button" class="chip-remove" onclick="removeTimer(${idx})" title="Eliminar frasco">&times;</button>
+                    </div>
                 </div>
                 <div class="progress-bar-bg">
                     <div class="progress-bar-fill" style="width: ${pct}%; background-color: ${isReady ? '#2e7d52' : 'var(--color-primary)'}"></div>
@@ -723,10 +763,18 @@ document.getElementById("copy-shopping-btn").addEventListener("click", () => {
     });
 });
 
+// Selector de Idioma (i18n)
+document.getElementById("lang-select").value = state.lang;
+document.getElementById("lang-select").addEventListener("change", (e) => {
+    state.lang = e.target.value;
+    localStorage.setItem("pantry_lang", state.lang);
+});
+
 document.getElementById("recommend-btn").addEventListener("click", loadRecommendations);
 
 updateFavBadge();
 updateBrineCalculator();
+updateABVCalculator();
 renderTimers();
 renderPantry();
 loadStats();

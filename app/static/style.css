@@ -914,6 +914,82 @@ select:focus {
     color: #9b1c1c;
 }
 
+/* Dual Calculators Layout */
+.calcs-wrapper {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.2rem;
+}
+
+/* Selector de Idioma */
+.lang-picker {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    padding: 0.35rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    cursor: pointer;
+}
+
+.lang-picker option {
+    background: #2d5a3f;
+    color: #ffffff;
+}
+
+/* Etiqueta Imprimible de Frasco */
+.jar-label-badge {
+    background: #ffffff;
+    border: 2px dashed #2d5a3f;
+    border-radius: 12px;
+    padding: 1.2rem 1.5rem;
+    margin-top: 1rem;
+    color: #1f2721;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.jar-label-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    border-bottom: 2px solid #2d5a3f;
+    padding-bottom: 0.6rem;
+    margin-bottom: 0.8rem;
+}
+
+.jar-label-header strong {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    color: #2d5a3f;
+}
+
+.jar-label-icon {
+    font-size: 1.8rem;
+}
+
+.jar-label-details p {
+    margin: 0.3rem 0;
+    font-size: 0.95rem;
+}
+
+/* Reglas de Impresión para Etiquetas */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #printable-jar-label, #printable-jar-label * {
+        visibility: visible;
+    }
+    #printable-jar-label {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        border: 2px solid #000000;
+        box-shadow: none;
+    }
+}
+
 @keyframes fadeIn {
     from { opacity: 0; transform: scale(0.98); }
     to { opacity: 1; transform: scale(1); }

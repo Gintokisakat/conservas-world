@@ -19,7 +19,25 @@ _SIZE_TOKENS = re.compile(
     re.I,
 )
 
-_DISCARD_NAME_RE = re.compile(r"\bcod liver oil\b", re.I)
+_DISCARD_NAME_RE = re.compile(
+    r"\bcod liver oil\b"
+    r"|^list of\b"
+    r"|^lists of\b"
+    r"|\b(food brand|pickle brand|drink brand|beverage brand|brand of)\b"
+    r"|\b(empresa|compan[yí]a|company)\b"
+    r"|preparation and preservation of"
+    r"|aggregation of particles",
+    re.I,
+)
+
+# Marcadores de ruido que solo aparecen en la descripción/metodo (no en el nombre).
+_DISCARD_TEXT_RE = re.compile(
+    r"\b(food brand|pickle brand|drink brand|beverage brand)\b"
+    r"|\bempresa\b"
+    r"|preparation and preservation of"
+    r"|aggregation of particles",
+    re.I,
+)
 
 # Grupos curados: mismo producto con grafías/lenguas distintas (canónico, variantes).
 # Las variantes se comparan con normalize_name (sin acentos/espacios).
@@ -272,6 +290,10 @@ def discard_noise(session) -> int:
     changed = 0
     for p in prods:
         if _DISCARD_NAME_RE.search(p.name):
+            p.status = "discarded"
+            changed += 1
+            continue
+        if _DISCARD_TEXT_RE.search(" ".join(filter(None, [p.description, p.method]))):
             p.status = "discarded"
             changed += 1
     return changed

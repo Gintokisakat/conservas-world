@@ -11,13 +11,14 @@ CANONICAL_INGREDIENTS = [
         "cabbage", "repollo", "chou", "col", "coles", "white cabbage", "red cabbage",
         "napa cabbage", "chinese cabbage", "brassica", "green cabbage",
         "weisskohl", "weiskohl", "rotkohl", "spitzkohl", "weisskraut", "weißkraut",
-        "kohl", "valkokaali", "kaali", "cavolo", "cavolo cappuccio",
+        "kohl", "valkokaali", "kaali", "cavolo", "cavolo cappuccio", "sauerkraut",
+        "chucrut",
     ]},
     {"name": "cucumber", "category": "vegetal", "aliases": [
         "cucumber", "cucumbers", "pepino", "concombre", "gherkin", "cornichon",
         "cumber", "cucumis sativus", "gurke", "gurken", "augurken", "gewurgurken",
         "ogórek", "ogórki", "ogorki", "uborka", "kurkku", "salzgurken",
-        "pepinillos", "pepino",
+        "pepinillos", "pepino", "خیار",
     ]},
     {"name": "carrot", "category": "vegetal", "aliases": [
         "carrot", "carrots", "zanahoria", "carotte", "black carrot", "carottes",
@@ -53,6 +54,7 @@ CANONICAL_INGREDIENTS = [
         "bell pepper", "sweet pepper", "sweet red bell pepper", "sweet green bell pepper",
         "green pepper", "red bell pepper", "pimiento", "poivron", "capsicum",
         "piment doux", "peppers", "bell peppers", "paprika", "paprikas", "paprica",
+        "pepper",
     ]},
     {"name": "eggplant", "category": "vegetal", "aliases": [
         "eggplant", "aubergine", "berenjena", "eggplants", "brinjal",
@@ -121,7 +123,7 @@ CANONICAL_INGREDIENTS = [
         "vegetables", "vegetable", "verduras", "verdura", "hortalizas",
         "legumes crus", "légumes", "legume", "mixed vegetables", "assorted vegetables",
         "various vegetables", "leafy greens", "greens", "green leafy vegetables",
-        "gemuse", "gemüse", "vihannekset",
+        "gemuse", "gemüse", "vihannekset", "wild plants", "magane-saag",
     ]},
     {"name": "watercress", "category": "vegetal", "aliases": [
         "watercress", "berro", "cresson",
@@ -258,6 +260,7 @@ CANONICAL_INGREDIENTS = [
     ]},
     {"name": "roselle", "category": "fruta", "aliases": [
         "roselle", "hibiscus", "jamaica flower", "roselle calyces", "hibiscus sabdariffa",
+        "hibisco",
     ]},
     {"name": "rhododendron", "category": "fruta", "aliases": [
         "rhododendron", "petals of rhododendron", "rhododendron flowers",
@@ -290,6 +293,7 @@ CANONICAL_INGREDIENTS = [
         "wheat", "trigo", "ble", "froment", "wheat flour", "wheat berries",
         "durum wheat", "semolina", "wheat bran", "wheat grains", "wheat gluten",
         "gluten", "triticum", "bulgur", "burghul", "cracked wheat", "weizen", "vehnä",
+        "tarwe", "seitan",
     ]},
     {"name": "barley", "category": "cereal", "aliases": [
         "barley", "cebada", "orge", "barley malt", "pearl barley", "malted barley",
@@ -470,13 +474,13 @@ CANONICAL_INGREDIENTS = [
         "skimmed goat or cow milk", "buffalo or mixed milk", "yak or cow milk",
         "mare milk or camel milk", "yak or dzo milk", "camel milk or goat milk",
         "goat's and sheep's milk", "sheep's milk", "reindeer milk", "milch", "maito",
-        "tej", "mléko", "mleko", "mliko",
+        "tej", "mléko", "mleko", "mliko", "حليب", "لبن",
     ]},
     {"name": "cheese", "category": "lacteo", "aliases": [
         "cheese", "cheeses", "fromage", "queso", "queijo", "cottage cheese",
         "cream cheese", "curd cheese", "mascarpone", "ricotta", "mozzarella",
         "feta", "parmesan", "cheddar", "chevre", "chèvre", "cheese curd", "käse",
-        "kase", "juusto", "sajt", "syr", "sır",
+        "kase", "juusto", "sajt", "syr", "sır", "جبن",
     ]},
     {"name": "yogurt", "category": "lacteo", "aliases": [
         "yogurt", "yoghurt", "yogur", "yoghourt", "yaourt", "jogurt", "strained yogurt",
@@ -499,6 +503,7 @@ CANONICAL_INGREDIENTS = [
     {"name": "cream", "category": "lacteo", "aliases": [
         "cream", "crème", "creme", "crema", "sour cream", "crème fraîche",
         "creme fraiche", "heavy cream", "fresh cream", "smetana", "sahne", "kerma",
+        "قشدة",
     ]},
     {"name": "butter", "category": "lacteo", "aliases": [
         "butter", "mantequilla", "beurre", "ghee", "yak butter", "butter oil",
@@ -695,7 +700,7 @@ CANONICAL_INGREDIENTS = [
         "sugar", "azúcar", "azucar", "sucre", "cane sugar", "brown sugar",
         "white sugar", "granulated sugar", "jaggery", "palm sugar", "raw sugar",
         "zucker", "cukier", "cukor", "sokeri", "rohrzucker", "kandis", "glukose",
-        "fruktose", "zucchero", "azúcares", "azucares", "açúcar", "acucar",
+        "fruktose", "zucchero", "azúcares", "azucares", "açúcar", "acucar", "سكر",
     ]},
     {"name": "sugarcane", "category": "bebida", "substrate": False, "aliases": [
         "sugar cane", "sugarcane", "sugarcane juice", "cane juice", "cana de azucar",
@@ -729,7 +734,7 @@ CANONICAL_INGREDIENTS = [
     ]},
     {"name": "cocoa", "category": "bebida", "substrate": False, "aliases": [
         "cocoa", "cacao", "cocoa bean", "cocoa beans", "cocoa pod", "chocolate",
-        "cacao bean", "cocoa pulp", "cocoa powder",
+        "cacao bean", "cocoa pulp", "cocoa powder", "cokolada", "cokoláda", "čokolada",
     ]},
     {"name": "wine", "category": "bebida", "substrate": False, "aliases": [
         "wine", "vino", "vin", "white wine", "red wine", "grappa", "wein",
@@ -752,18 +757,18 @@ CANONICAL_INGREDIENTS = [
         "oil", "huile", "aceite", "olio", "olive oil", "palm oil", "sunflower oil",
         "vegetable oil", "sesame oil", "coconut oil", "rapeseed oil",
         "hydrogenated oil", "vanaspati", "mustard oil", "olivenöl", "olivenol",
-        "sonnenblumenöl", "rapsöl", "speiseöl", "olej", "öljy", "sej",
+        "sonnenblumenöl", "rapsöl",         "speiseöl", "olej", "öljy", "sej", "زيت",
     ]},
     {"name": "salt", "category": "otro", "substrate": False, "aliases": [
         "salt", "sel", "sal", "sea salt", "rock salt", "kosher salt", "table salt",
         "curing salt", "pickling salt", "himalayan salt", "salted", "salz",
         "speisesalz", "meersalz", "steinsalz", "sůl", "sul", "só", "sól", "suola",
-        "suolaa", "sale", "salamoia", "zout",
+        "suolaa", "sale", "salamoia", "zout", "ملح",
     ]},
     {"name": "water", "category": "otro", "substrate": False, "aliases": [
         "water", "agua", "eau", "mineral water", "spring water", "salt water",
         "brine", "limewater", "rice water", "wasser", "trinkwasser", "voda", "víz",
-        "vesi", "vode",
+        "vesi", "vode", "ماء",
     ]},
     {"name": "spices", "category": "otro", "substrate": False, "aliases": [
         "spices", "especias", "epices", "spice mix", "mixed spices", "spice blend",
@@ -816,7 +821,7 @@ CANONICAL_INGREDIENTS = [
     ]},
     {"name": "yeast", "category": "hongo", "substrate": False, "aliases": [
         "yeast", "levadura", "levure", "brewer's yeast", "nutritional yeast",
-        "bakers yeast", "yeast extract",
+        "bakers yeast", "yeast extract", "خمائر",
     ]},
     {"name": "koji", "category": "hongo", "substrate": False, "aliases": [
         "koji", "koji rice", "koji mold", "koji starter", "aspergillus oryzae",
@@ -828,6 +833,92 @@ CANONICAL_INGREDIENTS = [
     {"name": "vegetable oil", "category": "bebida", "substrate": False, "aliases": [
         "vegetable oil", "huile végétale", "aceite vegetal",
     ]},
+    {"name": "jujube", "category": "fruta", "aliases": [
+        "jujube", "jujubes", "azufaifa", "chinese date", "ziziphus", "red date",
+    ]},
+    {"name": "cotton seed", "category": "legumbre", "aliases": [
+        "cotton seed", "cotton seeds", "semilla de algodón", "gossypium",
+    ]},
+]
+
+# Inferencia por nombre: productos sin texto descriptivo cuyo propio nombre
+# identifica de forma inequívoca su(s) ingrediente(s). (keywords, ingredientes, modo)
+# modo "substr" = subcadena en el nombre; "word" = palabra completa.
+_NAME_INFERENCE = [
+    (["peynir", "käse", "kase", "tvaroh", "twarog", "hrudka", "bryndza", "gräddost",
+      "halloumi", "hellim", "manouri", "mizithra", "myzithra", "xynotyro",
+      "xynomizithra", "metsovone", "kefalograviera", "encián", "plesnivec",
+      "hermelín", "brimsen", "steirerkäse", "bachensteiner", "kalari", "quesillo",
+      "cuajada", "queto", "sardo", "provoleta", "chevre", "chèvre", "cheddar",
+      "mozzarella", "ricotta", "camembert", "gouda", "edam", "parmesan", "manchego",
+      "roquefort", "gorgonzola", "pecorino", "provolone", "asiago", "stilton",
+      "gruyère", "emmental", "kasar", "cokelek", "tulum", "mihaliç", "obruk",
+      "örgü", "salamura", "telli", "van otlu", "djathë", "quudam", "chloro",
+      "grobnički", "shanklish", "tzfatit", "gravyeri", "saloio", "camur", "kirli",
+      "gryficki", "kortowski", "lowicki", "łowicki", "lubuski", "zamojski",
+      "cuartirolo", "chaqueño", "menonita", "renai", "talamello"], ["cheese", "milk"], "substr"),
+    (["sir", "syr", "sajt", "lor", "feta", "cecil"], ["cheese", "milk"], "word"),
+    (["smetana", "skābais krējums", "skabais krejums", "grietinė", "grietine",
+      "rømme", "romme", "hapukoor", "kermaviili", "kiselo vrhnje", "mileram",
+      "pavlaka", "gräddfil", "graddfil", "kwaśna śmietana", "kwasna smietana",
+      "smântână", "smantana", "crème fraîche", "creme fraiche", "jocoque", "samli"],
+     ["cream", "milk"], "substr"),
+    (["sour cream", "clabber"], ["cream", "milk"], "word"),
+    (["buttermilk", "kærnemælk", "kernemaelk", "tykmælk", "surmjølk", "surmjolk",
+      "kulturmelk", "filmjölk", "filmjolk", "långfil", "langfil", "amasi",
+      "prostokvasha", "varenets", "bifidok", "mattha", "matsoni", "katak",
+      "kefiri", "kefyras", "qatıq", "qatiq", "katyk", "kımız", "kimiz", "kumys",
+      "kumis", "airag", "dadih", "lapte", "raibi", "rayeb", "laban", "labneh",
+      "suzma", "qurt", "kashk", "skyr", "matzoon", "mastaw", "maziwa", "khuruud",
+      "kivuguto", "boruga", "omaere", "omatuka", "laezh", "ghara", "chalap",
+      "shubat", "xinogalo", "aludttej", "tejföl", "tejfol", "ryazhenka",
+      "coalhada", "byaslag", "kefir", "shrikhand", "mishti", "perugu",
+      "fermented milk", "sour milk", "yakult", "actimel", "danone", "danino",
+      "danonino", "moufid", "badaouia", "moniich", "zott", "qatyq", "qatyk",
+      "ruguspiens", "rugpienis", "paninas", "tjukkmjolk", "tjukkmjølk", "amabere",
+      "calpis", "kombucha"],
+     ["milk"], "substr"),
+    (["maas", "dahi", "raib", "rob", "chal", "spas", "ymer", "ariani", "ayran",
+      "lakto"], ["milk"], "word"),
+    (["pickle", "chow-chow", "piccalilli", "relish", "branston", "murături",
+      "muraturi", "tursu", "atchara", "achar", "asazuke", "asinan", "bostongurka",
+      "fukujinzuke", "nozawana", "karashizuke", "kasuzuke", "matsumaezuke",
+      "bettarazuke", "chhundo", "oorgai", "pachranga", "chamoy", "crack seed",
+      "li hing", "kool-aid", "murabba", "giardiniera", "murri", "tsukemono",
+      "torshi", "achiar"], ["vegetables"], "substr"),
+    (["kimchi", "sauerkraut", "crauti", "coleslaw", "knieperkohl", "kohl"],
+     ["cabbage"], "substr"),
+    (["takuan", "nukazuke", "kkakdugi", "dongchimi"], ["radish"], "substr"),
+    (["morkovcha"], ["carrot"], "substr"),
+    (["beni shoga", "beni shōga", "shōga"], ["ginger"], "substr"),
+    (["gari"], ["ginger"], "word"),
+    (["umeboshi"], ["plum"], "substr"),
+    (["amba"], ["mango"], "word"),
+    (["doufulu", "doufu ru"], ["soybean"], "substr"),
+    (["kombucha"], ["tea", "sugar"], "substr"),
+    (["peppadew"], ["pepper"], "substr"),
+    (["pepper"], ["pepper"], "word"),
+    (["cueritos", "eisbein"], ["pork"], "substr"),
+    (["sausage", "salchicha", "jerky"], ["meat"], "substr"),
+    (["bresaola"], ["beef"], "substr"),
+    (["gurka", "augurka"], ["cucumber"], "substr"),
+    (["toroi"], ["mussel"], "substr"),
+    (["pescada", "pescadilla"], ["fish"], "substr"),
+    (["kabarawan"], ["honey"], "substr"),
+    (["malamba"], ["sugarcane"], "substr"),
+    (["cauim"], ["cassava"], "word"),
+    (["funge"], ["cassava"], "word"),
+    (["oshikundu"], ["millet"], "substr"),
+    (["hapanvelli"], ["rye"], "substr"),
+    (["kanga"], ["corn"], "word"),
+    (["kenkey"], ["corn"], "substr"),
+    (["masala dosa", "paniyaram", "bánh cuốn", "banh cuon", "idli"], ["rice"],
+     "substr"),
+    (["worcestershire"], ["vinegar", "anchovy"], "substr"),
+    (["allium"], ["onion"], "substr"),
+    (["chanh muoi", "chanh muối"], ["lime"], "substr"),
+    (["masaura"], ["black gram"], "substr"),
+    (["vytintos"], ["meat"], "substr"),
 ]
 
 _SUBSTRATE_PRIORITY = {
@@ -911,6 +1002,48 @@ def match_ingredients(text: str) -> list[dict]:
             continue
         seen.add(entry["name"])
         out.append({"name": entry["name"], "category": entry["category"]})
+    return out
+
+
+def _name_pattern_for(keywords: list[str], mode: str) -> re.Pattern | None:
+    folded = [_fold(k) for k in keywords]
+    folded = [k for k in folded if len(k) >= 3]
+    if not folded:
+        return None
+    folded = sorted(set(folded), key=len, reverse=True)
+    if mode == "word":
+        return re.compile(
+            r"(?<![a-z0-9])(" + "|".join(re.escape(k) for k in folded) + r")(?![a-z0-9])"
+        )
+    return re.compile("(" + "|".join(re.escape(k) for k in folded) + ")")
+
+
+_NAME_PATTERNS = []
+for kws, ingredients, mode in _NAME_INFERENCE:
+    pat = _name_pattern_for(kws, mode)
+    if pat:
+        _NAME_PATTERNS.append((pat, ingredients))
+
+
+def match_ingredients_by_name(name: str) -> list[dict]:
+    """Ingredientes inferidos solo a partir del nombre del producto (curaduría)."""
+    if not name:
+        return []
+    t = _fold(name)
+    out = []
+    seen = set()
+    for pattern, ingredients in _NAME_PATTERNS:
+        if not pattern.search(t):
+            continue
+        for ing in ingredients:
+            if ing in seen:
+                continue
+            seen.add(ing)
+            entry = next(
+                (e for e in CANONICAL_INGREDIENTS if e["name"] == ing), None
+            )
+            if entry:
+                out.append({"name": entry["name"], "category": entry["category"]})
     return out
 
 

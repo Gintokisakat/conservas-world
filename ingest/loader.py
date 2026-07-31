@@ -166,7 +166,7 @@ _USE_STOPWORDS = {
 def enrich_ingredients(session: Session) -> int:
     """Re-extrae ingredientes sobre los productos ya persistidos (nombre +
     descripcion + metodo) y agrega los que falten, sin duplicar."""
-    from ingest.ingredients import match_ingredients
+    from ingest.ingredients import match_ingredients, match_ingredients_by_name
 
     added = 0
     updated_substrate = 0
@@ -180,6 +180,8 @@ def enrich_ingredients(session: Session) -> int:
             )
         )
         matched = match_ingredients(text)
+        if not matched:
+            matched = match_ingredients_by_name(product.name)
         if not matched:
             continue
         current = {i.name for i in product.ingredients}

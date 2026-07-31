@@ -474,7 +474,7 @@ CANONICAL_INGREDIENTS = [
         "skimmed goat or cow milk", "buffalo or mixed milk", "yak or cow milk",
         "mare milk or camel milk", "yak or dzo milk", "camel milk or goat milk",
         "goat's and sheep's milk", "sheep's milk", "reindeer milk", "milch", "maito",
-        "tej", "mléko", "mleko", "mliko", "حليب", "لبن",
+        "tej", "mléko", "mleko", "mliko", "lapte", "حليب", "لبن",
     ]},
     {"name": "cheese", "category": "lacteo", "aliases": [
         "cheese", "cheeses", "fromage", "queso", "queijo", "cottage cheese",
@@ -487,7 +487,7 @@ CANONICAL_INGREDIENTS = [
         "greek yogurt", "yogurt culture", "joghurt",
     ]},
     {"name": "kefir", "category": "lacteo", "aliases": [
-        "kefir", "kefir milk", "kefir grains", "water kefir",
+        "kefir", "kefir milk", "kefir grains", "water kefir", "chefir",
     ]},
     {"name": "buttermilk", "category": "lacteo", "aliases": [
         "buttermilk", "babeurre", "suero de mantequilla", "buffalo buttermilk",
@@ -919,6 +919,14 @@ _NAME_INFERENCE = [
     (["chanh muoi", "chanh muối"], ["lime"], "substr"),
     (["masaura"], ["black gram"], "substr"),
     (["vytintos"], ["meat"], "substr"),
+    (["scoby"], ["tea", "sugar"], "word"),
+    (["jun"], ["tea", "sugar"], "word"),
+    (["tuba"], ["palm sap"], "word"),
+    (["intus"], ["palm sap"], "word"),
+    (["ara"], ["rice"], "word"),
+    (["khai khrop"], ["egg", "salt"], "substr"),
+    (["kiamoy"], ["plum", "sugar"], "substr"),
+    (["salsa hp"], ["tomato", "vinegar"], "word"),
 ]
 
 _SUBSTRATE_PRIORITY = {

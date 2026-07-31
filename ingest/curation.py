@@ -39,6 +39,35 @@ _DISCARD_TEXT_RE = re.compile(
     re.I,
 )
 
+# Productos de marca/ruido (sin ingredientes ni descripción) que se descartan.
+CURATED_DISCARDS = [
+    # Entradas rotas de "List of cheeses" (descripción = "nan") y lugares/personas.
+    "Condiment",
+    "Qudam",
+    "Abaza",
+    "Arnavut",
+    "Edirne",
+    "Sayas",
+    "Enredo",
+    "Lingallin",
+    "Criollo",
+    "Goya",
+    "Chubut",
+    "Tandil",
+    "Mar del Plata",
+    "Tafí del Valle",
+    # Nombres de marca sueltos de OpenFoodFacts (sin ingredientes ni descripción).
+    "Corbeille Louise",
+    "Delicius Sicilia",
+    "Delicius Cantabrico",
+    "Delicius",
+    "Reserva",
+    "Delicious Aperitivo",
+    "Parma",
+    "Oceanos",
+]
+
+
 # Grupos curados: mismo producto con grafías/lenguas distintas (canónico, variantes).
 # Las variantes se comparan con normalize_name (sin acentos/espacios).
 CURATED_MERGES = [
@@ -64,7 +93,7 @@ CURATED_MERGES = [
     ("Atchara", ["atchara", "achara"]),
     ("Dadih", ["dadih", "dadiah"]),
     ("Yogurt", ["yogurt", "yogur"]),
-    ("Achar", ["achar", "achaar"]),
+    ("Achar", ["achar", "achaar", "achiar"]),
     ("Fish sauce", ["fish sauce", "fischsauce", "fish souce"]),
     ("Kvass", ["kvass", "kvas"]),
     ("Miso", ["miso", "misso"]),
@@ -139,6 +168,85 @@ CURATED_MERGES = [
         "organic kombucha ginger lemonade",
         "organic kombucha ginger lemon",
     ]),
+    ("Confiture de fraises allégée en sucres", [
+        "Confiture de Fraise Allégée en sucres",
+        "Confiture fraises allégée en sucres",
+    ]),
+    ("Confiture allégée framboise", ["Confiture allégée Framboises"]),
+    ("Filets de hareng fumés doux", ["Filets de hareng fumé doux"]),
+    ("Filets de harengs fumés", ["Filets de hareng fumes"]),
+    ("Truite des Pyrénées fumée", ["Truite des Pyrénées fumées"]),
+    ("Confiture Extra Abricot", ["Confiture Extra Abricots"]),
+    ("Confiture abricot", [
+        "Confiture Abricots",
+        "Confiture d'abricot",
+        "Confiture d'abricots",
+    ]),
+    ("Confiture de myrtilles", ["Confiture de myrtille", "Confiture myrtilles"]),
+    ("Thon entier au nature", ["Thon entier au naturel", "Thon entier nature"]),
+    ("Olives noirs de Nyons", ["Olives noir de nyons"]),
+    ("Vinaigre balsamique de Modène boilogique", [
+        "Vinaigre balsamique de Modène biologique",
+    ]),
+    ("Confiture de fraise", [
+        "Confiture de fraises",
+        "Confiture Fraises",
+        "Confiture fraise",
+    ]),
+    ("Confiture Framboises", ["Confiture Framboise"]),
+    ("Confiture de figue", ["Confiture de figues", "Confiture figues"]),
+    ("Filet De Sardines", ["Filets de Sardines", "Filet de sardine"]),
+    ("Viande des GRISONS", ["Viande de Grisons"]),
+    ("Non-Pareil Capers", ["Nonpareil Capers", "Nonpareille capers"]),
+    ("Marmelade orange", ["Marmelade Oranges", "Marmelade d'orange"]),
+    ("Rilettes de thon", ["Rillettes De Thon", "Rillettes thon"]),
+    ("Bigarreaux confits de provence", ["Bigarreaux Confits en Provence"]),
+    ("Écorces d'oranges confites🍊", ["Écorces d'Orange Confites"]),
+    ("Saumon fumé Le Norvège", ["Saumon fumé de Norvège", "Saumon fumé norvège"]),
+    ("Abricot 65% de fruit", ["Abricot, 65% de fruits"]),
+    ("Olives noires confites", ["Olives noir confites"]),
+    ("Bresaola della valtellina i.g.p.", ["Bresaola della valtellina IGP"]),
+    ("Filets de Sardine (au Naturel)", ["Filets de sardines au naturel"]),
+    ("Le thon blanc au naturel germon", ["Thon blanc au naturel Germon"]),
+    ("Choucroute garnie d'Alsace VPF VBF 700g", [
+        "Choucrout garnie d'Alsace VPF VBF 1400g",
+    ]),
+    ("Olives noires entières à la grecque", [
+        "Olives Noires Entieres à la a Grecque",
+    ]),
+    ("Olives noires à la grecques denoyautees", [
+        "Olives noires à la grecque dénoyautées",
+    ]),
+    ("Sardines", ["Sardine"]),
+    ("Citrons Confits", ["Citron confit"]),
+    ("Marmelade - Fruchtaufstrich Erdbeere", [
+        "Marmelade/Fruchtaufstrich Erdbeeren",
+    ]),
+    ("Sardines à l'huile d'olive vierge extra bio", [
+        "Sardines, huile d'olive vierge extra bio",
+    ]),
+    ("Truite fumée, Aquitaine", ["Truite fumée d'Aquitaine"]),
+    ("Atún con tomate", ["Atún en tomate"]),
+    ("Confiture d'Orange", ["Confiture à l'orange"]),
+    ("Saumon fumé d'Ecosse", ["Saumon Fumé Écosse"]),
+    ("MACEDOINE DE FRUITS CONFITS", ["Macédoine fruits confits"]),
+    ("Awase Miso", ["Aware miso"]),
+    ("Filetti acciughe sott'olio", ["Filetto do acciughe sott'olio"]),
+    ("Frutti di cappero", ["Frutti di capperi", "Frutto del cappero"]),
+    ("Danino", ["Danonino"]),
+    ("Liliput", ["Liliputas"]),
+    ("Ikivunde", ["Kivunde"]),
+    ("Kefír Or Acidofilní Mléko", ["Kefír Or Acidofilné Mlieko"]),
+    ("Confiture Extra Fraise", ["Confiture extra de Fraises"]),
+    ("Thon à l'huile végétale", ["Thon a huile végétale"]),
+    ("DOLCE À base d'\"Aceto Balsamico di Modena IGP\"", [
+        "Douceur à base d'\"Aceto Balsamico di Modena IGP\"",
+    ]),
+    ("Filetti di alice", ["Filetti di Alici"]),
+    ("Choucroute garnie alsacienne , 390g", [
+        "Choucroute garnie d'Alsace , 970g",
+    ]),
+    ("Caper", ["Capers"]),
 ]
 
 
@@ -147,6 +255,47 @@ def _canon_off(name: str) -> str:
     n = re.sub(r"[\s,;()'’]+", " ", n)
     n = re.sub(r"[^a-z0-9]+", " ", n)
     return re.sub(r"\s+", " ", n).strip()
+
+
+# Palabras función que se ignoran al comparar nombres dentro de un grupo curado.
+_STOP_TOKENS = frozenset({
+    "de", "d", "a", "l", "la", "le", "les", "au", "aux", "en", "des", "du",
+    "un", "une", "el", "los", "las", "del", "di", "della", "delle", "dei",
+    "con", "the", "of", "and", "or", "to", "at", "in", "with", "from", "for",
+    "on", "por", "para", "et", "und", "van", "von",
+})
+
+# Correcciones de grafía (typos/plurales no regulares) aplicadas al comparar contenido.
+_TOKEN_FIXES = {
+    "rilettes": "rillettes",
+    "boilogique": "biologique",
+    "aware": "awase",
+    "naturel": "nature",
+    "erdbeeren": "erdbeere",
+    "liliputas": "liliput",
+    "achiar": "achar",
+    "danonino": "danino",
+    "ikivunde": "kivunde",
+    "dolce": "douceur",
+    "alice": "alici",
+    "alsacienne": "alsace",
+}
+
+
+def _content_tokens(name: str) -> list[str]:
+    toks = []
+    for t in normalize_name(name).split():
+        if len(t) == 1 or t in _STOP_TOKENS:
+            continue
+        t = _TOKEN_FIXES.get(t, t)
+        if len(t) >= 5 and t.endswith("s") and not t.endswith("ss"):
+            t = t[:-1]
+        toks.append(t)
+    return toks
+
+
+def _content_key(name: str) -> frozenset[str]:
+    return frozenset(_content_tokens(name))
 
 
 def _title_case(name: str) -> str:
@@ -191,7 +340,8 @@ def _absorb_into(keep, dup, seen_aliases):
 
 def merge_curated(session) -> tuple[int, int]:
     """Fusiona los grupos de CURATED_MERGES: variantes con grafías/lenguas
-    distintas del mismo producto (coincidencia exacta de nombre normalizado)."""
+    distintas del mismo producto (nombre exacto normalizado o contenido
+    equivalente: mismas palabras tras quitar artículos/plurales/typos)."""
     prods = session.execute(
         select(models.Product)
         .options(
@@ -206,8 +356,10 @@ def merge_curated(session) -> tuple[int, int]:
     ).scalars().all()
 
     by_name: dict[str, list] = {}
+    by_content: dict[frozenset[str], list] = {}
     for p in prods:
         by_name.setdefault(normalize_name(p.name), []).append(p)
+        by_content.setdefault(_content_key(p.name), []).append(p)
 
     groups = 0
     merged = 0
@@ -215,6 +367,8 @@ def merge_curated(session) -> tuple[int, int]:
         candidates = {}
         for variant in [canonical, *variants]:
             for p in by_name.get(normalize_name(variant), []):
+                candidates[p.id] = p
+            for p in by_content.get(_content_key(variant), []):
                 candidates[p.id] = p
         active = [p for p in candidates.values() if p.status != "discarded"]
         if len(active) < 2:
@@ -251,7 +405,7 @@ def merge_off_variants(session) -> tuple[int, int]:
     groups: dict[str, list] = {}
     for p in prods:
         key = _canon_off(p.name)
-        if key:
+        if key and len(key) >= 8:
             groups.setdefault(key, []).append(p)
 
     groups = {k: v for k, v in groups.items() if len(v) > 1}
@@ -287,6 +441,7 @@ def discard_noise(session) -> int:
     prods = session.execute(
         select(models.Product).where(models.Product.status != "discarded")
     ).scalars().all()
+    curated_discards = {normalize_name(n) for n in CURATED_DISCARDS}
     changed = 0
     for p in prods:
         if _DISCARD_NAME_RE.search(p.name):
@@ -294,6 +449,10 @@ def discard_noise(session) -> int:
             changed += 1
             continue
         if _DISCARD_TEXT_RE.search(" ".join(filter(None, [p.description, p.method]))):
+            p.status = "discarded"
+            changed += 1
+            continue
+        if normalize_name(p.name) in curated_discards:
             p.status = "discarded"
             changed += 1
     return changed

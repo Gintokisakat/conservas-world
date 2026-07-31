@@ -149,3 +149,10 @@ def test_list_ingredients_cache_header(client):
     assert resp.status_code == 200
     assert resp.headers.get("Cache-Control") == "public, max-age=3600"
 
+
+def test_list_microbes(client):
+    resp = client.get("/microbes")
+    assert resp.status_code == 200
+    assert resp.headers.get("Cache-Control") == "public, max-age=3600"
+
+

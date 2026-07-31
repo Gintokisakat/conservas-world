@@ -411,6 +411,14 @@ def list_ingredients(response: Response, session: Session = Depends(get_session)
     ).scalars().all()
 
 
+@router.get("/microbes", response_model=list[MicrobeOut])
+def list_microbes(response: Response, session: Session = Depends(get_session)):
+    response.headers["Cache-Control"] = "public, max-age=3600"
+    return session.execute(
+        select(models.Microbe).order_by(models.Microbe.name)
+    ).scalars().all()
+
+
 @router.get("/references", response_model=list[ReferenceOut])
 def list_references(response: Response, session: Session = Depends(get_session)):
     response.headers["Cache-Control"] = "public, max-age=3600"

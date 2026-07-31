@@ -244,6 +244,10 @@ async function openDetail(id) {
                 ${p.countries.map((c) => tag(c.name, "country")).join("")}
             </div>
 
+            <div class="ph-safety-banner">
+                <span>🛡️ <strong>Seguridad Alimentaria:</strong> Para fermentación láctica y acética, el pH objetivo de seguridad es <strong>&lt; 4.6</strong> para inhibir esporas de <em>Clostridium botulinum</em>.</span>
+            </div>
+
             ${section("Alias / Nombres locales", p.aliases)}
             ${section("Ingredientes clave", p.ingredients)}
             ${section("Microbios fermentadores", p.microbes)}
@@ -266,10 +270,16 @@ function closeShoppingModal(event) {
     document.getElementById("shopping-modal").classList.add("hidden");
 }
 
+function closeMicrobesModal(event) {
+    if (event && event.target.id !== "microbes-modal" && !event.target.classList.contains("modal-close")) return;
+    document.getElementById("microbes-modal").classList.add("hidden");
+}
+
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
         document.getElementById("detail").classList.add("hidden");
         document.getElementById("shopping-modal").classList.add("hidden");
+        document.getElementById("microbes-modal").classList.add("hidden");
     }
 });
 
@@ -299,6 +309,101 @@ document.getElementById("random-btn").addEventListener("click", async () => {
         const p = await api("/products/random");
         openDetail(p.id);
     } catch (e) { /* ignore */ }
+});
+
+// ---- Calculadora de Salmuera ----
+
+function updateBrineCalculator() {
+    const weightEl = document.getElementById("calc-weight");
+    const targetEl = document.getElementById("calc-target");
+    const resultEl = document.getElementById("calc-result-grams");
+
+    if (!weightEl || !targetEl || !resultEl) return;
+    const weight = parseFloat(weightEl.value) || 0;
+    const pct = parseFloat(targetEl.value) || 2.5;
+
+    const grams = (weight * (pct / 100)).toFixed(1);
+    resultEl.textContent = `${grams.endsWith(".0") ? Math.round(grams) : grams} g`;
+}
+
+document.getElementById("calc-weight").addEventListener("input", updateBrineCalculator);
+document.getElementById("calc-target").addEventListener("change", updateBrineCalculator);
+
+// ---- Enciclopedia de Microbios ----
+
+async function loadMicrobesModal() {
+    const listEl = document.getElementById("microbes-list");
+    listEl.innerHTML = `<p>Cargando lista de microbios fermentadores...</p>`;
+    document.getElementById("microbes-modal").classList.remove("hidden");
+    try {
+        const microbes = await api("/microbes");
+        if (!microbes.length) {
+            listEl.innerHTML = `<p>No hay microbios registrados.</p>`;
+            return;
+        }
+        listEl.innerHTML = microbes.map((m) => `
+            <div class="microbe-badge" onclick="searchMicrobe('${esc(m.name)}')">
+                <span>🧫 ${esc(m.name)}</span>
+                <span style="font-size:0.75rem; opacity:0.7">🔍 Buscar</span>
+            </div>
+        `).join("");
+    } catch (e) {
+        listEl.innerHTML = `<p>Error al cargar la lista de microbios.</p>`;
+    }
+}
+
+function searchMicrobe(name) {
+    document.getElementById("microbes-modal").classList.add("hidden");
+    document.getElementById("q").value = name;
+    state.q = name;
+    search(1);
+}
+
+document.getElementById("microbes-btn").addEventListener("click", loadMicrobesModal);
+
+// Exportar / Importar Despensa en JSON
+document.getElementById("export-pantry-btn").addEventListener("click", () => {
+    const data = {
+        pantry,
+        favorites: Array.from(favorites),
+        exported_at: new Date().toISOString()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `mi_despensa_conservas_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+});
+
+document.getElementById("import-pantry-btn").addEventListener("click", () => {
+    document.getElementById("import-file-input").click();
+});
+
+document.getElementById("import-file-input").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+        try {
+            const data = JSON.parse(event.target.result);
+            if (data.pantry) {
+                if (Array.isArray(data.pantry.ingredients)) pantry.ingredients = data.pantry.ingredients;
+                if (Array.isArray(data.pantry.products)) pantry.products = data.pantry.products;
+                savePantry();
+                renderPantry();
+            }
+            if (Array.isArray(data.favorites)) {
+                data.favorites.forEach((id) => favorites.add(id));
+                saveFavorites();
+            }
+            alert("¡Despensa y favoritos importados exitosamente!");
+        } catch (err) {
+            alert("Error al leer el archivo JSON.");
+        }
+    };
+    reader.readAsText(file);
 });
 
 // ---- Dashboard: Mi Despensa ----
@@ -368,51 +473,6 @@ document.getElementById("prod-add").addEventListener("click", () => addFromInput
             }
         });
     }
-});
-
-// Exportar / Importar Despensa en JSON
-document.getElementById("export-pantry-btn").addEventListener("click", () => {
-    const data = {
-        pantry,
-        favorites: Array.from(favorites),
-        exported_at: new Date().toISOString()
-    };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `mi_despensa_conservas_${new Date().toISOString().slice(0,10)}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-});
-
-document.getElementById("import-pantry-btn").addEventListener("click", () => {
-    document.getElementById("import-file-input").click();
-});
-
-document.getElementById("import-file-input").addEventListener("change", (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (event) => {
-        try {
-            const data = JSON.parse(event.target.result);
-            if (data.pantry) {
-                if (Array.isArray(data.pantry.ingredients)) pantry.ingredients = data.pantry.ingredients;
-                if (Array.isArray(data.pantry.products)) pantry.products = data.pantry.products;
-                savePantry();
-                renderPantry();
-            }
-            if (Array.isArray(data.favorites)) {
-                data.favorites.forEach((id) => favorites.add(id));
-                saveFavorites();
-            }
-            alert("¡Despensa y favoritos importados exitosamente!");
-        } catch (err) {
-            alert("Error al leer el archivo JSON.");
-        }
-    };
-    reader.readAsText(file);
 });
 
 let missingIngredientsGlobal = [];
@@ -516,6 +576,7 @@ document.getElementById("copy-shopping-btn").addEventListener("click", () => {
 document.getElementById("recommend-btn").addEventListener("click", loadRecommendations);
 
 updateFavBadge();
+updateBrineCalculator();
 renderPantry();
 loadStats();
 loadCategories();

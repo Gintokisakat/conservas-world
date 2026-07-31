@@ -73,6 +73,36 @@
             <div id="recommendations" class="recommendations-container hidden"></div>
         </section>
 
+        <!-- Calculadora de Salmuera y Salinidad -->
+        <section class="calc-card">
+            <div class="calc-header">
+                <h2>🧮 Calculadora de Salinidad y Salmuera</h2>
+                <p class="calc-desc">Calcula la cantidad exacta de sal para una fermentación segura y libre de bacterias patógenas.</p>
+            </div>
+            <div class="calc-grid">
+                <div class="calc-input-group">
+                    <label for="calc-weight" class="label-title">Peso del Vegetal / Agua (gramos):</label>
+                    <input type="number" id="calc-weight" min="50" max="50000" value="1000" step="50">
+                </div>
+                <div class="calc-input-group">
+                    <label for="calc-target" class="label-title">Tipo de Fermentación / Salinidad:</label>
+                    <select id="calc-target">
+                        <option value="2.0">Chucrut / Kimchi Suave (2.0%)</option>
+                        <option value="2.5" selected>Chucrut / Kimchi Estándar (2.5%)</option>
+                        <option value="3.0">Hortalizas Firmes / Pepinillos (3.0%)</option>
+                        <option value="4.0">Salsa de Ají / Chiles (4.0%)</option>
+                        <option value="6.0">Salmuera Fuerte / Aceitunas (6.0%)</option>
+                        <option value="8.0">Curado en Salmuera Alta (8.0%)</option>
+                    </select>
+                </div>
+                <div class="calc-result-box">
+                    <span class="calc-result-label">Sal necesaria:</span>
+                    <strong id="calc-result-grams" class="calc-result-val">25 g</strong>
+                    <span class="calc-result-tip">💡 Utiliza sal marina o sal de roca sin yodo ni antiaglomerantes.</span>
+                </div>
+            </div>
+        </section>
+
         <!-- Barra de Búsqueda y Filtros -->
         <section class="filters-card">
             <form id="search-form" class="filters-form">
@@ -104,6 +134,7 @@
                     </select>
                 </div>
                 <div class="form-actions">
+                    <button type="button" id="microbes-btn" class="btn btn-outline">🔬 Microbios Fermentadores</button>
                     <button type="button" id="fav-filter-btn" class="btn btn-outline">❤️ Mis Favoritos (<span id="fav-count">0</span>)</button>
                     <button type="submit" class="btn btn-primary">Buscar</button>
                     <button type="button" id="random-btn" class="btn btn-accent">🎲 Sorpréndeme</button>
@@ -143,6 +174,16 @@
             <div style="margin-top:1.5rem; text-align:right">
                 <button type="button" id="copy-shopping-btn" class="btn btn-primary">📋 Copiar Lista</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal Enciclopedia de Microbios -->
+    <div id="microbes-modal" class="modal-overlay hidden" onclick="closeMicrobesModal(event)">
+        <div class="modal-card">
+            <button class="modal-close" onclick="closeMicrobesModal()">&times;</button>
+            <h2>🔬 Enciclopedia de Microbios Fermentadores</h2>
+            <p style="color:var(--text-secondary)">Bacterias, hongos y levaduras involucrados en la fermentación tradicional:</p>
+            <div id="microbes-list" class="microbes-grid"></div>
         </div>
     </div>
 

@@ -11,6 +11,67 @@ const state = {
     lang: localStorage.getItem("pantry_lang") || "es"
 };
 
+const i18n = {
+    es: {
+        header_sub: "Catálogo global de fermentos, encurtidos y recetas tradicionales",
+        pantry_title: "✨ Mi Despensa Interactiva",
+        pantry_desc: "Carga qué ingredientes o fermentados tienes a mano y te mostraremos qué puedes preparar.",
+        ing_label: "🥦 Sustratos e Ingredientes (repollo, leche, soja…)",
+        prod_label: "🧪 Fermentados que ya posees (miso, kimchi, kéfir…)",
+        add_btn: "+ Agregar",
+        export_btn: "💾 Guardar / Exportar",
+        import_btn: "📥 Cargar Despensa",
+        recommend_btn: "🔍 ¿Qué puedo preparar hoy?",
+        timers_title: "⏱️ Mis Fermentos en Proceso",
+        timers_desc: "Monitorea tus frascos en primera (F1) o segunda fermentación (F2).",
+        add_timer_btn: "+ Iniciar Frasco",
+        brine_calc_title: "🧮 Calculadora de Salinidad",
+        brine_calc_desc: "Gramos de sal para fermentación láctica segura.",
+        abv_calc_title: "🍺 Calculadora de Alcohol (% ABV)",
+        abv_calc_desc: "Estimación para hidromiel, sidra, kvas o cerveza.",
+        trouble_btn: "🚨 Diagnóstico de Problemas",
+        microbes_btn: "🔬 Microbios Fermentadores",
+        favs_btn: "❤️ Mis Favoritos",
+        search_btn: "Buscar",
+        random_btn: "🎲 Sorpréndeme",
+        ph_banner: "🛡️ <strong>Seguridad Alimentaria:</strong> Para fermentación láctica y acética, el pH objetivo de seguridad es <strong>&lt; 4.6</strong> para inhibir esporas de <em>Clostridium botulinum</em>.",
+        storage_title: "🧊 Conservación y almacenamiento:",
+        fermentation_time_title: "⏱️ Tiempo de fermentación:",
+        print_label_btn: "🏷️ Imprimir Etiqueta",
+        fav_saved: "❤️ Guardado",
+        fav_add: "🤍 Favorito",
+    },
+    en: {
+        header_sub: "Global catalog of ferments, pickles, and traditional recipes",
+        pantry_title: "✨ My Interactive Pantry",
+        pantry_desc: "Load what ingredients or fermented foods you have on hand, and we'll show you what you can make.",
+        ing_label: "🥦 Substrates & Ingredients (cabbage, milk, soy…)",
+        prod_label: "🧪 Fermentations You Already Own (miso, kimchi, kefir…)",
+        add_btn: "+ Add",
+        export_btn: "💾 Save / Export",
+        import_btn: "📥 Load Pantry",
+        recommend_btn: "🔍 What can I make today?",
+        timers_title: "⏱️ My Active Ferments",
+        timers_desc: "Monitor your jars in first (F1) or second fermentation (F2).",
+        add_timer_btn: "+ Start Jar",
+        brine_calc_title: "🧮 Salinity Calculator",
+        brine_calc_desc: "Exact salt grams for safe lacto-fermentation.",
+        abv_calc_title: "🍺 Alcohol Calculator (% ABV)",
+        abv_calc_desc: "Estimate ABV for mead, cider, kvass, or beer.",
+        trouble_btn: "🚨 Troubleshooting Guide",
+        microbes_btn: "🔬 Fermenting Microbes",
+        favs_btn: "❤️ My Favorites",
+        search_btn: "Search",
+        random_btn: "🎲 Surprise Me",
+        ph_banner: "🛡️ <strong>Food Safety:</strong> Target safety pH for lactic and acetic fermentation is <strong>&lt; 4.6</strong> to inhibit <em>Clostridium botulinum</em> spores.",
+        storage_title: "🧊 Storage & Shelf Life:",
+        fermentation_time_title: "⏱️ Fermentation time:",
+        print_label_btn: "🏷️ Print Label",
+        fav_saved: "❤️ Saved",
+        fav_add: "🤍 Favorite",
+    }
+};
+
 let chartInstances = {};
 
 // Register Service Worker for PWA / Offline support
@@ -68,10 +129,10 @@ async function loadStats() {
     try {
         const s = await api("/stats");
         document.getElementById("stats").innerHTML = `
-            <span class="stat-pill"><strong>${s.products.toLocaleString()}</strong> productos</span>
-            <span class="stat-pill"><strong>${s.countries}</strong> países</span>
-            <span class="stat-pill"><strong>${s.ingredients}</strong> ingredientes</span>
-            <span class="stat-pill"><strong>${s.categories}</strong> categorías</span>
+            <span class="stat-pill"><strong>${s.products.toLocaleString()}</strong> ${state.lang === 'en' ? 'products' : 'productos'}</span>
+            <span class="stat-pill"><strong>${s.countries}</strong> ${state.lang === 'en' ? 'countries' : 'países'}</span>
+            <span class="stat-pill"><strong>${s.ingredients}</strong> ${state.lang === 'en' ? 'ingredients' : 'ingredientes'}</span>
+            <span class="stat-pill"><strong>${s.categories}</strong> ${state.lang === 'en' ? 'categories' : 'categorías'}</span>
         `;
     } catch (e) {
         document.getElementById("stats").textContent = "API offline";
@@ -82,6 +143,7 @@ async function loadCategories() {
     try {
         const cats = await api("/categories");
         const select = document.getElementById("category");
+        select.innerHTML = `<option value="">${state.lang === 'en' ? 'All categories' : 'Todas las categorías'}</option>`;
         for (const c of cats) {
             const opt = document.createElement("option");
             opt.value = c.code;
@@ -95,6 +157,7 @@ async function loadCountries() {
     try {
         const countries = await api("/countries");
         const select = document.getElementById("country");
+        select.innerHTML = `<option value="">${state.lang === 'en' ? 'All countries' : 'Todos los países'}</option>`;
         for (const c of countries) {
             const opt = document.createElement("option");
             opt.value = c.name;
@@ -122,6 +185,7 @@ function buildQuery(page) {
     if (state.continent) params.set("continent", state.continent);
     if (state.country) params.set("country", state.country);
     if (state.source) params.set("source", state.source);
+    params.set("lang", state.lang);
     params.set("page", page);
     params.set("page_size", state.pageSize);
     return params.toString();
@@ -132,7 +196,7 @@ async function search(page = 1) {
     document.getElementById("fav-filter-btn").classList.remove("active");
     state.page = page;
     const list = document.getElementById("product-list");
-    list.innerHTML = `<li class="empty">Buscando fermentos y conservas...</li>`;
+    list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'Searching ferments...' : 'Buscando fermentos y conservas...'}</li>`;
     try {
         const data = await api(`/products?${buildQuery(page)}`);
         state.total = data.total;
@@ -149,18 +213,18 @@ async function renderFavorites() {
     const list = document.getElementById("product-list");
     const favIds = Array.from(favorites);
     if (!favIds.length) {
-        document.getElementById("count").textContent = "0 favoritos";
-        list.innerHTML = `<li class="empty">Aún no tienes productos marcados como favoritos. Haz clic en el corazón ❤️ de cualquier producto para guardarlo aquí.</li>`;
+        document.getElementById("count").textContent = state.lang === 'en' ? "0 favorites" : "0 favoritos";
+        list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'No favorites saved yet. Click ❤️ on any product card.' : 'Aún no tienes productos marcados como favoritos. Haz clic en el corazón ❤️ de cualquier producto para guardarlo aquí.'}</li>`;
         updatePagination(0);
         return;
     }
 
     list.innerHTML = `<li class="empty">Cargando tus favoritos...</li>`;
     try {
-        const items = await Promise.all(favIds.map((id) => api(`/products/${id}`).catch(() => null)));
+        const items = await Promise.all(favIds.map((id) => api(`/products/${id}?lang=${state.lang}`).catch(() => null)));
         const validItems = items.filter(Boolean);
         state.total = validItems.length;
-        document.getElementById("count").textContent = `${validItems.length} favorito${validItems.length === 1 ? "" : "s"}`;
+        document.getElementById("count").textContent = `${validItems.length} ${state.lang === 'en' ? 'favorite' : 'favorito'}${validItems.length === 1 ? "" : "s"}`;
         renderResults(validItems);
         updatePagination(1);
     } catch (e) {
@@ -171,9 +235,9 @@ async function renderFavorites() {
 function renderResults(items) {
     const list = document.getElementById("product-list");
     document.getElementById("count").textContent =
-        `${state.total.toLocaleString()} resultado${state.total === 1 ? "" : "s"}`;
+        `${state.total.toLocaleString()} ${state.lang === 'en' ? 'result' : 'resultado'}${state.total === 1 ? "" : "s"}`;
     if (!items.length) {
-        list.innerHTML = `<li class="empty">No encontramos fermentos con esos criterios. Prueba ajustando los filtros.</li>`;
+        list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'No ferments found. Try adjusting your search filters.' : 'No encontramos fermentos con esos criterios. Prueba ajustando los filtros.'}</li>`;
         return;
     }
     list.innerHTML = items.map((p) => {
@@ -202,7 +266,7 @@ function renderResults(items) {
 
 function updatePagination(overridePages) {
     const pages = overridePages !== undefined ? overridePages : Math.max(1, Math.ceil(state.total / state.pageSize));
-    document.getElementById("page-info").textContent = `Página ${state.page} de ${pages}`;
+    document.getElementById("page-info").textContent = state.lang === 'en' ? `Page ${state.page} of ${pages}` : `Página ${state.page} de ${pages}`;
     document.getElementById("prev-btn").disabled = state.page <= 1 || state.onlyFavs;
     document.getElementById("next-btn").disabled = state.page >= pages || state.onlyFavs;
 }
@@ -212,8 +276,10 @@ async function openDetail(id) {
     body.innerHTML = `<p>Cargando información del fermento...</p>`;
     document.getElementById("detail").classList.remove("hidden");
     try {
-        const p = await api(`/products/${id}`);
+        const p = await api(`/products/${id}?lang=${state.lang}`);
         const isFav = favorites.has(p.id);
+        const t = i18n[state.lang] || i18n.es;
+
         const section = (title, items) =>
             items && items.length ? `
                 <div class="detail-section">
@@ -223,7 +289,7 @@ async function openDetail(id) {
         
         const refs = p.references && p.references.length ? `
             <div class="detail-section">
-                <h4>Referencias y Fuentes</h4>
+                <h4>${state.lang === 'en' ? 'References & Sources' : 'Referencias y Fuentes'}</h4>
                 <ul>${p.references.map((r) => `
                     <li class="reference">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)}</a>` : esc(r.title)}${r.doi ? ` — DOI: ${esc(r.doi)}` : ""}</li>
                 `).join("")}</ul>
@@ -234,17 +300,17 @@ async function openDetail(id) {
                 <h2>${esc(p.name)}</h2>
                 <div style="display:flex; gap:0.4rem">
                     <button type="button" class="btn btn-outline btn-sm" onclick="openLabelModal('${esc(p.name)}', '${new Date().toISOString().slice(0,10)}', '${esc(p.fermentation_time || '7-14 días')}', '${esc(p.storage_life || 'Refrigerado')}')">
-                        🏷️ Imprimir Etiqueta
+                        ${t.print_label_btn}
                     </button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="toggleFavorite(${p.id}); this.textContent = favorites.has(${p.id}) ? '❤️ Guardado' : '🤍 Favorito'">
-                        ${isFav ? "❤️ Guardado" : "🤍 Favorito"}
+                    <button type="button" class="btn btn-outline btn-sm" onclick="toggleFavorite(${p.id}); this.textContent = favorites.has(${p.id}) ? '${t.fav_saved}' : '${t.fav_add}'">
+                        ${isFav ? t.fav_saved : t.fav_add}
                     </button>
                 </div>
             </div>
             ${p.description ? `<p style="font-size:1.05rem; color:var(--text-secondary); margin-bottom:1rem">${esc(p.description)}</p>` : ""}
-            ${p.method ? `<p style="background:var(--bg-page); padding:0.8rem; border-radius:var(--radius-sm)"><strong>Método tradicional:</strong> ${esc(p.method)}</p>` : ""}
-            ${p.fermentation_time ? `<p><strong>⏱️ Tiempo de fermentación:</strong> ${esc(p.fermentation_time)}</p>` : ""}
-            ${p.storage_life ? `<p><strong>🧊 Conservación y almacenamiento:</strong> ${esc(p.storage_life)}</p>` : ""}
+            ${p.method ? `<p style="background:var(--bg-page); padding:0.8rem; border-radius:var(--radius-sm)"><strong>${state.lang === 'en' ? 'Traditional Method:' : 'Método tradicional:'}</strong> ${esc(p.method)}</p>` : ""}
+            ${p.fermentation_time ? `<p><strong>${t.fermentation_time_title}</strong> ${esc(p.fermentation_time)}</p>` : ""}
+            ${p.storage_life ? `<p><strong>${t.storage_title}</strong> ${esc(p.storage_life)}</p>` : ""}
             
             <div class="tags" style="margin-top: 0.8rem">
                 ${p.substrate ? tag(`Sustrato: ${p.substrate}`, "substrate") : ""}
@@ -253,14 +319,14 @@ async function openDetail(id) {
             </div>
 
             <div class="ph-safety-banner">
-                <span>🛡️ <strong>Seguridad Alimentaria:</strong> Para fermentación láctica y acética, el pH objetivo de seguridad es <strong>&lt; 4.6</strong> para inhibir esporas de <em>Clostridium botulinum</em>.</span>
+                <span>${t.ph_banner}</span>
             </div>
 
-            ${section("Alias / Nombres locales", p.aliases)}
-            ${section("Ingredientes clave", p.ingredients)}
-            ${section("Microbios fermentadores", p.microbes)}
-            ${section("Utiliza como ingrediente", p.uses)}
-            ${section("Es ingrediente de", p.used_by)}
+            ${section(state.lang === 'en' ? 'Aliases / Local Names' : 'Alias / Nombres locales', p.aliases)}
+            ${section(state.lang === 'en' ? 'Key Ingredients' : 'Ingredientes clave', p.ingredients)}
+            ${section(state.lang === 'en' ? 'Fermenting Microbes' : 'Microbios fermentadores', p.microbes)}
+            ${section(state.lang === 'en' ? 'Used as ingredient in' : 'Utiliza como ingrediente', p.uses)}
+            ${section(state.lang === 'en' ? 'Contains ingredient' : 'Es ingrediente de', p.used_by)}
             ${refs}
         `;
     } catch (e) {
@@ -324,19 +390,19 @@ function renderKPIs(s) {
     kpiEl.innerHTML = `
         <div class="kpi-card">
             <span class="kpi-val">${ingPct}%</span>
-            <span class="kpi-lbl">Productos con Ingredientes</span>
+            <span class="kpi-lbl">${state.lang === 'en' ? 'Products with Ingredients' : 'Productos con Ingredientes'}</span>
         </div>
         <div class="kpi-card">
             <span class="kpi-val">${subPct}%</span>
-            <span class="kpi-lbl">Sustratos Mapeados</span>
+            <span class="kpi-lbl">${state.lang === 'en' ? 'Substrates Mapped' : 'Sustratos Mapeados'}</span>
         </div>
         <div class="kpi-card">
             <span class="kpi-val">${s.uses.toLocaleString()}</span>
-            <span class="kpi-lbl">Vínculos de Uso entre Productos</span>
+            <span class="kpi-lbl">${state.lang === 'en' ? 'Cross Product Links' : 'Vínculos de Uso entre Productos'}</span>
         </div>
         <div class="kpi-card">
             <span class="kpi-val">${s.microbes}</span>
-            <span class="kpi-lbl">Especies de Microbios</span>
+            <span class="kpi-lbl">${state.lang === 'en' ? 'Microbe Species' : 'Especies de Microbios'}</span>
         </div>
     `;
 }
@@ -344,11 +410,9 @@ function renderKPIs(s) {
 function renderCharts(s) {
     if (typeof Chart === "undefined") return;
 
-    // Destroy existing charts to allow re-rendering
     Object.values(chartInstances).forEach((c) => c && c.destroy());
     chartInstances = {};
 
-    // 1. Continents Doughnut Chart
     const contCtx = document.getElementById("chart-continent");
     if (contCtx) {
         chartInstances.continent = new Chart(contCtx, {
@@ -368,7 +432,6 @@ function renderCharts(s) {
         });
     }
 
-    // 2. Data Sources Pie Chart
     const srcCtx = document.getElementById("chart-sources");
     if (srcCtx) {
         chartInstances.sources = new Chart(srcCtx, {
@@ -388,7 +451,6 @@ function renderCharts(s) {
         });
     }
 
-    // 3. Top Categories Horizontal Bar Chart
     const catCtx = document.getElementById("chart-categories");
     if (catCtx) {
         const sortedCats = Object.entries(s.by_category).sort((a, b) => b[1] - a[1]);
@@ -397,7 +459,7 @@ function renderCharts(s) {
             data: {
                 labels: sortedCats.map((c) => c[0].replace(/_/g, " ")),
                 datasets: [{
-                    label: "Productos registrados",
+                    label: state.lang === 'en' ? "Registered Ferments" : "Productos registrados",
                     data: sortedCats.map((c) => c[1]),
                     backgroundColor: "#2d5a3f",
                     borderRadius: 6
@@ -447,7 +509,7 @@ document.getElementById("next-btn").addEventListener("click", () => search(state
 
 document.getElementById("random-btn").addEventListener("click", async () => {
     try {
-        const p = await api("/products/random");
+        const p = await api(`/products/random?lang=${state.lang}`);
         openDetail(p.id);
     } catch (e) { /* ignore */ }
 });
@@ -498,7 +560,7 @@ function renderTimers() {
     const container = document.getElementById("timers-list");
     if (!container) return;
     if (!timers.length) {
-        container.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem; grid-column:1/-1">No tienes frascos activos en fermentación. Agrega uno arriba para darle seguimiento.</p>`;
+        container.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem; grid-column:1/-1">${state.lang === 'en' ? 'No active jars in fermentation. Add one above to track progress.' : 'No tienes frascos activos en fermentación. Agrega uno arriba para darle seguimiento.'}</p>`;
         return;
     }
 
@@ -528,8 +590,8 @@ function renderTimers() {
                     <div class="progress-bar-fill" style="width: ${pct}%; background-color: ${isReady ? '#2e7d52' : 'var(--color-primary)'}"></div>
                 </div>
                 <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:var(--text-secondary)">
-                    <span>${pct}% completado</span>
-                    <span>${isReady ? '🎉 ¡Listo para consumir/probar!' : `Quedan ${remainingDays} día${remainingDays === 1 ? '' : 's'}`}</span>
+                    <span>${pct}% ${state.lang === 'en' ? 'completed' : 'completado'}</span>
+                    <span>${isReady ? (state.lang === 'en' ? '🎉 Ready to taste!' : '🎉 ¡Listo para consumir/probar!') : (state.lang === 'en' ? `${remainingDays} day${remainingDays === 1 ? '' : 's'} left` : `Quedan ${remainingDays} día${remainingDays === 1 ? '' : 's'}`)}</span>
                 </div>
             </div>
         `;
@@ -544,7 +606,7 @@ function addTimer() {
     const days = parseInt(daysEl.value, 10);
 
     if (!name || isNaN(days) || days < 1) {
-        alert("Por favor ingresa un nombre y cantidad de días válidos.");
+        alert(state.lang === 'en' ? "Please enter a valid jar name and number of days." : "Por favor ingresa un nombre y cantidad de días válidos.");
         return;
     }
 
@@ -585,7 +647,12 @@ function diagnoseTrouble(type) {
 
     if (type === "kahm") {
         outcomeEl.classList.add("warning");
-        outcomeEl.innerHTML = `
+        outcomeEl.innerHTML = state.lang === 'en' ? `
+            <h3>⚪ Diagnosis: Kahm Yeast</h3>
+            <p><strong>Status:</strong> Harmless but can alter flavor if left to accumulate.</p>
+            <p><strong>Explanation:</strong> Wild yeast growing on the surface in the presence of oxygen when acidity is still low.</p>
+            <p><strong>Solution:</strong> Gently skim off the white film with a clean, sanitized spoon. Keep all vegetables submerged under brine using a weight.</p>
+        ` : `
             <h3>⚪ Diagnóstico: Levadura Kahm (Kahm Yeast)</h3>
             <p><strong>Estado:</strong> Inofensivo pero puede alterar el sabor si se deja acumular.</p>
             <p><strong>Explicación:</strong> Es una levadura salvaje silvestre que crece en la superficie en presencia de oxígeno cuando la acidez aún es baja.</p>
@@ -593,7 +660,12 @@ function diagnoseTrouble(type) {
         `;
     } else if (type === "mold") {
         outcomeEl.classList.add("danger");
-        outcomeEl.innerHTML = `
+        outcomeEl.innerHTML = state.lang === 'en' ? `
+            <h3>🟢 Diagnosis: Mold</h3>
+            <p><strong>Status:</strong> ⚠️ DANGEROUS — Discard batch.</p>
+            <p><strong>Explanation:</strong> Mold spores form fuzzy green, black, or blue growths. They produce mycotoxins that penetrate the liquid.</p>
+            <p><strong>Recommendation:</strong> For safety, discard the entire jar contents and thoroughly sanitize the jar with boiling water.</p>
+        ` : `
             <h3>🟢 Diagnóstico: Moho Hongo (Mold)</h3>
             <p><strong>Estado:</strong> ⚠️ PELIGROSO — Desechar la preparación.</p>
             <p><strong>Explicación:</strong> Las esporas de moho forman estructuras vellosas de color verde, negro o azul. Producen micotoxinas que penetran todo el líquido.</p>
@@ -601,7 +673,12 @@ function diagnoseTrouble(type) {
         `;
     } else if (type === "cloudy") {
         outcomeEl.classList.add("safe");
-        outcomeEl.innerHTML = `
+        outcomeEl.innerHTML = state.lang === 'en' ? `
+            <h3>🌫️ Diagnosis: Cloudy Brine</h3>
+            <p><strong>Status:</strong> ✅ COMPLETELY NORMAL & HEALTHY.</p>
+            <p><strong>Explanation:</strong> Milky brine indicates massive multiplication of beneficial lactic acid bacteria (LAB).</p>
+            <p><strong>Recommendation:</strong> No action needed, your ferment is progressing perfectly.</p>
+        ` : `
             <h3>🌫️ Diagnóstico: Salmuera Turbia</h3>
             <p><strong>Estado:</strong> ✅ COMPLETAMENTE NORMAL Y SALUDABLE.</p>
             <p><strong>Explicación:</strong> El color blanquecino o turbio en el líquido es una señal positiva de multiplicación masiva de bacterias ácido-lácticas (LAB) sanas.</p>
@@ -609,7 +686,12 @@ function diagnoseTrouble(type) {
         `;
     } else if (type === "foul") {
         outcomeEl.classList.add("danger");
-        outcomeEl.innerHTML = `
+        outcomeEl.innerHTML = state.lang === 'en' ? `
+            <h3>🤢 Diagnosis: Contamination / Foul Odor</h3>
+            <p><strong>Status:</strong> ⚠️ DISCARD BATCH.</p>
+            <p><strong>Explanation:</strong> Healthy ferments smell sour or tangy. A sewage or rotten smell means putrefactive bacteria multiplied.</p>
+            <p><strong>Recommendation:</strong> Discard contents immediately.</p>
+        ` : `
             <h3>🤢 Diagnóstico: Contaminación o Putrefacción</h3>
             <p><strong>Estado:</strong> ⚠️ DESECHAR EL FERMENTO.</p>
             <p><strong>Explicación:</strong> Un fermento saludable huele ácido, agrio o encurtido. Si huele a alcantarilla, basura o carne podrida, significa que bacterias putrefactivas se multiplicaron.</p>
@@ -617,7 +699,12 @@ function diagnoseTrouble(type) {
         `;
     } else if (type === "soft") {
         outcomeEl.classList.add("warning");
-        outcomeEl.innerHTML = `
+        outcomeEl.innerHTML = state.lang === 'en' ? `
+            <h3>🥬 Diagnosis: Soft Vegetables</h3>
+            <p><strong>Status:</strong> Edible but low crunch quality.</p>
+            <p><strong>Explanation:</strong> Caused by low salt salinity, high room temperature (>24°C), or pectinolytic enzymes.</p>
+            <p><strong>Solution:</strong> Maintain room temperature at 18-22°C and ensure at least 2.5% salinity.</p>
+        ` : `
             <h3>🥬 Diagnóstico: Vegetales Blandos</h3>
             <p><strong>Estado:</strong> Comestible pero de baja calidad de textura.</p>
             <p><strong>Explicación:</strong> Ocurre por insuficiente concentración de sal, temperatura ambiente muy alta (>24°C) o la acción de enzimas pectinolíticas.</p>
@@ -643,7 +730,7 @@ async function loadMicrobesModal() {
         listEl.innerHTML = microbes.map((m) => `
             <div class="microbe-badge" onclick="searchMicrobe('${esc(m.name)}')">
                 <span>🧫 ${esc(m.name)}</span>
-                <span style="font-size:0.75rem; opacity:0.7">🔍 Buscar</span>
+                <span style="font-size:0.75rem; opacity:0.7">🔍 Search</span>
             </div>
         `).join("");
     } catch (e) {
@@ -703,7 +790,7 @@ document.getElementById("import-file-input").addEventListener("change", (e) => {
                 saveTimers();
                 renderTimers();
             }
-            alert("¡Despensa, favoritos y temporizadores importados exitosamente!");
+            alert(state.lang === 'en' ? "Pantry, favorites, and timers imported successfully!" : "¡Despensa, favoritos y temporizadores importados exitosamente!");
         } catch (err) {
             alert("Error al leer el archivo JSON.");
         }
@@ -879,10 +966,26 @@ document.getElementById("copy-shopping-btn").addEventListener("click", () => {
 });
 
 // Selector de Idioma (i18n)
+function updateLanguageUI() {
+    const t = i18n[state.lang] || i18n.es;
+
+    document.querySelectorAll("[data-i18n]").forEach((el) => {
+        const key = el.dataset.i18n;
+        if (t[key]) el.innerHTML = t[key];
+    });
+
+    loadStats();
+    loadCategories();
+    loadCountries();
+    renderTimers();
+    search(1);
+}
+
 document.getElementById("lang-select").value = state.lang;
 document.getElementById("lang-select").addEventListener("change", (e) => {
     state.lang = e.target.value;
     localStorage.setItem("pantry_lang", state.lang);
+    updateLanguageUI();
 });
 
 document.getElementById("recommend-btn").addEventListener("click", loadRecommendations);

@@ -66,10 +66,16 @@ def _load_product(session: Session, product_id: int) -> models.Product:
     return product
 
 
-def _product_out(product: models.Product) -> ProductOut:
+def _product_out(product: models.Product, lang: str = "es") -> ProductOut:
+    p_name = product.name
+    if lang == "en" and product.aliases:
+        en_alias = next((a.name for a in product.aliases if a.language in ("en", "orig")), None)
+        if en_alias:
+            p_name = en_alias
+
     data = {
         "id": product.id,
-        "name": product.name,
+        "name": p_name,
         "description": product.description,
         "method": product.method,
         "fermentation_time": product.fermentation_time,
@@ -378,8 +384,12 @@ def related_products(
 
 
 @router.get("/products/{product_id}", response_model=ProductOut)
-def get_product(product_id: int, session: Session = Depends(get_session)):
-    return _product_out(_load_product(session, product_id))
+def get_product(
+    product_id: int,
+    lang: str = Query(default="es", description="Idioma del contenido (es / en)"),
+    session: Session = Depends(get_session),
+):
+    return _product_out(_load_product(session, product_id), lang=lang)
 
 
 @router.get("/categories", response_model=list[CategoryOut])

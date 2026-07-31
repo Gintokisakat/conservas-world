@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <header class="site-header">
@@ -22,10 +23,11 @@
                     <p class="subtitle" data-i18n="header_sub">Catálogo global de fermentos, encurtidos y recetas tradicionales</p>
                 </div>
             </div>
-            <div style="display:flex; align-items:center; gap:1rem">
-                <div id="stats" class="stats-grid">
+            <div style="display:flex; align-items:center; gap:0.8rem">
+                <div id="stats" class="stats-grid" onclick="openChartsModal()" style="cursor:pointer" title="Ver gráficos detallados">
                     <div class="stat-skeleton">Cargando estadísticas…</div>
                 </div>
+                <button type="button" class="btn btn-sm btn-outline" onclick="openChartsModal()" style="border-color:rgba(255,255,255,0.4); color:#fff">📊 Gráficos</button>
                 <select id="lang-select" class="lang-picker" title="Cambiar idioma">
                     <option value="es">🇪🇸 Español</option>
                     <option value="en">🇬🇧 English</option>
@@ -282,6 +284,40 @@
 
             <div style="margin-top:1.5rem; display:flex; justify-content:flex-end; gap:0.5rem">
                 <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ Imprimir Etiqueta</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Cuadro de Mando y Gráficos Estadísticos -->
+    <div id="charts-modal" class="modal-overlay hidden" onclick="closeChartsModal(event)">
+        <div class="modal-card modal-lg">
+            <button class="modal-close" onclick="closeChartsModal()">&times;</button>
+            <h2>📊 Panel de Estadísticas y Distribución Global</h2>
+            <p style="color:var(--text-secondary)">Análisis de datos de más de 3400 fermentos, fuentes y taxonomía tradicional:</p>
+
+            <div class="kpi-grid" id="kpi-summary"></div>
+
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <h3>🌍 Distribución por Continente</h3>
+                    <div class="chart-canvas-container">
+                        <canvas id="chart-continent"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card">
+                    <h3>🏷️ Fuentes de Datos Registradas</h3>
+                    <div class="chart-canvas-container">
+                        <canvas id="chart-sources"></canvas>
+                    </div>
+                </div>
+
+                <div class="chart-card chart-card-wide">
+                    <h3>🏺 Top Categorías de Fermentación</h3>
+                    <div class="chart-canvas-container">
+                        <canvas id="chart-categories"></canvas>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

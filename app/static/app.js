@@ -11,6 +11,8 @@ const state = {
     lang: localStorage.getItem("pantry_lang") || "es"
 };
 
+let chartInstances = {};
+
 // Register Service Worker for PWA / Offline support
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
@@ -291,12 +293,124 @@ function closeLabelModal(event) {
     document.getElementById("label-modal").classList.add("hidden");
 }
 
+function closeChartsModal(event) {
+    if (event && event.target.id !== "charts-modal" && !event.target.classList.contains("modal-close")) return;
+    document.getElementById("charts-modal").classList.add("hidden");
+}
+
 function openLabelModal(name, dateStr, timeStr, storageStr) {
     document.getElementById("lbl-title").textContent = name;
     document.getElementById("lbl-date").textContent = dateStr;
     document.getElementById("lbl-time").textContent = timeStr;
     document.getElementById("lbl-storage").textContent = storageStr;
     document.getElementById("label-modal").classList.remove("hidden");
+}
+
+async function openChartsModal() {
+    document.getElementById("charts-modal").classList.remove("hidden");
+    try {
+        const s = await api("/stats");
+        renderKPIs(s);
+        renderCharts(s);
+    } catch (e) { /* ignore */ }
+}
+
+function renderKPIs(s) {
+    const kpiEl = document.getElementById("kpi-summary");
+    if (!kpiEl) return;
+    const ingPct = Math.round((s.products_with_ingredients / s.products) * 100);
+    const subPct = Math.round((s.products_with_substrate / s.products) * 100);
+
+    kpiEl.innerHTML = `
+        <div class="kpi-card">
+            <span class="kpi-val">${ingPct}%</span>
+            <span class="kpi-lbl">Productos con Ingredientes</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-val">${subPct}%</span>
+            <span class="kpi-lbl">Sustratos Mapeados</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-val">${s.uses.toLocaleString()}</span>
+            <span class="kpi-lbl">Vínculos de Uso entre Productos</span>
+        </div>
+        <div class="kpi-card">
+            <span class="kpi-val">${s.microbes}</span>
+            <span class="kpi-lbl">Especies de Microbios</span>
+        </div>
+    `;
+}
+
+function renderCharts(s) {
+    if (typeof Chart === "undefined") return;
+
+    // Destroy existing charts to allow re-rendering
+    Object.values(chartInstances).forEach((c) => c && c.destroy());
+    chartInstances = {};
+
+    // 1. Continents Doughnut Chart
+    const contCtx = document.getElementById("chart-continent");
+    if (contCtx) {
+        chartInstances.continent = new Chart(contCtx, {
+            type: "doughnut",
+            data: {
+                labels: Object.keys(s.by_continent),
+                datasets: [{
+                    data: Object.values(s.by_continent),
+                    backgroundColor: ["#2d5a3f", "#c98836", "#d96b43", "#214e78", "#592e78"]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "bottom" } }
+            }
+        });
+    }
+
+    // 2. Data Sources Pie Chart
+    const srcCtx = document.getElementById("chart-sources");
+    if (srcCtx) {
+        chartInstances.sources = new Chart(srcCtx, {
+            type: "pie",
+            data: {
+                labels: Object.keys(s.by_source).map((k) => k.toUpperCase()),
+                datasets: [{
+                    data: Object.values(s.by_source),
+                    backgroundColor: ["#225232", "#8c4217", "#592e78", "#214e78"]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: "bottom" } }
+            }
+        });
+    }
+
+    // 3. Top Categories Horizontal Bar Chart
+    const catCtx = document.getElementById("chart-categories");
+    if (catCtx) {
+        const sortedCats = Object.entries(s.by_category).sort((a, b) => b[1] - a[1]);
+        chartInstances.categories = new Chart(catCtx, {
+            type: "bar",
+            data: {
+                labels: sortedCats.map((c) => c[0].replace(/_/g, " ")),
+                datasets: [{
+                    label: "Productos registrados",
+                    data: sortedCats.map((c) => c[1]),
+                    backgroundColor: "#2d5a3f",
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                indexAxis: "y",
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+    }
 }
 
 document.addEventListener("keydown", (e) => {
@@ -306,6 +420,7 @@ document.addEventListener("keydown", (e) => {
         document.getElementById("microbes-modal").classList.add("hidden");
         document.getElementById("trouble-modal").classList.add("hidden");
         document.getElementById("label-modal").classList.add("hidden");
+        document.getElementById("charts-modal").classList.add("hidden");
     }
 });
 

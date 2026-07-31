@@ -153,8 +153,9 @@ _CONTINENT_BY_ISO2 = {
     "SE": "Europe", "CH": "Europe", "UA": "Europe", "GB": "Europe", "VA": "Europe",
     "AU": "Oceania", "FJ": "Oceania", "KI": "Oceania", "MH": "Oceania", "FM": "Oceania",
     "NR": "Oceania", "NZ": "Oceania", "PW": "Oceania", "PG": "Oceania", "WS": "Oceania",
-    "SB": "Oceania", "TO": "Oceania", "TV": "Oceania", "VU": "Oceania",
+    "SB": "Oceania", "TO": "Oceania", "TV": "Oceania", "VU": "Oceania", "PF": "Oceania",
     "AQ": "Antarctica", "GL": "Americas",
+    "IM": "Europe", "MQ": "Americas", "RE": "Africa",
 }
 
 
@@ -345,12 +346,27 @@ _MICROBE_STOPWORDS = {
     "culture",
     "cultures",
     "starters",
+    "starterkultur",
+    "starter",
     "organisms",
     "microbes",
     "cells",
     "found",
     "including",
     "in",
+    "fermented",
+    "ferment",
+    "mold",
+    "mould",
+}
+
+# Erratas de especies capturadas del texto fuente.
+_MICROBE_FIXES = {
+    "rhamnossus": "rhamnosus",
+    "orizae": "oryzae",
+    "coaguland": "coagulans",
+    "thermophils": "thermophilus",
+    "asei": "casei",
 }
 
 
@@ -359,7 +375,7 @@ def _format_microbe(genus: str, species: str) -> str:
     for part in species.split():
         if part == "." or part.lower() in _MICROBE_STOPWORDS:
             continue
-        clean.append(part)
+        clean.append(_MICROBE_FIXES.get(part.lower(), part))
     return f"{genus} {' '.join(clean)}" if clean else genus
 
 

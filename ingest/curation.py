@@ -85,6 +85,7 @@ CURATED_MERGES = [
     ]),
     ("Pickled onions", ["pickled onion", "pickled onions"]),
     ("Myeolchijeot", ["myeolchi jeot", "myeolchijeot"]),
+    ("Sukakomasu", ["sukakomasu", "suka ko masu"]),
     ("Kiselo mleko", ["kislo mleko", "kiselo mleko", "kiselo mlyako"]),
     ("Danablu", ["dana blu", "danablu"]),
     ("Soumbala", ["soumbala", "sumbala"]),

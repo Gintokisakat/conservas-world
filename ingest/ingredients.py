@@ -701,6 +701,15 @@ CANONICAL_INGREDIENTS = [
         "white sugar", "granulated sugar", "jaggery", "palm sugar", "raw sugar",
         "zucker", "cukier", "cukor", "sokeri", "rohrzucker", "kandis", "glukose",
         "fruktose", "zucchero", "azúcares", "azucares", "açúcar", "acucar", "سكر",
+        "น้ำตาล",
+    ]},
+    {"name": "glucose syrup", "category": "bebida", "substrate": False, "aliases": [
+        "glucose syrup", "glucose-fructose syrup", "glucose sirup", "glukos",
+        "sirop de glucose", "jarabe de glucosa", "sciroppo di glucosio",
+        "sirup glukozowy", "กลูโคสไซรัป",
+    ]},
+    {"name": "gelatin", "category": "otro", "substrate": False, "aliases": [
+        "gelatin", "gelatine", "gelatina", "เจลาติน",
     ]},
     {"name": "sugarcane", "category": "bebida", "substrate": False, "aliases": [
         "sugar cane", "sugarcane", "sugarcane juice", "cane juice", "cana de azucar",
@@ -927,6 +936,12 @@ _NAME_INFERENCE = [
     (["khai khrop"], ["egg", "salt"], "substr"),
     (["kiamoy"], ["plum", "sugar"], "substr"),
     (["salsa hp"], ["tomato", "vinegar"], "word"),
+    (["キムチ"], ["cabbage"], "substr"),
+    (["aloja"], ["honey"], "word"),
+    (["muday"], ["wheat", "honey"], "word"),
+    (["nem lai vung"], ["pork", "rice", "garlic"], "substr"),
+    (["menudo"], ["pork", "tomato"], "word"),
+    (["churri"], ["yogurt", "buttermilk", "chili"], "word"),
 ]
 
 _SUBSTRATE_PRIORITY = {

@@ -944,7 +944,7 @@ _NAME_INFERENCE = [
     (["churri"], ["yogurt", "buttermilk", "chili"], "word"),
     (["beer", "cerveza", "birra", "bière", "bier", "pils", "stout", "lager",
       "stella artois", "heineken", "jupiler", "leffe", "tuborg",
-      "nastro azzurro", "μπύρα", "пиво", "бира"],
+      "nastro azzurro", "nastro azzuro", "μπύρα", "пиво", "бира"],
      ["barley", "hops", "yeast"], "word"),
     (["sake", "saké", "junmai", "nigori", "nihonshu"],
      ["rice", "yeast"], "substr"),

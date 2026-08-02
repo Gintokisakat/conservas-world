@@ -44,6 +44,8 @@ CATEGORIES = {
     "sakes": 50,
     "pickled-onions": 80,
     "pickled-eggs": 25,
+    "ciders": 150,
+    "smoked-sausages": 80,
 }
 
 _CATEGORY_DEFAULT = {
@@ -79,6 +81,8 @@ _CATEGORY_DEFAULT = {
     "sakes": ["fermento_alcoholico"],
     "pickled-onions": ["encurtido_vinagre"],
     "pickled-eggs": ["encurtido_vinagre"],
+    "ciders": ["fermento_alcoholico"],
+    "smoked-sausages": ["ahumado"],
 }
 
 _TAG_MAP = (
@@ -101,6 +105,7 @@ _TAG_MAP = (
     ("cheese", "fermento_lactico"),
     ("kombucha", "fermento_alcoholico"),
     ("beer", "fermento_alcoholico"),
+    ("cider", "fermento_alcoholico"),
     ("sake", "fermento_alcoholico"),
     ("wine", "fermento_alcoholico"),
     ("cider", "fermento_alcoholico"),
@@ -121,6 +126,7 @@ _TAG_MAP = (
     ("dried-fish", "secado"),
     ("dried-meat", "secado"),
     ("smoked", "ahumado"),
+    ("smoked-sausage", "ahumado"),
     ("olive", "encurtido_salmuera"),
     ("canned", "conserva_esterilizada"),
     ("tuna", "conserva_esterilizada"),

@@ -895,7 +895,7 @@ _NAME_INFERENCE = [
       "bettarazuke", "chhundo", "oorgai", "pachranga", "chamoy", "crack seed",
       "li hing", "kool-aid", "murabba", "giardiniera", "murri", "tsukemono",
       "torshi", "achiar"], ["vegetables"], "substr"),
-    (["kimchi", "sauerkraut", "crauti", "coleslaw", "knieperkohl", "kohl"],
+    (["kimchi", "sauerkraut", "crauti", "coleslaw", "knieperkohl", "kohl", "choucroute"],
      ["cabbage"], "substr"),
     (["takuan", "nukazuke", "kkakdugi", "dongchimi"], ["radish"], "substr"),
     (["morkovcha"], ["carrot"], "substr"),
@@ -948,6 +948,7 @@ _NAME_INFERENCE = [
      ["barley", "hops", "yeast"], "word"),
     (["sake", "saké", "junmai", "nigori", "nihonshu"],
      ["rice", "yeast"], "substr"),
+    (["saucisse fumée", "saucisses fumées"], ["pork"], "substr"),
 ]
 
 _SUBSTRATE_PRIORITY = {

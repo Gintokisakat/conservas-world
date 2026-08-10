@@ -20,9 +20,11 @@ from app.schemas import (
     RecommendationOut,
     Recommendations,
     ReferenceOut,
+    SearchSuggest,
     SeasonalMonthName,
     SeasonalOut,
     Stats,
+    SuggestItem,
     UseRecommendationOut,
 )
 from app.services.diet import DIET_TAGS, REQUIRED, VIOLATIONS, product_diet_tags
@@ -286,6 +288,101 @@ def list_products(
         page_size=page_size,
         items=[_list_item(p) for p in items],
     )
+
+
+@router.get("/search/suggest", response_model=SearchSuggest)
+def search_suggest(
+    q: str = Query(default=""),
+    limit: int = Query(default=10, ge=1, le=20),
+    session: Session = Depends(get_session),
+):
+    term = q.strip()
+    if not term:
+        return SearchSuggest()
+
+    products: list[SuggestItem] = []
+    ingredients: list[SuggestItem] = []
+
+    fts_ids = _fts_matches(session, term, limit=50)
+    if fts_ids is not None and fts_ids:
+        rows = session.execute(
+            select(models.Product)
+            .options(
+                selectinload(models.Product.categories),
+                selectinload(models.Product.countries),
+            )
+            .where(models.Product.id.in_(fts_ids), models.Product.status != "discarded")
+        ).scalars().all()
+    else:
+        like = f"%{term.lower()}%"
+        rows = session.execute(
+            select(models.Product)
+            .options(
+                selectinload(models.Product.categories),
+                selectinload(models.Product.countries),
+            )
+            .where(
+                models.Product.status != "discarded",
+                func.lower(models.Product.name).like(like),
+            )
+        ).scalars().all()
+
+    def _rank(product):
+        name = product.name.lower()
+        if name.startswith(term.lower()):
+            return (0, name)
+        return (1, name)
+
+    for p in sorted(rows, key=_rank)[:limit]:
+        products.append(
+            SuggestItem(
+                type="product",
+                id=p.id,
+                name=p.name,
+                category=p.categories[0].name if p.categories else None,
+                country=p.countries[0].name if p.countries else None,
+                substrate=p.substrate,
+            )
+        )
+
+    prefix = f"{term.lower()}%"
+    ing_rows = session.execute(
+        select(models.Ingredient)
+        .where(func.lower(models.Ingredient.name).like(prefix))
+        .order_by(models.Ingredient.name)
+        .limit(limit)
+    ).scalars().all()
+    for ing in ing_rows:
+        ingredients.append(
+            SuggestItem(
+                type="ingredient",
+                id=ing.id,
+                name=ing.name,
+                category=ing.category,
+            )
+        )
+    if len(ing_rows) < limit:
+        contains = f"%{term.lower()}%"
+        extra = session.execute(
+            select(models.Ingredient)
+            .where(
+                func.lower(models.Ingredient.name).like(contains),
+                func.lower(models.Ingredient.name).notlike(prefix),
+            )
+            .order_by(models.Ingredient.name)
+            .limit(limit - len(ing_rows))
+        ).scalars().all()
+        ingredients.extend(
+            SuggestItem(
+                type="ingredient",
+                id=ing.id,
+                name=ing.name,
+                category=ing.category,
+            )
+            for ing in extra
+        )
+
+    return SearchSuggest(products=products, ingredients=ingredients)
 
 
 @router.get("/recommendations", response_model=Recommendations)

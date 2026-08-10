@@ -360,6 +360,79 @@ input[type="search"]:focus {
     box-shadow: 0 0 0 3px rgba(45, 90, 63, 0.12);
 }
 
+.suggest-box {
+    position: absolute;
+    top: calc(100% + 6px);
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    max-height: 380px;
+    overflow-y: auto;
+    padding: 0.35rem;
+}
+
+.suggest-box.hidden {
+    display: none;
+}
+
+.suggest-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    padding: 0.45rem 0.6rem 0.2rem;
+}
+
+.suggest-item {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    width: 100%;
+    text-align: left;
+    padding: 0.5rem 0.6rem;
+    border: none;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-primary);
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    cursor: pointer;
+}
+
+.suggest-item:hover,
+.suggest-item.active {
+    background: var(--tag-cat-bg);
+}
+
+.suggest-item .suggest-name {
+    font-weight: 600;
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.suggest-item .suggest-tag {
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: var(--tag-country-bg);
+    color: var(--tag-country-text);
+    white-space: nowrap;
+}
+
+.suggest-item .suggest-tag.ing {
+    background: var(--tag-substr-bg);
+    color: var(--tag-substr-text);
+}
+
 input[type="text"], input[type="number"], input[type="email"], input[type="password"] {
     background-color: var(--bg-card);
     color: var(--text-primary);

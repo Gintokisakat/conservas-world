@@ -178,7 +178,8 @@
             <form id="search-form" class="filters-form">
                 <div class="search-input-wrapper">
                     <span class="search-icon">🔍</span>
-                    <input type="search" id="q" placeholder="Buscar por nombre o descripción (ej. kimchi, sauerkraut, choucroute...)" autocomplete="off">
+                    <input type="search" id="q" placeholder="Buscar por nombre o descripción (ej. kimchi, sauerkraut, choucroute...)" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest-box" aria-autocomplete="list">
+                    <div id="suggest-box" class="suggest-box hidden" role="listbox"></div>
                 </div>
                 <div class="selects-group">
                     <select id="category">

@@ -86,6 +86,9 @@ const i18n = {
         nutrition_calcium: "Calcio",
         nutrition_zinc: "Zinc",
         nutrition_products: "Fermentos que lo utilizan",
+        suggest_products: "Productos",
+        suggest_ingredients: "Ingredientes",
+        suggest_empty: "Sin coincidencias para «{q}»",
     },
     en: {
         header_sub: "Global catalog of ferments, pickles, and traditional recipes",
@@ -135,6 +138,9 @@ const i18n = {
         nutrition_calcium: "Calcium",
         nutrition_zinc: "Zinc",
         nutrition_products: "Ferments that use it",
+        suggest_products: "Products",
+        suggest_ingredients: "Ingredients",
+        suggest_empty: "No matches for \"{q}\"",
     }
 };
 
@@ -177,6 +183,15 @@ function toggleFavorite(id, event) {
 }
 
 document.addEventListener("click", (e) => {
+    if (!e.target.closest(".search-input-wrapper")) {
+        closeSuggest();
+    }
+    const suggestBtn = e.target.closest(".suggest-item[data-suggest-index]");
+    if (suggestBtn) {
+        const idx = Number(suggestBtn.dataset.suggestIndex);
+        if (suggestState.items[idx]) applySuggestion(suggestState.items[idx]);
+        return;
+    }
     const productCard = e.target.closest(".product-card[data-product-id]");
     if (productCard && !e.target.closest(".fav-toggle")) {
         openDetail(Number(productCard.dataset.productId));
@@ -765,6 +780,7 @@ document.addEventListener("keydown", (e) => {
         document.getElementById("label-modal").classList.add("hidden");
         document.getElementById("charts-modal").classList.add("hidden");
         document.getElementById("guide-modal").classList.add("hidden");
+        closeSuggest();
     }
 });
 
@@ -779,8 +795,110 @@ document.getElementById("search-form").addEventListener("submit", (e) => {
     state.country = document.getElementById("country").value;
     state.source = document.getElementById("source").value;
     state.diet = document.getElementById("diet").value;
+    closeSuggest();
     search(1);
 });
+
+const suggestState = { items: [], active: -1 };
+
+function closeSuggest() {
+    const box = document.getElementById("suggest-box");
+    if (!box) return;
+    box.classList.add("hidden");
+    box.innerHTML = "";
+    suggestState.items = [];
+    suggestState.active = -1;
+    document.getElementById("q").setAttribute("aria-expanded", "false");
+}
+
+function renderSuggest(data) {
+    const box = document.getElementById("suggest-box");
+    const t = i18n[state.lang] || i18n.es;
+    const items = [];
+    let html = "";
+    if (data.products && data.products.length) {
+        html += `<div class="suggest-label">${t.suggest_products}</div>`;
+        for (const p of data.products) {
+            items.push({ ...p, section: "products" });
+            const tags = [p.category, p.country].filter(Boolean)
+                .map((x) => `<span class="suggest-tag">${esc(x)}</span>`)
+                .join("");
+            html += `<button type="button" class="suggest-item" data-suggest-index="${items.length - 1}" role="option">
+                <span class="suggest-name">${esc(p.name)}</span>${tags}
+            </button>`;
+        }
+    }
+    if (data.ingredients && data.ingredients.length) {
+        html += `<div class="suggest-label">${t.suggest_ingredients}</div>`;
+        for (const ing of data.ingredients) {
+            items.push({ ...ing, section: "ingredients" });
+            html += `<button type="button" class="suggest-item" data-suggest-index="${items.length - 1}" role="option">
+                <span class="suggest-name">${esc(ing.name)}</span>
+                ${ing.category ? `<span class="suggest-tag ing">${esc(ing.category)}</span>` : ""}
+            </button>`;
+        }
+    }
+    if (!items.length) {
+        html = `<div class="suggest-label">${t.suggest_empty.replace("{q}", esc(document.getElementById("q").value.trim()))}</div>`;
+    }
+    box.innerHTML = html;
+    box.classList.remove("hidden");
+    suggestState.items = items;
+    document.getElementById("q").setAttribute("aria-expanded", "true");
+}
+
+function highlightSuggest() {
+    const box = document.getElementById("suggest-box");
+    box.querySelectorAll(".suggest-item").forEach((el, i) => {
+        el.classList.toggle("active", i === suggestState.active);
+        el.setAttribute("aria-selected", i === suggestState.active ? "true" : "false");
+    });
+}
+
+function applySuggestion(item) {
+    closeSuggest();
+    const input = document.getElementById("q");
+    input.value = item.name;
+    state.q = item.name;
+    search(1);
+}
+
+function onSuggestKeydown(e) {
+    const box = document.getElementById("suggest-box");
+    if (box.classList.contains("hidden") || !suggestState.items.length) return;
+    if (e.key === "ArrowDown") {
+        e.preventDefault();
+        suggestState.active = (suggestState.active + 1) % suggestState.items.length;
+        highlightSuggest();
+    } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        suggestState.active = (suggestState.active - 1 + suggestState.items.length) % suggestState.items.length;
+        highlightSuggest();
+    } else if (e.key === "Enter" && suggestState.active >= 0) {
+        e.preventDefault();
+        applySuggestion(suggestState.items[suggestState.active]);
+    }
+}
+
+let suggestTimer = null;
+const qInput = document.getElementById("q");
+qInput.addEventListener("input", () => {
+    clearTimeout(suggestTimer);
+    const term = qInput.value.trim();
+    if (term.length < 2) {
+        closeSuggest();
+        return;
+    }
+    suggestTimer = setTimeout(async () => {
+        try {
+            const data = await api(`/search/suggest?q=${encodeURIComponent(term)}&limit=8`);
+            renderSuggest(data);
+        } catch (e) {
+            closeSuggest();
+        }
+    }, 180);
+});
+qInput.addEventListener("keydown", onSuggestKeydown);
 
 document.getElementById("fav-filter-btn").addEventListener("click", () => {
     if (state.onlyFavs) {

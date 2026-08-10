@@ -113,6 +113,20 @@ class PaginatedProducts(BaseModel):
     items: list[ProductListItem]
 
 
+class SuggestItem(BaseModel):
+    type: str
+    id: int
+    name: str
+    category: str | None = None
+    country: str | None = None
+    substrate: str | None = None
+
+
+class SearchSuggest(BaseModel):
+    products: list[SuggestItem] = []
+    ingredients: list[SuggestItem] = []
+
+
 class RecommendationOut(BaseModel):
     id: int
     name: str

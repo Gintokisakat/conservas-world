@@ -19,6 +19,23 @@ class IngredientOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class NutritionOut(BaseModel):
+    fdc_id: str
+    calories: float | None = None
+    protein_g: float | None = None
+    fat_g: float | None = None
+    carbs_g: float | None = None
+    fiber_g: float | None = None
+    sodium_mg: float | None = None
+    potassium_mg: float | None = None
+    vitamin_c_mg: float | None = None
+    iron_mg: float | None = None
+    calcium_mg: float | None = None
+    zinc_mg: float | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class CategoryOut(BaseModel):
     id: int
     code: str

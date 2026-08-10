@@ -155,6 +155,39 @@ class Ingredient(Base):
     products: Mapped[list["Product"]] = relationship(
         secondary=product_ingredient, back_populates="ingredients"
     )
+    nutrition: Mapped["NutritionData | None"] = relationship(
+        back_populates="ingredient", cascade="all, delete-orphan"
+    )
+
+
+class NutritionData(Base):
+    """Valores por 100 g tomados de la USDA FoodData Central (fdcId)."""
+
+    __tablename__ = "nutrition_data"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    ingredient_id: Mapped[int] = mapped_column(
+        ForeignKey("ingredients.id", ondelete="CASCADE"),
+        unique=True,
+        index=True,
+    )
+    fdc_id: Mapped[str] = mapped_column(String(30))
+    calories: Mapped[float | None] = mapped_column(Float)
+    protein_g: Mapped[float | None] = mapped_column(Float)
+    fat_g: Mapped[float | None] = mapped_column(Float)
+    carbs_g: Mapped[float | None] = mapped_column(Float)
+    fiber_g: Mapped[float | None] = mapped_column(Float)
+    sodium_mg: Mapped[float | None] = mapped_column(Float)
+    potassium_mg: Mapped[float | None] = mapped_column(Float)
+    vitamin_c_mg: Mapped[float | None] = mapped_column(Float)
+    iron_mg: Mapped[float | None] = mapped_column(Float)
+    calcium_mg: Mapped[float | None] = mapped_column(Float)
+    zinc_mg: Mapped[float | None] = mapped_column(Float)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now()
+    )
+
+    ingredient: Mapped["Ingredient"] = relationship(back_populates="nutrition")
 
 
 class Category(Base):

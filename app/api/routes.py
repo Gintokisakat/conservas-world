@@ -13,6 +13,7 @@ from app.schemas import (
     CountryOut,
     IngredientOut,
     MicrobeOut,
+    NutritionOut,
     PaginatedProducts,
     ProductListItem,
     ProductOut,
@@ -482,6 +483,28 @@ def list_ingredients(response: Response, session: Session = Depends(get_session)
     return session.execute(
         select(models.Ingredient).order_by(models.Ingredient.name)
     ).scalars().all()
+
+
+@router.get("/ingredients/{ingredient_id}/nutrition", response_model=NutritionOut | None)
+def ingredient_nutrition(
+    ingredient_id: int,
+    response: Response,
+    session: Session = Depends(get_session),
+):
+    ingredient = session.execute(
+        select(models.Ingredient).where(models.Ingredient.id == ingredient_id)
+    ).scalar_one_or_none()
+    if ingredient is None:
+        raise HTTPException(status_code=404, detail="Ingrediente no encontrado")
+    nutrition = session.execute(
+        select(models.NutritionData).where(
+            models.NutritionData.ingredient_id == ingredient_id
+        )
+    ).scalar_one_or_none()
+    if nutrition is None:
+        return None
+    response.headers["Cache-Control"] = "public, max-age=86400"
+    return nutrition
 
 
 @router.get("/diets")

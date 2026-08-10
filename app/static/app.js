@@ -71,6 +71,21 @@ const i18n = {
         seasonal_title: "🌿 Qué fermentar este mes",
         seasonal_desc: "Ingredientes de temporada y fermentos sugeridos.",
         show_more: "Ver más",
+        nutrition_title: "🧪 Información Nutricional (por 100 g)",
+        nutrition_source: "Fuente: USDA FoodData Central (CC0)",
+        nutrition_none: "Sin datos de nutrición disponibles para este ingrediente.",
+        nutrition_calories: "Energía",
+        nutrition_protein: "Proteínas",
+        nutrition_fat: "Grasas",
+        nutrition_carbs: "Carbohidratos",
+        nutrition_fiber: "Fibra",
+        nutrition_sodium: "Sodio",
+        nutrition_potassium: "Potasio",
+        nutrition_vitamin_c: "Vitamina C",
+        nutrition_iron: "Hierro",
+        nutrition_calcium: "Calcio",
+        nutrition_zinc: "Zinc",
+        nutrition_products: "Fermentos que lo utilizan",
     },
     en: {
         header_sub: "Global catalog of ferments, pickles, and traditional recipes",
@@ -105,6 +120,21 @@ const i18n = {
         seasonal_title: "🌿 What to Ferment This Month",
         seasonal_desc: "In-season ingredients and suggested ferments.",
         show_more: "Show more",
+        nutrition_title: "🧪 Nutrition Facts (per 100 g)",
+        nutrition_source: "Source: USDA FoodData Central (CC0)",
+        nutrition_none: "No nutrition data available for this ingredient.",
+        nutrition_calories: "Energy",
+        nutrition_protein: "Protein",
+        nutrition_fat: "Fat",
+        nutrition_carbs: "Carbohydrates",
+        nutrition_fiber: "Fiber",
+        nutrition_sodium: "Sodium",
+        nutrition_potassium: "Potassium",
+        nutrition_vitamin_c: "Vitamin C",
+        nutrition_iron: "Iron",
+        nutrition_calcium: "Calcium",
+        nutrition_zinc: "Zinc",
+        nutrition_products: "Ferments that use it",
     }
 };
 
@@ -160,6 +190,11 @@ document.addEventListener("click", (e) => {
     const microbeBadge = e.target.closest(".microbe-badge[data-name]");
     if (microbeBadge) {
         searchMicrobe(microbeBadge.dataset.name);
+        return;
+    }
+    const ingredientChip = e.target.closest("[data-action='ingredient']");
+    if (ingredientChip) {
+        openIngredient(Number(ingredientChip.dataset.ingredientId), ingredientChip.dataset.ingredientName);
         return;
     }
     const labelBtn = e.target.closest("[data-action='label']");
@@ -423,6 +458,7 @@ function updatePagination(overridePages) {
 async function openDetail(id) {
     const body = document.getElementById("detail-body");
     const t = i18n[state.lang] || i18n.es;
+    document.getElementById("ingredient-modal").classList.add("hidden");
     body.innerHTML = `<p>${state.lang === 'en' ? 'Loading product info...' : 'Cargando información del fermento...'}</p>`;
     document.getElementById("detail").classList.remove("hidden");
     try {
@@ -442,6 +478,18 @@ async function openDetail(id) {
                 <ul>${p.references.map((r) => `
                     <li class="reference">${r.url ? `<a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)}</a>` : esc(r.title)}${r.doi ? ` — DOI: ${esc(r.doi)}` : ""}</li>
                 `).join("")}</ul>
+            </div>` : "";
+
+        const ingChips = p.ingredients && p.ingredients.length ? `
+            <div class="detail-section">
+                <h4>${state.lang === 'en' ? 'Key Ingredients' : 'Ingredientes clave'}</h4>
+                <div class="tags">
+                    ${p.ingredients.map((i) => `
+                        <button type="button" class="ingredient-chip" data-action="ingredient" data-ingredient-id="${i.id}" data-ingredient-name="${escAttr(i.name)}">
+                            ${esc(i.name)}
+                        </button>
+                    `).join("")}
+                </div>
             </div>` : "";
             
         body.innerHTML = `
@@ -473,7 +521,7 @@ async function openDetail(id) {
             </div>
 
             ${section(state.lang === 'en' ? 'Aliases / Local Names' : 'Alias / Nombres locales', p.aliases)}
-            ${section(state.lang === 'en' ? 'Key Ingredients' : 'Ingredientes clave', p.ingredients)}
+            ${ingChips}
             ${section(state.lang === 'en' ? 'Fermenting Microbes' : 'Microbios fermentadores', p.microbes)}
             ${section(state.lang === 'en' ? 'Used as ingredient in' : 'Utiliza como ingrediente', p.uses)}
             ${section(state.lang === 'en' ? 'Contains ingredient' : 'Es ingrediente de', p.used_by)}
@@ -487,6 +535,72 @@ async function openDetail(id) {
 function closeDetail(event) {
     if (event && event.target.id !== "detail" && !event.target.classList.contains("modal-close")) return;
     document.getElementById("detail").classList.add("hidden");
+}
+
+const NUTRITION_FIELDS = [
+    ["calories", "nutrition_calories", "kcal"],
+    ["protein_g", "nutrition_protein", "g"],
+    ["fat_g", "nutrition_fat", "g"],
+    ["carbs_g", "nutrition_carbs", "g"],
+    ["fiber_g", "nutrition_fiber", "g"],
+    ["sodium_mg", "nutrition_sodium", "mg"],
+    ["potassium_mg", "nutrition_potassium", "mg"],
+    ["vitamin_c_mg", "nutrition_vitamin_c", "mg"],
+    ["iron_mg", "nutrition_iron", "mg"],
+    ["calcium_mg", "nutrition_calcium", "mg"],
+    ["zinc_mg", "nutrition_zinc", "mg"],
+];
+
+async function openIngredient(id, name) {
+    const body = document.getElementById("ingredient-body");
+    const t = i18n[state.lang] || i18n.es;
+    document.getElementById("ingredient-modal").classList.remove("hidden");
+    body.innerHTML = `<h2>🥕 ${esc(name)}</h2><p>${state.lang === 'en' ? 'Loading nutrition data...' : 'Cargando información nutricional...'}</p>`;
+    try {
+        const nutrition = await api(`/ingredients/${id}/nutrition`);
+        let nutritionHtml = `<p style="color:var(--text-secondary); margin-bottom:0.6rem">${t.nutrition_none}</p>`;
+        if (nutrition) {
+            const rows = NUTRITION_FIELDS
+                .filter(([key]) => nutrition[key] !== null && nutrition[key] !== undefined)
+                .map(([key, labelKey, unit]) => {
+                    const value = key === "calories" ? Math.round(nutrition[key]) : +Number(nutrition[key]).toFixed(1);
+                    return `<tr><td>${t[labelKey]}</td><td>${value} ${unit}</td></tr>`;
+                })
+                .join("");
+            nutritionHtml = `
+                <h3 style="margin-top:0.4rem">${t.nutrition_title}</h3>
+                <table class="nutrition-table">
+                    <tbody>${rows}</tbody>
+                </table>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.6rem">${t.nutrition_source} — FDC ${esc(nutrition.fdc_id)}</p>`;
+        }
+        const products = await api(`/products?ingredient=${encodeURIComponent(name)}&page_size=10`);
+        const productsHtml = products.total
+            ? `<h3 style="margin-top:1.2rem">${t.nutrition_products}</h3>
+               <ul class="ingredient-product-list">
+                   ${products.items.map((p) => `
+                       <li class="product-card" data-product-id="${p.id}">
+                           <div>
+                               <h3>${esc(p.name)}</h3>
+                               <p class="desc">${esc(p.description || "")}</p>
+                           </div>
+                           <div class="tags">
+                               ${p.substrate ? tag(p.substrate, "substrate") : ""}
+                               ${p.categories.map((c) => tag(c.name)).join("")}
+                               ${p.countries.map((c) => tag(c.name, "country")).join("")}
+                           </div>
+                       </li>`).join("")}
+               </ul>`
+            : "";
+        body.innerHTML = `<h2>🥕 ${esc(name)}</h2>${nutritionHtml}${productsHtml}`;
+    } catch (e) {
+        body.innerHTML = `<h2>🥕 ${esc(name)}</h2><p>${state.lang === 'en' ? 'Error loading ingredient info.' : 'Error al cargar la información del ingrediente.'}</p>`;
+    }
+}
+
+function closeIngredientModal(event) {
+    if (event && event.target.id !== "ingredient-modal" && !event.target.classList.contains("modal-close")) return;
+    document.getElementById("ingredient-modal").classList.add("hidden");
 }
 
 function closeShoppingModal(event) {

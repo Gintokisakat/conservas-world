@@ -592,6 +592,56 @@ html.dark .tag.missing {
     color: #ef9a9a;
 }
 
+.ingredient-chip {
+    font-family: var(--font-body);
+    font-size: 0.8rem;
+    font-weight: 500;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+    border: 1px solid var(--tag-substr-bg);
+    background: var(--tag-substr-bg);
+    color: var(--tag-substr-text);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.ingredient-chip:hover {
+    border-color: var(--color-accent);
+    transform: translateY(-1px);
+}
+
+.nutrition-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+    background: var(--bg-page);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+}
+
+.nutrition-table td {
+    padding: 0.45rem 0.8rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.nutrition-table tr:last-child td {
+    border-bottom: none;
+}
+
+.nutrition-table td:last-child {
+    text-align: right;
+    font-weight: 600;
+    color: var(--color-primary);
+}
+
+.ingredient-product-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    gap: 0.75rem;
+}
+
 .empty {
     grid-column: 1 / -1;
     text-align: center;

@@ -4,8 +4,9 @@ Traduce productos en francés, italiano, holandés, alemán, sueco e inglés al 
 limpia caracteres escapados (d\'orange -> d'orange) y signos de puntuación iniciales.
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def full_translate():
     conn = sqlite3.connect("data/build.db")
@@ -75,7 +76,7 @@ def full_translate():
         (r"\bSpecialité d'orange\b", "Especialidad de naranja"),
     ]
 
-    for pid, orig_name, desc, source in products:
+    for pid, orig_name, _desc, source in products:
         new_name = orig_name.strip()
         was_modified = False
 

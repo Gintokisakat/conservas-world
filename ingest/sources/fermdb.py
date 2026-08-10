@@ -2,7 +2,6 @@ import re
 from pathlib import Path
 
 import pandas as pd
-
 from ingest.normalize import (
     fermdb_categories,
     find_ingredients,

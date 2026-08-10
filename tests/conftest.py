@@ -1,11 +1,10 @@
 import pytest
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, event
-from sqlalchemy.orm import sessionmaker
-
 from app.db import models  # noqa: F401
 from app.db.database import Base, get_session
 from app.main import app
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine, event
+from sqlalchemy.orm import sessionmaker
 
 TEST_DB_URL = "sqlite://"
 

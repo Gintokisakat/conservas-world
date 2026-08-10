@@ -3,8 +3,9 @@ Script de traducción y normalización de descripciones de mermeladas, lácteos,
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def translate_jams_and_meats():
     conn = sqlite3.connect("data/build.db")
@@ -78,7 +79,7 @@ def translate_jams_and_meats():
         (r"\bcitrate de sodium\b", "citrato de sodio"),
     ]
 
-    for pid, orig_name, desc, source in products:
+    for pid, orig_name, desc, _source in products:
         new_name = orig_name.strip()
         new_desc = desc if desc else ""
         modified = False

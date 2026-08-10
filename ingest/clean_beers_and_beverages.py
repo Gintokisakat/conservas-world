@@ -3,8 +3,9 @@ Script de traducción final para cervezas, bebidas y almidones.
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def clean_beers():
     conn = sqlite3.connect("data/build.db")

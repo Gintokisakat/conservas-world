@@ -1,7 +1,6 @@
+from app.db import models
 from sqlalchemy.orm import Session
 
-from app.db import models
-from app.db.database import init_db
 from ingest.categories import CATEGORIES
 from ingest.ingredients import pick_substrate
 from ingest.normalize import extract_microbes, normalize_name
@@ -16,7 +15,6 @@ def seed_categories(session: Session):
 
 
 def _get_or_create_country(session: Session, info: dict) -> models.Country:
-    key = info.get("iso2") or normalize_name(info["name"])
     country = session.query(models.Country).filter(
         models.Country.iso2 == info.get("iso2")
     ).first() if info.get("iso2") else None
@@ -208,7 +206,7 @@ def build_product_uses(session: Session) -> int:
     products = session.query(models.Product).all()
     active = [p for p in products if p.status != "discarded"]
     active_ids = {p.id for p in active}
-    stale = (
+    (
         session.query(models.ProductUse)
         .filter(
             (models.ProductUse.product_id.notin_(active_ids))
@@ -263,9 +261,8 @@ def build_product_uses(session: Session) -> int:
 
 
 def create_full_text_table():
-    from sqlalchemy import text
-
     from app.db.database import engine
+    from sqlalchemy import text
 
     with engine.begin() as conn:
         conn.execute(

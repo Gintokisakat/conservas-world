@@ -1,8 +1,7 @@
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-
 from app.db import models
 from ingest.sources import usda
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 _SAMPLE_FOOD = {
     "fdcId": 2709775,

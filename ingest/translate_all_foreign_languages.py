@@ -3,8 +3,9 @@ Script de traducción completa y exhaustiva para TODOS los idiomas restantes
 (Francés, Portugués, Galego, Italiano, Alemán y Holandés) en descripciones y nombres de `data/build.db`.
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def translate_all_languages():
     conn = sqlite3.connect("data/build.db")
@@ -151,10 +152,9 @@ def translate_all_languages():
         (r"\bolie\b", "aceite"),
     ]
 
-    for pid, name, desc, method in products:
+    for pid, name, desc, _method in products:
         new_name = name.strip()
         new_desc = desc if desc else ""
-        new_method = method if method else ""
         modified = False
 
         if new_desc:

@@ -3,8 +3,9 @@ Script de traducción de alérgenos (trazas) y eliminación de ruido de escaneo 
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def clean_traces():
     conn = sqlite3.connect("data/build.db")

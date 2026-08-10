@@ -3,11 +3,11 @@ import re
 from difflib import SequenceMatcher
 from pathlib import Path
 
+from app.db import models
+from app.db.database import SessionLocal
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 
-from app.db import models
-from app.db.database import SessionLocal
 from ingest.normalize import normalize_name
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"

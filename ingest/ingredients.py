@@ -1,11 +1,12 @@
 import re
 import unicodedata
+from typing import Any
 
 # Ingredientes canonicos (EN) con alias multilingue (EN/ES/FR + typos conocidos).
 # El matcher extrae de un texto libre los ingredientes canonicos con max-munch:
 # ante solapamientos, gana el alias mas largo (p.ej. "coconut milk" > "coconut" + "milk").
 
-CANONICAL_INGREDIENTS = [
+CANONICAL_INGREDIENTS: list[dict[str, Any]] = [
     # --- Vegetales ---
     {"name": "cabbage", "category": "vegetal", "aliases": [
         "cabbage", "repollo", "chou", "col", "coles", "white cabbage", "red cabbage",

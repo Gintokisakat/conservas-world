@@ -3,8 +3,9 @@ Script de traducción y refinamiento específico de Tempeh y productos fermentad
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def clean_tempeh_and_remaining():
     conn = sqlite3.connect("data/build.db")

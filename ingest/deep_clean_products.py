@@ -4,8 +4,9 @@ Elimina ruidos comerciales de empaques (pesos, marcas, envases), desinfecta sint
 traduce títulos al español y preserva alias originales.
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def deep_clean():
     conn = sqlite3.connect("data/build.db")
@@ -84,7 +85,7 @@ def deep_clean():
         (r"\bCarre de l'est\b", "Queso Carré de l'Est"),
     ]
 
-    for pid, orig_name, desc, source in products:
+    for pid, orig_name, _desc, _source in products:
         new_name = orig_name.strip()
         was_modified = False
 

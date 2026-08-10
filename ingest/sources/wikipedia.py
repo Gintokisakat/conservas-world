@@ -6,7 +6,6 @@ from pathlib import Path
 
 import httpx
 import pandas as pd
-
 from ingest.normalize import find_ingredients, infer_categories, resolve_country
 
 API = "https://en.wikipedia.org/w/api.php"

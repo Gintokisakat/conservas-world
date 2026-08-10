@@ -3,8 +3,9 @@ Script de traducción final para acidifiants, rellenos de anchoa, ajo de oso y c
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def clean_acidifiants():
     conn = sqlite3.connect("data/build.db")

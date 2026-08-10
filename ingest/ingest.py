@@ -2,6 +2,7 @@ import argparse
 import sys
 
 from app.db.database import SessionLocal, init_db
+
 from ingest.normalize import normalize_name
 
 SOURCES = ["fermdb", "wikipedia", "openfoodfacts", "wikidata"]
@@ -9,6 +10,7 @@ SOURCES = ["fermdb", "wikipedia", "openfoodfacts", "wikidata"]
 
 def run(sources: list[str], reset: bool = False):
     from app.db import models  # noqa: F401
+
     from ingest import loader
 
     if reset:

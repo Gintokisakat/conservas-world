@@ -3,6 +3,8 @@ from datetime import datetime
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
+from ingest.ingredients import CANONICAL_INGREDIENTS, match_ingredients
+from ingest.normalize import normalize_name
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session, selectinload
 
@@ -28,8 +30,6 @@ from app.schemas import (
     UseRecommendationOut,
 )
 from app.services.diet import DIET_TAGS, REQUIRED, VIOLATIONS, product_diet_tags
-from ingest.ingredients import CANONICAL_INGREDIENTS, match_ingredients
-from ingest.normalize import normalize_name
 
 router = APIRouter()
 
@@ -440,12 +440,12 @@ def recommendations(
     product_tokens = [normalize_name(t) for t in _split_terms(products)]
     if product_tokens:
         user_product_ids: set[int] = set()
-        for product in session.execute(
+        for row in session.execute(
             select(models.Product.id, models.Product.name)
             .where(models.Product.status != "discarded")
         ).all():
-            if normalize_name(product.name) in product_tokens:
-                user_product_ids.add(product.id)
+            if normalize_name(row.name) in product_tokens:
+                user_product_ids.add(row.id)
         for alias_row in session.execute(
             select(models.ProductAlias.product_id, models.ProductAlias.name)
         ).all():
@@ -743,15 +743,16 @@ def stats(session: Session = Depends(get_session)):
             .where(model.status != "discarded", *criteria)
         ).scalar_one()
 
-    by_category = dict(
-        session.execute(
+    by_category: dict[str, int] = {
+        code: count
+        for code, count in session.execute(
             select(models.Category.code, func.count(models.product_category.c.product_id))
             .join(models.product_category, models.product_category.c.category_id == models.Category.id)
             .join(models.Product, models.Product.id == models.product_category.c.product_id)
             .where(models.Product.status != "discarded")
             .group_by(models.Category.code)
         ).all()
-    )
+    }
     by_continent = {
         k: v
         for k, v in session.execute(
@@ -763,13 +764,15 @@ def stats(session: Session = Depends(get_session)):
         ).all()
         if k
     }
-    by_source = dict(
-        session.execute(
+    by_source: dict[str, int] = {
+        source: count
+        for source, count in session.execute(
             select(models.Product.source_tag, func.count())
             .where(models.Product.status != "discarded")
             .group_by(models.Product.source_tag)
         ).all()
-    )
+        if source
+    }
     return Stats(
         products=active_count(models.Product),
         countries=count(models.Country),

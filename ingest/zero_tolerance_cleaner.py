@@ -3,8 +3,9 @@ Script de pulido cero tolerancia con vocabulario botánico, gastronómico y cone
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def zero_tolerance_cleaner():
     conn = sqlite3.connect("data/build.db")

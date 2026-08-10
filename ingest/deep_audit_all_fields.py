@@ -3,8 +3,9 @@ Script de auditoría ultra-profunda para detectar CUALQUIER texto que no esté e
 en `data/build.db` (nombres, descripciones, métodos, sustratos).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def deep_audit():
     conn = sqlite3.connect("data/build.db")

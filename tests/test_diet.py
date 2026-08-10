@@ -1,4 +1,3 @@
-import pytest
 
 from app.services.diet import (
     DIET_TAGS,

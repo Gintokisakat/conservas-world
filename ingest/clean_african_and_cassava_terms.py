@@ -3,8 +3,9 @@ Script de traducción y perfeccionamiento fluido para Abacha, preparaciones afri
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def clean_african_and_cassava():
     conn = sqlite3.connect("data/build.db")

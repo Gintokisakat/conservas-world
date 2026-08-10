@@ -3,8 +3,9 @@ Script de traducción y refinamiento para aceitunas confitadas y aditivos en fra
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def translate_confited():
     conn = sqlite3.connect("data/build.db")

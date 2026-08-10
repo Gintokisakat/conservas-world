@@ -3,8 +3,9 @@ Script de traducción y normalización de conservas de pescado y mariscos.
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def translate_seafood_products():
     conn = sqlite3.connect("data/build.db")

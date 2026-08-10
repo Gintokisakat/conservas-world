@@ -4,8 +4,9 @@ Limpia sufijos desambiguados extensos, traduce combinaciones de ingredientes com
 y asegura que los títulos sean limpios y elegantes.
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def refine_titles():
     conn = sqlite3.connect("data/build.db")
@@ -34,7 +35,7 @@ def refine_titles():
         (r"\bFlanders red ale\b", "Cerveza roja de Flandes (Flanders red ale)"),
     ]
 
-    for pid, orig_name, desc, source in products:
+    for pid, orig_name, _desc, source in products:
         new_name = orig_name.strip()
         was_modified = False
 

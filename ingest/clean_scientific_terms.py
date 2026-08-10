@@ -3,8 +3,9 @@ Script de pulido final para términos científicos y descripciones de FermDB.
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def clean_scientific():
     conn = sqlite3.connect("data/build.db")
@@ -42,7 +43,7 @@ def clean_scientific():
         (r"\bunder\b", "bajo"),
     ]
 
-    for pid, name, desc, method in products:
+    for pid, _name, desc, method in products:
         new_desc = desc if desc else ""
         new_method = method if method else ""
         modified = False

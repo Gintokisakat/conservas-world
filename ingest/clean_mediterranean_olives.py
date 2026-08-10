@@ -3,8 +3,9 @@ Script de traducción final para aceitunas de la cuenca del Mediterráneo y vari
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def clean_mediterranean():
     conn = sqlite3.connect("data/build.db")

@@ -3,8 +3,9 @@ Script de traducción profunda de conectores y términos en inglés para dejar e
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def translate_all_english_descriptions():
     conn = sqlite3.connect("data/build.db")
@@ -90,7 +91,7 @@ def translate_all_english_descriptions():
         (r"\b fermenting\b", " fermentación"),
     ]
 
-    for pid, name, desc, method in products:
+    for pid, _name, desc, method in products:
         new_desc = desc if desc else ""
         new_method = method if method else ""
         modified = False

@@ -3,7 +3,6 @@ import time
 from pathlib import Path
 
 import httpx
-
 from ingest.normalize import find_ingredients, normalize_name, resolve_country
 
 OFF_API = "https://world.openfoodfacts.org/api/v2/search"

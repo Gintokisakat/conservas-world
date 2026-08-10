@@ -1,5 +1,5 @@
-import sqlite3
 import re
+import sqlite3
 
 conn = sqlite3.connect("data/build.db")
 cursor = conn.cursor()
@@ -13,7 +13,7 @@ non_es = []
 
 es_words = r"\b(de|del|la|el|las|los|con|en|y|para|al|por|sin|queso|salsa|vinagre|mermelada|cebolla|pepinillos|chucrut|cerveza|pan|leche|aceite|harina|pescado|soja|fermentado|conserva|encurtido|jamón|salmuera)\b"
 
-for pid, name, desc, source in products:
+for pid, name, _desc, source in products:
     if "\\" in name or "'" in name or "&" in name or ";" in name or "  " in name or name != name.strip():
         broken.append((pid, name, source))
     

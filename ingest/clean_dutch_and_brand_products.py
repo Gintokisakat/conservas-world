@@ -3,8 +3,9 @@ Script de traducción y refinamiento de productos de la marca AH Terra y descrip
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def clean_dutch_and_brand_products():
     conn = sqlite3.connect("data/build.db")

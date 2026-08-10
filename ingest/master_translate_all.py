@@ -4,8 +4,9 @@ Traduce exhaustivamente todos los títulos y descripciones en alemán, italiano,
 y reindexa FTS5.
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def master_translate():
     conn = sqlite3.connect("data/build.db")

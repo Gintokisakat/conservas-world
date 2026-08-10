@@ -2,8 +2,9 @@
 Script de limpieza final de símbolos (#ID) y backslashes en `data/build.db`.
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def clean_symbols():
     conn = sqlite3.connect("data/build.db")

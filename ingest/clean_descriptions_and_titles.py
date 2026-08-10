@@ -3,8 +3,9 @@ Script de limpieza de descripciones, formato de alérgenos y traducción de text
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def clean_descriptions_and_titles():
     conn = sqlite3.connect("data/build.db")
@@ -38,7 +39,7 @@ def clean_descriptions_and_titles():
         (r"\bedulcorantes\b", "edulcorantes"),
     ]
 
-    for pid, name, desc, source in products:
+    for pid, name, desc, _source in products:
         new_name = name.strip()
         new_desc = desc if desc else ""
         modified = False

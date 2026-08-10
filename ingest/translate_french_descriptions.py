@@ -3,9 +3,10 @@ Script de traducción completa de descripciones en francés e HTML entities al e
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
-import re
 import html
+import re
+import sqlite3
+
 
 def translate_french_descriptions():
     conn = sqlite3.connect("data/build.db")
@@ -79,7 +80,7 @@ def translate_french_descriptions():
         (r"\bsel\b", "sal"),
     ]
 
-    for pid, name, desc, source in products:
+    for pid, name, desc, _source in products:
         new_name = html.unescape(name.strip())
         new_desc = html.unescape(desc) if desc else ""
         modified = False

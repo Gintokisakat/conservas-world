@@ -3,8 +3,9 @@ Script de traducción exhaustiva de oraciones y descripciones en inglés de Ferm
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def translate_fermdb_english():
     conn = sqlite3.connect("data/build.db")
@@ -159,7 +160,7 @@ def translate_fermdb_english():
         (r"\b white\b", " blanco"),
     ]
 
-    for pid, name, desc, method in products:
+    for pid, _name, desc, method in products:
         new_desc = desc if desc else ""
         new_method = method if method else ""
         modified = False

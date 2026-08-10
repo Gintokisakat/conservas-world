@@ -3,8 +3,9 @@ Script de auditoría exhaustiva para detectar cualquier producto o descripción 
 (Alemán, Italiano, Polaco, Portugués, Francés, Inglés, etc.) en `data/build.db`.
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def audit():
     conn = sqlite3.connect("data/build.db")
@@ -26,7 +27,7 @@ def audit():
     en_pat = r"\b(Water|Sugar|Salt|Garlic|Onion|Oil|Vinegar|Cheese|Pickled|Fermented|Sauce|Brewed|Yogurt|Cider|Yeast|Paste)\b"
     fr_pat = r"\b(Eau|Sucre|Sel|Vinaigre|Oignon|Ail|Huile|Moutarde|Lait|Levure|Poivre|Piment)\b"
 
-    for pid, name, desc, source in products:
+    for pid, name, desc, _source in products:
         full_text = f"{name} {desc if desc else ''}"
         
         if re.search(de_pat, full_text, re.IGNORECASE):

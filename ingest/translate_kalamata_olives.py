@@ -3,8 +3,9 @@ Script de traducción y refinamiento específico para aceitunas Kalamata y certi
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def translate_kalamata():
     conn = sqlite3.connect("data/build.db")

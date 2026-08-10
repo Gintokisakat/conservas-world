@@ -3,8 +3,9 @@ Script de traducción final para preparaciones con hierbas, tapenades, bouchées
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def clean_herbs():
     conn = sqlite3.connect("data/build.db")

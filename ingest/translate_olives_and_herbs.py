@@ -3,8 +3,9 @@ Script de traducción y refinamiento para aceitunas, aderezos y hierbas.
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def translate_olives():
     conn = sqlite3.connect("data/build.db")

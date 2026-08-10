@@ -4,8 +4,9 @@ Translates English and French entries into Spanish while preserving original nam
 Rebuilds SQLite FTS5 index.
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def clean_and_translate():
     db_path = "data/build.db"
@@ -101,7 +102,7 @@ def clean_and_translate():
         (r"\bSour cream\b", "Crema agria", re.IGNORECASE),
     ]
 
-    for pid, orig_name, desc, source in products:
+    for pid, orig_name, _desc, source in products:
         new_name = orig_name.strip()
         was_modified = False
 

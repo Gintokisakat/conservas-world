@@ -3,8 +3,9 @@ Script de verificación de calidad total de la base de datos `data/build.db`.
 Comprueba que todos los 3692 títulos y descripciones estén en español, limpios y libres de errores.
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def verify_quality():
     conn = sqlite3.connect("data/build.db")
@@ -18,7 +19,7 @@ def verify_quality():
     symbols_in_titles = 0
     escaped_chars = 0
 
-    for pid, name, desc, source in products:
+    for _pid, name, desc, _source in products:
         if not desc or len(desc.strip()) == 0:
             empty_descriptions += 1
         if len(name.strip()) <= 2:

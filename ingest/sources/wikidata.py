@@ -4,7 +4,6 @@ import time
 from pathlib import Path
 
 import httpx
-
 from ingest.normalize import find_ingredients, infer_categories, resolve_country
 
 WIKIDATA_API = "https://www.wikidata.org/w/api.php"

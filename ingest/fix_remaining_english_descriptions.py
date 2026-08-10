@@ -3,8 +3,9 @@ Script de traducción final y refinamiento gramatical de descripciones en españ
 Para Conservas del Mundo (`data/build.db`).
 """
 
-import sqlite3
 import re
+import sqlite3
+
 
 def fix_remaining():
     conn = sqlite3.connect("data/build.db")
@@ -92,7 +93,7 @@ def fix_remaining():
         (r"\bmust \b", "debe "),
     ]
 
-    for pid, name, desc, method in products:
+    for pid, _name, desc, method in products:
         new_desc = desc if desc else ""
         new_method = method if method else ""
         modified = False

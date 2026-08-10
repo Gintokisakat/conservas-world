@@ -3,9 +3,8 @@ import os
 import time
 
 import httpx
-
-from app.db.database import SessionLocal, init_db
 from app.db import models
+from app.db.database import SessionLocal, init_db
 
 FDC_API = "https://api.nal.usda.gov/fdc/v1"
 

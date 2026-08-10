@@ -218,6 +218,7 @@
                 </div>
                 <div class="form-actions">
                     <button type="button" id="guide-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">📖 Manual del Fermentador</button>
+                    <button type="button" id="glossary-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">📚 Glosario</button>
                     <button type="button" id="trouble-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43">🚨 Diagnóstico de Problemas</button>
                     <button type="button" id="microbes-btn" class="btn btn-outline">🔬 Microbios Fermentadores</button>
                     <button type="button" id="fav-filter-btn" class="btn btn-outline">❤️ Mis Favoritos (<span id="fav-count">0</span>)</button>
@@ -414,6 +415,17 @@
                     </p>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal Glosario de Fermentación -->
+    <div id="glossary-modal" class="modal-overlay hidden" onclick="closeGlossaryModal(event)">
+        <div class="modal-card modal-lg">
+            <button class="modal-close" onclick="closeGlossaryModal()">&times;</button>
+            <h2 data-i18n="glossary_title">📚 Glosario de Fermentación</h2>
+            <p style="color:var(--text-secondary); margin-bottom:1rem" data-i18n="glossary_sub">Términos esenciales de fermentación y conservación, con definiciones breves.</p>
+            <input type="search" id="glossary-search" class="search-input" placeholder="🔎 Buscar un término…" data-i18n-placeholder="glossary_search" autocomplete="off" style="width:100%; margin-bottom:1rem">
+            <div id="glossary-list" style="max-height:55vh; overflow-y:auto"></div>
         </div>
     </div>
 

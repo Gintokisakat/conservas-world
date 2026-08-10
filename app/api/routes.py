@@ -16,6 +16,7 @@ from app.db.database import get_session
 from app.schemas import (
     CategoryOut,
     CountryOut,
+    GlossaryOut,
     IngredientOut,
     MicrobeOut,
     NutritionOut,
@@ -385,7 +386,55 @@ def search_suggest(
             for ing in extra
         )
 
-    return SearchSuggest(products=products, ingredients=ingredients)
+    terms: list[SuggestItem] = []
+    glossary_like = f"%{term.lower()}%"
+    term_rows = session.execute(
+        select(models.GlossaryTerm)
+        .where(func.lower(models.GlossaryTerm.term).like(glossary_like))
+        .order_by(models.GlossaryTerm.term)
+        .limit(limit)
+    ).scalars().all()
+    for gl in term_rows:
+        terms.append(
+            SuggestItem(
+                type="glossary",
+                id=gl.id,
+                name=gl.term,
+                category=gl.language,
+            )
+        )
+
+    return SearchSuggest(products=products, ingredients=ingredients, glossary=terms)
+
+
+@router.get("/glossary", response_model=list[GlossaryOut])
+def list_glossary(
+    q: str = Query(default="", description="Filtro por término (prefijo/contiene)"),
+    lang: str = Query(default="es", pattern="^(es|en)$"),
+    limit: int = Query(default=100, ge=1, le=500),
+    product_id: int | None = Query(default=None, description="Filtrar por producto relacionado"),
+    session: Session = Depends(get_session),
+):
+    query = select(models.GlossaryTerm).where(models.GlossaryTerm.language == lang)
+    if q.strip():
+        needle = f"%{q.strip().lower()}%"
+        query = query.where(func.lower(models.GlossaryTerm.term).like(needle))
+    if product_id is not None:
+        query = query.where(models.GlossaryTerm.related_product_id == product_id)
+    rows = session.execute(
+        query.order_by(models.GlossaryTerm.term).limit(limit)
+    ).scalars().all()
+    return [
+        GlossaryOut(
+            id=g.id,
+            term=g.term,
+            definition=g.definition,
+            language=g.language,
+            related_product_id=g.related_product_id,
+            related_product=g.related_product.name if g.related_product else None,
+        )
+        for g in rows
+    ]
 
 
 @router.get("/recommendations", response_model=Recommendations)

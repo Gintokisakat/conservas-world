@@ -433,6 +433,61 @@ input[type="search"]:focus {
     color: var(--tag-substr-text);
 }
 
+.suggest-item .suggest-tag.gloss {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.glossary-entry {
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.5rem;
+    background: var(--bg-card);
+}
+
+.glossary-entry summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.65rem 0.85rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    list-style: none;
+}
+
+.glossary-entry summary::-webkit-details-marker {
+    display: none;
+}
+
+.glossary-entry summary::before {
+    content: "▸";
+    margin-right: 0.5rem;
+    color: var(--text-secondary);
+}
+
+.glossary-entry[open] summary::before {
+    content: "▾";
+}
+
+.glossary-entry .glossary-link {
+    margin-left: auto;
+}
+
+.glossary-entry p {
+    padding: 0 0.85rem 0.85rem;
+    font-size: 0.92rem;
+    line-height: 1.55;
+    color: var(--text-secondary);
+}
+
+.glossary-empty {
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 1.5rem 0;
+}
+
 input[type="text"], input[type="number"], input[type="email"], input[type="password"] {
     background-color: var(--bg-card);
     color: var(--text-primary);

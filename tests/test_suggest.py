@@ -1,7 +1,7 @@
 def test_suggest_empty_query(client):
     resp = client.get("/search/suggest", params={"q": " "})
     assert resp.status_code == 200
-    assert resp.json() == {"products": [], "ingredients": []}
+    assert resp.json() == {"products": [], "ingredients": [], "glossary": []}
 
 
 def test_suggest_product_prefix(client):

@@ -27,6 +27,9 @@ def run(sources: list[str], reset: bool = False):
     session = SessionLocal()
     try:
         loader.seed_categories(session)
+        from ingest.sources.glossary import seed_glossary
+
+        seed_glossary(session)
         seen = set()
         total = 0
         skipped = 0

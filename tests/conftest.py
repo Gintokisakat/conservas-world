@@ -48,6 +48,7 @@ def client(tmp_path):
 
 def _seed(session):
     from ingest.loader import seed_categories, upsert_product
+    from ingest.sources.glossary import seed_glossary
 
     seed_categories(session)
     records = [
@@ -99,3 +100,4 @@ def _seed(session):
     ]
     for record in records:
         upsert_product(session, record)
+    seed_glossary(session)

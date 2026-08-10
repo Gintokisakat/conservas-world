@@ -91,6 +91,14 @@ const i18n = {
         suggest_empty: "Sin coincidencias para «{q}»",
         export_csv: "📄 CSV",
         export_pdf: "🖨️ PDF",
+        glossary_btn: "📚 Glosario",
+        glossary_title: "Glosario de Fermentación",
+        glossary_sub: "Términos esenciales de fermentación y conservación, con definiciones breves.",
+        glossary_search: "Buscar un término…",
+        glossary_empty: "No hay términos que coincidan con «{q}».",
+        glossary_related: "Ver producto",
+        glossary_pronounced: "Glosario",
+        suggest_glossary: "Glosario",
     },
     en: {
         header_sub: "Global catalog of ferments, pickles, and traditional recipes",
@@ -145,6 +153,14 @@ const i18n = {
         suggest_empty: "No matches for \"{q}\"",
         export_csv: "📄 CSV",
         export_pdf: "🖨️ PDF",
+        glossary_btn: "📚 Glossary",
+        glossary_title: "Fermentation Glossary",
+        glossary_sub: "Essential terms of fermentation and preservation, with short definitions.",
+        glossary_search: "Search a term…",
+        glossary_empty: "No terms match \"{q}\".",
+        glossary_related: "View product",
+        glossary_pronounced: "Glossary",
+        suggest_glossary: "Glossary",
     }
 };
 
@@ -237,6 +253,17 @@ document.addEventListener("click", (e) => {
             `/products/${exportPdfBtn.dataset.id}/export?format=pdf&lang=${state.lang}`,
             "_blank"
         );
+        return;
+    }
+    const glossaryDetailBtn = e.target.closest("[data-action='glossary-detail']");
+    if (glossaryDetailBtn) {
+        openGlossaryModal({});
+        return;
+    }
+    const glossaryProductBtn = e.target.closest("[data-action='glossary-product']");
+    if (glossaryProductBtn) {
+        closeGlossaryModal();
+        openDetail(Number(glossaryProductBtn.dataset.id));
         return;
     }
     const favDetailBtn = e.target.closest("[data-action='fav-detail']");
@@ -539,6 +566,9 @@ async function openDetail(id) {
                     <button type="button" class="btn btn-outline btn-sm" data-action="export-pdf" data-id="${p.id}">
                         ${t.export_pdf}
                     </button>
+                    <button type="button" class="btn btn-outline btn-sm" data-action="glossary-detail">
+                        📚
+                    </button>
                     <button type="button" class="btn btn-outline btn-sm" data-action="label" data-name="${escAttr(p.name)}" data-date="${new Date().toISOString().slice(0,10)}" data-time="${escAttr(p.fermentation_time || '7-14 días')}" data-storage="${escAttr(p.storage_life || 'Refrigerado')}">
                         ${t.print_label_btn}
                     </button>
@@ -680,6 +710,58 @@ function closeGuideModal(event) {
     document.getElementById("guide-modal").classList.add("hidden");
 }
 
+let glossaryTimer = null;
+let glossaryOpenedTerm = "";
+
+function openGlossaryModal(opts) {
+    opts = opts || {};
+    document.getElementById("glossary-modal").classList.remove("hidden");
+    if (opts.term) {
+        const input = document.getElementById("glossary-search");
+        input.value = opts.term;
+        glossaryOpenedTerm = opts.term;
+    }
+    renderGlossary();
+}
+
+function closeGlossaryModal(event) {
+    if (event && event.target.id !== "glossary-modal" && !event.target.classList.contains("modal-close")) return;
+    document.getElementById("glossary-modal").classList.add("hidden");
+}
+
+async function renderGlossary() {
+    const t = i18n[state.lang] || i18n.es;
+    const listEl = document.getElementById("glossary-list");
+    const term = document.getElementById("glossary-search").value.trim();
+    const q = term || glossaryOpenedTerm || "";
+    listEl.innerHTML = `<div class="suggest-label">${esc(t.glossary_search)}</div>`;
+    let data = [];
+    try {
+        data = await api(`/glossary?lang=${state.lang}&limit=300&q=${encodeURIComponent(q)}`);
+    } catch (e) {
+        listEl.innerHTML = `<p class="glossary-empty">${esc(t.glossary_empty).replace("{q}", esc(q))}</p>`;
+        return;
+    }
+    if (!data.length) {
+        listEl.innerHTML = `<p class="glossary-empty">${esc(t.glossary_empty).replace("{q}", esc(q))}</p>`;
+        return;
+    }
+    listEl.innerHTML = data.map((g) => `
+        <details class="glossary-entry">
+            <summary>
+                ${esc(g.term)}
+                ${g.related_product ? `<button type="button" class="btn btn-outline btn-sm glossary-link" data-action="glossary-product" data-id="${g.related_product_id}" data-name="${escAttr(g.related_product)}">${esc(t.glossary_related)}</button>` : ""}
+            </summary>
+            <p>${esc(g.definition)}</p>
+        </details>
+    `).join("");
+}
+
+function glossarySearchInput() {
+    clearTimeout(glossaryTimer);
+    glossaryTimer = setTimeout(renderGlossary, 180);
+}
+
 function openLabelModal(name, dateStr, timeStr, storageStr) {
     document.getElementById("lbl-title").textContent = name;
     document.getElementById("lbl-date").textContent = dateStr;
@@ -808,12 +890,18 @@ document.addEventListener("keydown", (e) => {
         document.getElementById("label-modal").classList.add("hidden");
         document.getElementById("charts-modal").classList.add("hidden");
         document.getElementById("guide-modal").classList.add("hidden");
+        document.getElementById("glossary-modal").classList.add("hidden");
         closeSuggest();
     }
 });
 
 const guideBtn = document.getElementById("guide-btn");
 if (guideBtn) guideBtn.addEventListener("click", openGuideModal);
+
+const glossaryBtn = document.getElementById("glossary-btn");
+if (glossaryBtn) glossaryBtn.addEventListener("click", () => openGlossaryModal({}));
+const glossarySearchInputEl = document.getElementById("glossary-search");
+if (glossarySearchInputEl) glossarySearchInputEl.addEventListener("input", glossarySearchInput);
 
 document.getElementById("search-form").addEventListener("submit", (e) => {
     e.preventDefault();
@@ -866,6 +954,16 @@ function renderSuggest(data) {
             </button>`;
         }
     }
+    if (data.glossary && data.glossary.length) {
+        html += `<div class="suggest-label">${t.suggest_glossary}</div>`;
+        for (const gl of data.glossary) {
+            items.push({ ...gl, section: "glossary" });
+            html += `<button type="button" class="suggest-item" data-suggest-index="${items.length - 1}" role="option">
+                <span class="suggest-name">${esc(gl.name)}</span>
+                <span class="suggest-tag gloss">${esc(t.glossary_pronounced)}</span>
+            </button>`;
+        }
+    }
     if (!items.length) {
         html = `<div class="suggest-label">${t.suggest_empty.replace("{q}", esc(document.getElementById("q").value.trim()))}</div>`;
     }
@@ -885,6 +983,11 @@ function highlightSuggest() {
 
 function applySuggestion(item) {
     closeSuggest();
+    if (item.section === "glossary") {
+        document.getElementById("q").value = "";
+        openGlossaryModal({ term: item.name });
+        return;
+    }
     const input = document.getElementById("q");
     input.value = item.name;
     state.q = item.name;

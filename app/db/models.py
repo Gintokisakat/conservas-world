@@ -225,3 +225,20 @@ class Reference(Base):
     products: Mapped[list["Product"]] = relationship(
         secondary=product_reference, back_populates="references"
     )
+
+
+class GlossaryTerm(Base):
+    """Término de fermentación/conservación con su definición (bilingüe)."""
+
+    __tablename__ = "glossary"
+    __table_args__ = (UniqueConstraint("term", "language"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    term: Mapped[str] = mapped_column(String(150), index=True)
+    definition: Mapped[str] = mapped_column(Text)
+    language: Mapped[str] = mapped_column(String(10), default="es", index=True)
+    related_product_id: Mapped[int | None] = mapped_column(
+        ForeignKey("products.id", ondelete="SET NULL"), index=True, nullable=True
+    )
+
+    related_product: Mapped["Product | None"] = relationship()

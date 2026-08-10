@@ -1,4 +1,4 @@
-const CACHE_NAME = "conservas-world-v5";
+const CACHE_NAME = "conservas-world-v6";
 const ASSETS_TO_CACHE = [
   "/",
   "/static/style.css",

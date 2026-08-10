@@ -125,6 +125,16 @@ class SuggestItem(BaseModel):
 class SearchSuggest(BaseModel):
     products: list[SuggestItem] = []
     ingredients: list[SuggestItem] = []
+    glossary: list[SuggestItem] = []
+
+
+class GlossaryOut(BaseModel):
+    id: int
+    term: str
+    definition: str
+    language: str
+    related_product_id: int | None = None
+    related_product: str | None = None
 
 
 class RecommendationOut(BaseModel):

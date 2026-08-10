@@ -9,6 +9,7 @@ const state = {
     page: 1,
     pageSize: 20,
     total: 0,
+    view: "list",
     lang: localStorage.getItem("pantry_lang") || "es"
 };
 
@@ -99,6 +100,11 @@ const i18n = {
         glossary_related: "Ver producto",
         glossary_pronounced: "Glosario",
         suggest_glossary: "Glosario",
+        view_list: "Lista",
+        view_map: "Mapa",
+        map_loading: "Cargando mapa…",
+        map_empty: "Sin resultados para mostrar en el mapa.",
+        map_detail: "Ver detalle",
     },
     en: {
         header_sub: "Global catalog of ferments, pickles, and traditional recipes",
@@ -161,6 +167,11 @@ const i18n = {
         glossary_related: "View product",
         glossary_pronounced: "Glossary",
         suggest_glossary: "Glossary",
+        view_list: "List",
+        view_map: "Map",
+        map_loading: "Loading map…",
+        map_empty: "No results to show on the map.",
+        map_detail: "View details",
     }
 };
 
@@ -446,6 +457,7 @@ async function search(page = 1) {
         state.total = data.total;
         renderResults(data.items);
         updatePagination();
+        if (state.view === "map") loadMap();
     } catch (e) {
         list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'Error connecting to API. Check your connection.' : 'Error al conectar con la API. Verifica tu conexión.'}</li>`;
     }
@@ -1293,6 +1305,93 @@ function searchMicrobe(name) {
     state.q = name;
     search(1);
 }
+
+// ---- Vista Mapa (Leaflet + markercluster) ----
+
+let mapInstance = null;
+let mapCluster = null;
+
+function setView(view) {
+    state.view = view;
+    const listEl = document.getElementById("product-list");
+    const mapEl = document.getElementById("map-view");
+    const pagEl = document.querySelector(".pagination");
+    const listBtn = document.getElementById("view-list-btn");
+    const mapBtn = document.getElementById("view-map-btn");
+    listEl.classList.toggle("hidden", view === "map");
+    if (mapEl) mapEl.classList.toggle("hidden", view !== "map");
+    if (pagEl) pagEl.style.display = view === "map" ? "none" : "";
+    listBtn.classList.toggle("active", view === "list");
+    mapBtn.classList.toggle("active", view === "map");
+    if (view === "map") {
+        loadMap();
+    } else if (mapInstance) {
+        mapInstance.invalidateSize();
+    }
+}
+
+async function loadMap() {
+    const t = i18n[state.lang] || i18n.es;
+    const mapEl = document.getElementById("map");
+    const loadingEl = document.getElementById("map-loading");
+    if (!mapEl) return;
+    if (typeof L === "undefined") {
+        loadingEl.textContent = state.lang === 'en'
+            ? "Map library not loaded (CDN blocked)."
+            : "La librería de mapas no se cargó (CDN bloqueado).";
+        loadingEl.classList.remove("hidden");
+        return;
+    }
+    loadingEl.textContent = t.map_loading;
+    loadingEl.classList.remove("hidden");
+    let points = [];
+    try {
+        points = await api(`/products/geo?${buildQuery(1)}&limit=4000`);
+    } catch (e) {
+        loadingEl.textContent = t.map_empty;
+        return;
+    }
+    loadingEl.classList.add("hidden");
+
+    if (!mapInstance) {
+        mapInstance = L.map("map").setView([20, 10], 2);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 18,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(mapInstance);
+        mapCluster = L.markerClusterGroup();
+        mapInstance.addLayer(mapCluster);
+    }
+
+    mapCluster.clearLayers();
+    if (!points.length) {
+        loadingEl.textContent = t.map_empty;
+        loadingEl.classList.remove("hidden");
+        return;
+    }
+    const markers = points.map((p) => {
+        const m = L.marker([p.lat, p.lng]);
+        m.bindPopup(`
+            <strong>${esc(p.name)}</strong><br>
+            ${p.category ? `<span class="map-popup-tag">${esc(p.category)}</span> ` : ""}
+            ${p.country ? `<span class="map-popup-tag">${esc(p.country)}</span>` : ""}
+            <br><button type="button" class="btn btn-sm map-popup-btn" data-map-product="${p.id}">${esc(t.map_detail)}</button>
+        `);
+        return m;
+    });
+    mapCluster.addLayers(markers);
+    if (mapInstance) setTimeout(() => mapInstance.invalidateSize(), 60);
+}
+
+document.getElementById("view-list-btn").addEventListener("click", () => setView("list"));
+document.getElementById("view-map-btn").addEventListener("click", () => setView("map"));
+
+document.addEventListener("click", (e) => {
+    const mapBtn = e.target.closest("[data-map-product]");
+    if (mapBtn) {
+        openDetail(Number(mapBtn.dataset.mapProduct));
+    }
+});
 
 document.getElementById("microbes-btn").addEventListener("click", loadMicrobesModal);
 

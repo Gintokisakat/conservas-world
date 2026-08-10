@@ -138,6 +138,8 @@ class Country(Base):
     iso2: Mapped[str | None] = mapped_column(String(2))
     iso3: Mapped[str | None] = mapped_column(String(3))
     continent: Mapped[str | None] = mapped_column(String(50), index=True)
+    latitude: Mapped[float | None] = mapped_column(Float)
+    longitude: Mapped[float | None] = mapped_column(Float)
 
     products: Mapped[list["Product"]] = relationship(
         secondary=product_country, back_populates="countries"

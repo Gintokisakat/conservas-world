@@ -14,6 +14,20 @@ def seed_categories(session: Session):
     session.commit()
 
 
+def seed_country_coords(session: Session):
+    """Rellena latitud/longitud de los países desde los centroides por ISO2."""
+    from ingest.sources.geo import get_centroid
+
+    updated = 0
+    for country in session.query(models.Country).all():
+        centroid = get_centroid(country.iso2)
+        if centroid and (country.latitude != centroid[0] or country.longitude != centroid[1]):
+            country.latitude, country.longitude = centroid
+            updated += 1
+    session.commit()
+    return updated
+
+
 def _get_or_create_country(session: Session, info: dict) -> models.Country:
     country = session.query(models.Country).filter(
         models.Country.iso2 == info.get("iso2")

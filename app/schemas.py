@@ -106,6 +106,18 @@ class ProductListItem(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class GeoPointOut(BaseModel):
+    id: int
+    name: str
+    lat: float
+    lng: float
+    country: str | None = None
+    continent: str | None = None
+    category: str | None = None
+    source_tag: str | None = None
+    substrate: str | None = None
+
+
 class PaginatedProducts(BaseModel):
     total: int
     page: int

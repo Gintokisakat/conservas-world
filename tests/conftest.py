@@ -47,10 +47,11 @@ def client(tmp_path):
 
 
 def _seed(session):
-    from ingest.loader import seed_categories, upsert_product
+    from ingest.loader import seed_categories, seed_country_coords, upsert_product
     from ingest.sources.glossary import seed_glossary
 
     seed_categories(session)
+    seed_country_coords(session)
     records = [
         {
             "name": "Miso",
@@ -100,4 +101,5 @@ def _seed(session):
     ]
     for record in records:
         upsert_product(session, record)
+    seed_country_coords(session)
     seed_glossary(session)

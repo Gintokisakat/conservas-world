@@ -16,6 +16,7 @@ from app.db.database import get_session
 from app.schemas import (
     CategoryOut,
     CountryOut,
+    GeoPointOut,
     GlossaryOut,
     IngredientOut,
     MicrobeOut,
@@ -156,31 +157,9 @@ def _list_item(product: models.Product) -> ProductListItem:
     )
 
 
-@router.get("/products", response_model=PaginatedProducts)
-def list_products(
-    q: str | None = None,
-    category: str | None = Query(default=None, description="Código de categoría"),
-    country: str | None = Query(default=None, description="Nombre o código ISO"),
-    continent: str | None = None,
-    ingredient: str | None = None,
-    source: str | None = None,
-    fermentation_time: str | None = None,
-    diet: str | None = Query(
-        default=None,
-        description="Filtro por etiqueta dietaria: vegan, vegetarian, gluten_free, dairy_free, soy_free, nut_free, egg_free, pescatarian, spicy",
-    ),
-    status: str | None = None,
-    page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=20, ge=1, le=200),
-    session: Session = Depends(get_session),
-):
-    query = select(models.Product).options(
-        selectinload(models.Product.categories),
-        selectinload(models.Product.countries),
-        selectinload(models.Product.ingredients),
-    )
-    count_query = select(func.count()).select_from(models.Product)
-
+def _apply_filters(query, count_query, session, *, q, category, country, continent,
+                   ingredient, source, fermentation_time, diet, status):
+    """Aplica los filtros comunes de listado a `query` y `count_query`."""
     if diet:
         diet_ids = _diet_ids(session, diet)
         if diet_ids is None:
@@ -278,6 +257,40 @@ def list_products(
             )
             query = query.where(search_clause)
             count_query = count_query.where(search_clause)
+    return query, count_query
+
+
+@router.get("/products", response_model=PaginatedProducts)
+def list_products(
+    q: str | None = None,
+    category: str | None = Query(default=None, description="Código de categoría"),
+    country: str | None = Query(default=None, description="Nombre o código ISO"),
+    continent: str | None = None,
+    ingredient: str | None = None,
+    source: str | None = None,
+    fermentation_time: str | None = None,
+    diet: str | None = Query(
+        default=None,
+        description="Filtro por etiqueta dietaria: vegan, vegetarian, gluten_free, dairy_free, soy_free, nut_free, egg_free, pescatarian, spicy",
+    ),
+    status: str | None = None,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=200),
+    session: Session = Depends(get_session),
+):
+    query = select(models.Product).options(
+        selectinload(models.Product.categories),
+        selectinload(models.Product.countries),
+        selectinload(models.Product.ingredients),
+    )
+    count_query = select(func.count()).select_from(models.Product)
+
+    query, count_query = _apply_filters(
+        query, count_query, session,
+        q=q, category=category, country=country, continent=continent,
+        ingredient=ingredient, source=source, fermentation_time=fermentation_time,
+        diet=diet, status=status,
+    )
 
     total = session.execute(count_query).scalar_one()
     query = (
@@ -292,6 +305,55 @@ def list_products(
         page_size=page_size,
         items=[_list_item(p) for p in items],
     )
+
+
+@router.get("/products/geo", response_model=list[GeoPointOut])
+def list_products_geo(
+    q: str | None = None,
+    category: str | None = Query(default=None, description="Código de categoría"),
+    country: str | None = Query(default=None, description="Nombre o código ISO"),
+    continent: str | None = None,
+    ingredient: str | None = None,
+    source: str | None = None,
+    fermentation_time: str | None = None,
+    diet: str | None = Query(default=None),
+    limit: int = Query(default=4000, ge=1, le=20000),
+    session: Session = Depends(get_session),
+):
+    query = select(models.Product).options(
+        selectinload(models.Product.categories),
+        selectinload(models.Product.countries),
+    )
+    count_query = select(func.count()).select_from(models.Product)
+    query, count_query = _apply_filters(
+        query, count_query, session,
+        q=q, category=category, country=country, continent=continent,
+        ingredient=ingredient, source=source, fermentation_time=fermentation_time,
+        diet=diet, status=None,
+    )
+    rows = session.execute(
+        query.order_by(models.Product.name).limit(limit)
+    ).scalars().unique().all()
+
+    points: list[GeoPointOut] = []
+    for p in rows:
+        for c in p.countries:
+            if c.latitude is None or c.longitude is None:
+                continue
+            points.append(
+                GeoPointOut(
+                    id=p.id,
+                    name=p.name,
+                    lat=c.latitude,
+                    lng=c.longitude,
+                    country=c.name,
+                    continent=c.continent,
+                    category=p.categories[0].name if p.categories else None,
+                    source_tag=p.source_tag,
+                    substrate=p.substrate,
+                )
+            )
+    return points
 
 
 @router.get("/search/suggest", response_model=SearchSuggest)

@@ -67,6 +67,7 @@ def run(sources: list[str], reset: bool = False):
         session.commit()
         added, updated = loader.enrich_ingredients(session)
         uses = loader.build_product_uses(session)
+        loader.seed_country_coords(session)
         loader.create_full_text_table()
     finally:
         session.close()

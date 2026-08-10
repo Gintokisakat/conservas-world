@@ -488,6 +488,58 @@ input[type="search"]:focus {
     padding: 1.5rem 0;
 }
 
+.view-toggle {
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-secondary);
+    cursor: pointer;
+}
+
+.view-toggle.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+}
+
+#map-view {
+    margin-top: 1rem;
+}
+
+#map {
+    width: 100%;
+    height: 62vh;
+    min-height: 380px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border-color);
+    z-index: 1;
+}
+
+#map-loading {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 1.5rem 0;
+    font-size: 0.95rem;
+}
+
+.leaflet-container {
+    background: #dce6dc;
+    font-family: inherit;
+}
+
+.map-popup-tag {
+    display: inline-block;
+    background: #eaf2eb;
+    color: #225232;
+    border-radius: 999px;
+    padding: 0.1rem 0.5rem;
+    font-size: 0.72rem;
+    margin: 0.15rem 0.15rem 0 0;
+}
+
+.map-popup-btn {
+    margin-top: 0.5rem;
+}
+
 input[type="text"], input[type="number"], input[type="email"], input[type="password"] {
     background-color: var(--bg-card);
     color: var(--text-primary);

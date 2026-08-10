@@ -308,3 +308,45 @@ def test_stats_has_all_fields(client):
     assert "by_source" in data
 
 
+def test_seasonal_default_month(client):
+    resp = client.get("/seasonal")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert 1 <= data["month"] <= 12
+    assert data["month_name"]["es"]
+    assert data["month_name"]["en"]
+    assert resp.headers.get("Cache-Control") == "public, max-age=86400"
+
+
+def test_seasonal_cabbage_month_includes_sauerkraut(client):
+    resp = client.get("/seasonal?month=1")
+    assert resp.status_code == 200
+    data = resp.json()
+    names = [i["name"] for i in data["ingredients"]]
+    assert "cabbage" in names
+    assert any(p["name"] == "Sauerkraut" for p in data["products"])
+
+
+def test_seasonal_cabbage_out_of_season(client):
+    resp = client.get("/seasonal?month=7")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "cabbage" not in [i["name"] for i in data["ingredients"]]
+    assert data["total"] == 0
+    assert data["products"] == []
+
+
+def test_seasonal_filter_by_continent(client):
+    resp = client.get("/seasonal?month=1&continent=Europe")
+    data = resp.json()
+    assert any(p["name"] == "Sauerkraut" for p in data["products"])
+    resp = client.get("/seasonal?month=1&continent=Asia")
+    data = resp.json()
+    assert all(p["name"] != "Sauerkraut" for p in data["products"])
+
+
+def test_seasonal_invalid_month(client):
+    assert client.get("/seasonal?month=0").status_code == 422
+    assert client.get("/seasonal?month=13").status_code == 422
+
+

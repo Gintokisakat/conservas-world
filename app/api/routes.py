@@ -1,3 +1,7 @@
+import json
+from datetime import datetime
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from sqlalchemy import func, select, text
 from sqlalchemy.orm import Session, selectinload
@@ -15,6 +19,8 @@ from app.schemas import (
     RecommendationOut,
     Recommendations,
     ReferenceOut,
+    SeasonalMonthName,
+    SeasonalOut,
     Stats,
     UseRecommendationOut,
 )
@@ -482,6 +488,111 @@ def list_ingredients(response: Response, session: Session = Depends(get_session)
 def list_diets(response: Response):
     response.headers["Cache-Control"] = "public, max-age=3600"
     return DIET_TAGS
+
+
+_SEASONAL_PATH = Path(__file__).resolve().parents[2] / "data" / "seasonal.json"
+_seasonal_cache: dict | None = None
+
+_MONTH_NAMES = {
+    1: SeasonalMonthName(es="enero", en="January"),
+    2: SeasonalMonthName(es="febrero", en="February"),
+    3: SeasonalMonthName(es="marzo", en="March"),
+    4: SeasonalMonthName(es="abril", en="April"),
+    5: SeasonalMonthName(es="mayo", en="May"),
+    6: SeasonalMonthName(es="junio", en="June"),
+    7: SeasonalMonthName(es="julio", en="July"),
+    8: SeasonalMonthName(es="agosto", en="August"),
+    9: SeasonalMonthName(es="septiembre", en="September"),
+    10: SeasonalMonthName(es="octubre", en="October"),
+    11: SeasonalMonthName(es="noviembre", en="November"),
+    12: SeasonalMonthName(es="diciembre", en="December"),
+}
+
+
+def _load_seasonal() -> dict:
+    global _seasonal_cache
+    if _seasonal_cache is None:
+        _seasonal_cache = json.loads(_SEASONAL_PATH.read_text(encoding="utf-8"))
+    return _seasonal_cache
+
+
+@router.get("/seasonal", response_model=SeasonalOut)
+def seasonal(
+    response: Response,
+    month: int = Query(default=datetime.now().month, ge=1, le=12),
+    continent: str | None = None,
+    limit: int = Query(default=50, ge=1, le=100),
+    session: Session = Depends(get_session),
+):
+    response.headers["Cache-Control"] = "public, max-age=86400"
+
+    seasonal = _load_seasonal()
+    in_season = [name for name, months in seasonal["ingredients"].items() if month in months]
+
+    ing_rows = session.execute(
+        select(models.Ingredient.id, models.Ingredient.name).where(
+            models.Ingredient.name.in_(in_season)
+        )
+    ).all()
+    if not ing_rows:
+        return SeasonalOut(
+            month=month, month_name=_MONTH_NAMES[month], total=0, ingredients=[], products=[]
+        )
+
+    ing_ids = [r.id for r in ing_rows]
+    ing_name = {r.id: r.name for r in ing_rows}
+
+    matches = (
+        select(models.product_ingredient.c.product_id, models.product_ingredient.c.ingredient_id)
+        .join(models.Product, models.Product.id == models.product_ingredient.c.product_id)
+        .where(
+            models.Product.status != "discarded",
+            models.product_ingredient.c.ingredient_id.in_(ing_ids),
+        )
+    )
+    if continent:
+        matches = (
+            matches.join(
+                models.product_country, models.product_country.c.product_id == models.Product.id
+            )
+            .join(models.Country, models.Country.id == models.product_country.c.country_id)
+            .where(models.Country.continent == continent)
+        )
+
+    counts: dict[int, int] = {}
+    product_ids: set[int] = set()
+    for pid, iid in session.execute(matches).all():
+        counts[iid] = counts.get(iid, 0) + 1
+        product_ids.add(pid)
+
+    ingredient_counts = sorted(
+        (
+            {"name": ing_name[iid], "count": count}
+            for iid, count in counts.items()
+            if count > 0
+        ),
+        key=lambda item: (-item["count"], item["name"]),
+    )
+
+    products = session.execute(
+        select(models.Product)
+        .options(
+            selectinload(models.Product.categories),
+            selectinload(models.Product.countries),
+            selectinload(models.Product.ingredients),
+        )
+        .where(models.Product.id.in_(product_ids))
+        .order_by(models.Product.name)
+        .limit(limit)
+    ).scalars().all()
+
+    return SeasonalOut(
+        month=month,
+        month_name=_MONTH_NAMES[month],
+        total=len(product_ids),
+        ingredients=ingredient_counts,
+        products=[_list_item(p) for p in products],
+    )
 
 
 @router.get("/microbes", response_model=list[MicrobeOut])

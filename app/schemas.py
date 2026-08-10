@@ -137,3 +137,21 @@ class Stats(BaseModel):
     by_category: dict[str, int]
     by_continent: dict[str, int]
     by_source: dict[str, int]
+
+
+class SeasonalIngredientOut(BaseModel):
+    name: str
+    count: int
+
+
+class SeasonalMonthName(BaseModel):
+    es: str
+    en: str
+
+
+class SeasonalOut(BaseModel):
+    month: int
+    month_name: SeasonalMonthName
+    total: int
+    ingredients: list[SeasonalIngredientOut] = []
+    products: list[ProductListItem] = []

@@ -68,6 +68,9 @@ const i18n = {
         fav_add: "🤍 Favorito",
         shopping_title: "🛒 Lista de Compras Requerida",
         shopping_desc: "Ingredientes necesarios para preparar las recetas seleccionadas:",
+        seasonal_title: "🌿 Qué fermentar este mes",
+        seasonal_desc: "Ingredientes de temporada y fermentos sugeridos.",
+        show_more: "Ver más",
     },
     en: {
         header_sub: "Global catalog of ferments, pickles, and traditional recipes",
@@ -99,6 +102,9 @@ const i18n = {
         fav_add: "🤍 Favorite",
         shopping_title: "🛒 Shopping List",
         shopping_desc: "Ingredients needed to prepare the recommended recipes:",
+        seasonal_title: "🌿 What to Ferment This Month",
+        seasonal_desc: "In-season ingredients and suggested ferments.",
+        show_more: "Show more",
     }
 };
 
@@ -273,6 +279,38 @@ async function loadDiets() {
     } catch (e) { /* ignore */ }
 }
 
+let seasonalLimit = 12;
+
+async function loadSeasonal(reset = true) {
+    const card = document.getElementById("seasonal-card");
+    if (!card) return;
+    if (reset) seasonalLimit = 12;
+    try {
+        const s = await api(`/seasonal?month=${new Date().getMonth() + 1}&limit=${seasonalLimit}`);
+        const monthName = (s.month_name[state.lang] || s.month_name.es);
+        const label = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+        document.getElementById("seasonal-desc").textContent =
+            `${label}: ${s.total.toLocaleString()} ${state.lang === 'en' ? 'ferments in season' : 'fermentos en temporada'}`;
+        document.getElementById("seasonal-ingredients").innerHTML = s.ingredients
+            .slice(0, 12)
+            .map((i) =>
+                `<span class="chip seasonal-chip" title="${i.count} ${state.lang === 'en' ? 'products' : 'productos'}">${esc(i.name)}</span>`
+            )
+            .join("");
+        const noDesc = state.lang === 'en' ? 'No description available.' : 'Sin descripción disponible.';
+        document.getElementById("seasonal-products").innerHTML = s.products
+            .map((p) => productCardHtml(p, noDesc))
+            .join("");
+        const moreBtn = document.getElementById("seasonal-more-btn");
+        if (moreBtn) {
+            moreBtn.hidden = s.total <= seasonalLimit;
+            moreBtn.textContent = state.lang === 'en'
+                ? `Show more (${(s.total - seasonalLimit).toLocaleString()})`
+                : `Ver más (${(s.total - seasonalLimit).toLocaleString()})`;
+        }
+    } catch (e) { /* ignore */ }
+}
+
 async function loadIngredientDatalist() {
     try {
         const ingredients = await api("/ingredients");
@@ -339,6 +377,30 @@ async function renderFavorites() {
     }
 }
 
+function productCardHtml(p, noDesc) {
+    const isFav = favorites.has(p.id);
+    return `
+    <li class="product-card" data-product-id="${p.id}">
+        <div>
+            <div class="card-header-row">
+                <h3>${esc(p.name)}</h3>
+                <button type="button" class="fav-toggle" data-id="${p.id}" title="Marcar como favorito">
+                    ${isFav ? "❤️" : "🤍"}
+                </button>
+            </div>
+            <p class="desc">${esc(p.description || noDesc)}</p>
+        </div>
+        <div class="tags">
+            ${p.substrate ? tag(p.substrate, "substrate") : ""}
+            ${p.categories.map((c) => tag(c.name)).join("")}
+            ${p.countries.map((c) => tag(c.name, "country")).join("")}
+            ${dietBadges(p.diet_tags)}
+            ${p.source_tag ? tag(p.source_tag, "source") : ""}
+        </div>
+    </li>
+    `;
+}
+
 function renderResults(items) {
     const list = document.getElementById("product-list");
     document.getElementById("count").textContent =
@@ -348,29 +410,7 @@ function renderResults(items) {
         return;
     }
     const noDesc = state.lang === 'en' ? 'No description available.' : 'Sin descripción disponible.';
-    list.innerHTML = items.map((p) => {
-        const isFav = favorites.has(p.id);
-        return `
-        <li class="product-card" data-product-id="${p.id}">
-            <div>
-                <div class="card-header-row">
-                    <h3>${esc(p.name)}</h3>
-                    <button type="button" class="fav-toggle" data-id="${p.id}" title="Marcar como favorito">
-                        ${isFav ? "❤️" : "🤍"}
-                    </button>
-                </div>
-                <p class="desc">${esc(p.description || noDesc)}</p>
-            </div>
-            <div class="tags">
-                ${p.substrate ? tag(p.substrate, "substrate") : ""}
-                ${p.categories.map((c) => tag(c.name)).join("")}
-                ${p.countries.map((c) => tag(c.name, "country")).join("")}
-                ${dietBadges(p.diet_tags)}
-                ${p.source_tag ? tag(p.source_tag, "source") : ""}
-            </div>
-        </li>
-        `;
-    }).join("");
+    list.innerHTML = items.map((p) => productCardHtml(p, noDesc)).join("");
 }
 
 function updatePagination(overridePages) {
@@ -645,6 +685,14 @@ document.getElementById("random-btn").addEventListener("click", async () => {
         openDetail(p.id);
     } catch (e) { /* ignore */ }
 });
+
+const seasonalMoreBtn = document.getElementById("seasonal-more-btn");
+if (seasonalMoreBtn) {
+    seasonalMoreBtn.addEventListener("click", () => {
+        seasonalLimit = 100;
+        loadSeasonal(false);
+    });
+}
 
 // ---- Calculadora de Salmuera y ABV ----
 
@@ -1147,6 +1195,7 @@ function updateLanguageUI() {
     loadCategories();
     loadCountries();
     loadDiets();
+    loadSeasonal();
     renderTimers();
     search(1);
 }
@@ -1169,5 +1218,6 @@ loadStats();
 loadCategories();
 loadCountries();
 loadDiets();
+loadSeasonal();
 loadIngredientDatalist();
 search(1);

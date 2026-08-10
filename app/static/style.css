@@ -1063,6 +1063,47 @@ html.dark .trouble-outcome-box.danger {
     gap: 1.2rem;
 }
 
+/* Calendario Estacional */
+.seasonal-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.6rem 2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.seasonal-header h2 {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    margin: 0 0 0.2rem;
+    color: var(--color-primary);
+}
+
+.seasonal-desc {
+    margin: 0 0 1rem;
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+}
+
+.seasonal-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin-bottom: 1.2rem;
+}
+
+.seasonal-chip {
+    background: var(--tag-diet-bg);
+    color: var(--tag-diet-text);
+    border: 1px solid var(--tag-diet-border);
+}
+
+.seasonal-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 1.2rem;
+}
+
 /* Selector de Idioma */
 .lang-picker {
     background: rgba(255, 255, 255, 0.15);

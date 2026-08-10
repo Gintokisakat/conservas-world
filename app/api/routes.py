@@ -1,3 +1,6 @@
+import csv
+import html as html_mod
+import io
 import json
 from datetime import datetime
 from pathlib import Path
@@ -551,6 +554,178 @@ def get_product(
     session: Session = Depends(get_session),
 ):
     return _product_out(_load_product(session, product_id), lang=lang)
+
+
+_EXPORT_LABELS = {
+    "es": {
+        "name": "Nombre",
+        "aliases": "Alias",
+        "description": "Descripción",
+        "method": "Método",
+        "fermentation_time": "Tiempo de fermentación",
+        "storage_life": "Conservación",
+        "categories": "Categorías",
+        "countries": "Países",
+        "ingredients": "Ingredientes",
+        "microbes": "Microbios",
+        "diet_tags": "Etiquetas dietarias",
+        "references": "Referencias",
+        "uses": "Se usa como ingrediente en",
+        "used_by": "Es ingrediente de",
+    },
+    "en": {
+        "name": "Name",
+        "aliases": "Aliases",
+        "description": "Description",
+        "method": "Method",
+        "fermentation_time": "Fermentation time",
+        "storage_life": "Storage & shelf life",
+        "categories": "Categories",
+        "countries": "Countries",
+        "ingredients": "Ingredients",
+        "microbes": "Microbes",
+        "diet_tags": "Dietary tags",
+        "references": "References",
+        "uses": "Used as ingredient in",
+        "used_by": "Is ingredient of",
+    },
+}
+
+
+def _export_rows(data: ProductOut, lang: str) -> list[tuple[str, str]]:
+    labels = _EXPORT_LABELS.get(lang, _EXPORT_LABELS["es"])
+
+    def join(items) -> str:
+        return ", ".join(str(i) for i in items)
+
+    values = {
+        "name": data.name,
+        "aliases": join(a.name for a in data.aliases),
+        "description": data.description or "",
+        "method": data.method or "",
+        "fermentation_time": data.fermentation_time or "",
+        "storage_life": data.storage_life or "",
+        "categories": join(c.name for c in data.categories),
+        "countries": join(c.name for c in data.countries),
+        "ingredients": join(i.name for i in data.ingredients),
+        "microbes": join(m.name for m in data.microbes),
+        "diet_tags": join(data.diet_tags),
+        "references": "; ".join(r.title for r in data.references),
+        "uses": join(data.uses),
+        "used_by": join(data.used_by),
+    }
+    return [(labels[k], v) for k, v in values.items()]
+
+
+def _render_recipe_html(data: ProductOut, lang: str) -> str:
+    t = {
+        "title": "Recipe Sheet" if lang == "en" else "Ficha de la receta",
+        "method": "Traditional Method" if lang == "en" else "Método tradicional",
+        "time": "Fermentation Time" if lang == "en" else "Tiempo de fermentación",
+        "storage": "Storage" if lang == "en" else "Conservación",
+        "ingredients": "Key Ingredients" if lang == "en" else "Ingredientes clave",
+        "microbes": "Fermenting Microbes" if lang == "en" else "Microbios fermentadores",
+        "references": "References & Sources" if lang == "en" else "Referencias y fuentes",
+        "diet": "Dietary Tags" if lang == "en" else "Etiquetas dietarias",
+        "print": "Print / Save as PDF" if lang == "en" else "Imprimir / Guardar como PDF",
+        "safety": (
+            "Food Safety: target pH < 4.6 for lactic/acetic fermentation"
+            if lang == "en"
+            else "Seguridad alimentaria: pH objetivo < 4.6 para fermentación láctica/acética"
+        ),
+        "footer": "Conservas del Mundo" if lang == "en" else "Conservas del Mundo",
+    }
+
+    def li(items):
+        return "".join(f"<li>{html_mod.escape(str(i))}</li>" for i in items)
+
+    tags = "".join(
+        f'<span class="tag">{html_mod.escape(str(x))}</span>'
+        for x in list(data.diet_tags) + [c.name for c in data.countries]
+    )
+    ingredients = li(i.name for i in data.ingredients) if data.ingredients else "<li>—</li>"
+    microbes = li(m.name for m in data.microbes) if data.microbes else "<li>—</li>"
+    refs = (
+        "".join(f"<li>{html_mod.escape(r.title)}</li>" for r in data.references)
+        if data.references
+        else "<li>—</li>"
+    )
+    return f"""<!DOCTYPE html>
+<html lang="{lang}">
+<head>
+<meta charset="utf-8">
+<title>{html_mod.escape(data.name)}</title>
+<style>
+  * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+  body {{ font-family: Georgia, 'Times New Roman', serif; color: #1f2721; padding: 2rem; max-width: 720px; margin: 0 auto; }}
+  h1 {{ font-size: 1.8rem; margin-bottom: 0.3rem; }}
+  .meta {{ color: #566359; margin-bottom: 1rem; }}
+  .tags {{ margin: 0.6rem 0 1.2rem; }}
+  .tag {{ display: inline-block; background: #eaf2eb; color: #225232; border-radius: 999px; padding: 0.15rem 0.6rem; font-size: 0.75rem; margin-right: 0.3rem; }}
+  .field {{ margin-bottom: 1.1rem; }}
+  .field h3 {{ font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: #88968b; margin-bottom: 0.25rem; }}
+  ul {{ padding-left: 1.2rem; }}
+  li {{ margin-bottom: 0.15rem; line-height: 1.45; }}
+  p {{ line-height: 1.5; }}
+  .safety {{ background: #fff8eb; border: 1px solid #e5ded2; border-radius: 8px; padding: 0.7rem 0.9rem; font-size: 0.85rem; color: #8c4217; margin-top: 1.5rem; }}
+  .btn {{ margin-top: 1.5rem; font-family: inherit; font-size: 0.9rem; padding: 0.5rem 1rem; border-radius: 8px; border: 1.5px solid #2d5a3f; background: #2d5a3f; color: #fff; cursor: pointer; }}
+  footer {{ margin-top: 2rem; font-size: 0.8rem; color: #88968b; border-top: 1px solid #e5ded2; padding-top: 0.6rem; }}
+  @media print {{
+    .btn {{ display: none; }}
+    body {{ padding: 0; }}
+    .safety {{ page-break-inside: avoid; }}
+  }}
+</style>
+</head>
+<body>
+  <button type="button" class="btn" onclick="window.print()">🖨️ {t['print']}</button>
+  <h1>{html_mod.escape(data.name)}</h1>
+  <div class="meta">{html_mod.escape(data.substrate or "")}</div>
+  <div class="tags">{tags}</div>
+  {f"<div class='field'><h3>{t['method']}</h3><p>{html_mod.escape(data.method)}</p></div>" if data.method else ""}
+  <div class="field"><h3>{t['ingredients']}</h3><ul>{ingredients}</ul></div>
+  {f"<div class='field'><h3>{t['time']}</h3><p>{html_mod.escape(data.fermentation_time)}</p></div>" if data.fermentation_time else ""}
+  {f"<div class='field'><h3>{t['storage']}</h3><p>{html_mod.escape(data.storage_life)}</p></div>" if data.storage_life else ""}
+  {f"<div class='field'><h3>{t['microbes']}</h3><ul>{microbes}</ul></div>" if data.microbes else ""}
+  {f"<div class='field'><h3>{t['diet']}</h3><ul>{li(data.diet_tags)}</ul></div>" if data.diet_tags else ""}
+  {f"<div class='field'><h3>{t['references']}</h3><ul>{refs}</ul></div>" if data.references else ""}
+  <div class="safety">🛡️ {t['safety']}</div>
+  <footer>{t['footer']} · {html_mod.escape(data.source_tag or "")}</footer>
+</body>
+</html>"""
+
+
+@router.get("/products/{product_id}/export")
+def export_product(
+    product_id: int,
+    format: str = Query(default="csv", pattern="^(csv|pdf|html)$"),
+    lang: str = Query(default="es", pattern="^(es|en)$"),
+    session: Session = Depends(get_session),
+):
+    data = _product_out(_load_product(session, product_id), lang=lang)
+
+    if format == "csv":
+        buf = io.StringIO()
+        writer = csv.writer(buf)
+        writer.writerow(["Campo", "Valor"] if lang == "es" else ["Field", "Value"])
+        writer.writerows(_export_rows(data, lang))
+        content = "\ufeff" + buf.getvalue()
+        return Response(
+            content=content,
+            media_type="text/csv; charset=utf-8",
+            headers={
+                "Content-Disposition": f'attachment; filename="producto-{product_id}.csv"'
+            },
+        )
+
+    html_doc = _render_recipe_html(data, lang)
+    return Response(
+        content=html_doc,
+        media_type="text/html; charset=utf-8",
+        headers={
+            "Content-Disposition": f'inline; filename="producto-{product_id}.html"'
+        },
+    )
 
 
 @router.get("/categories", response_model=list[CategoryOut])

@@ -89,6 +89,8 @@ const i18n = {
         suggest_products: "Productos",
         suggest_ingredients: "Ingredientes",
         suggest_empty: "Sin coincidencias para «{q}»",
+        export_csv: "📄 CSV",
+        export_pdf: "🖨️ PDF",
     },
     en: {
         header_sub: "Global catalog of ferments, pickles, and traditional recipes",
@@ -141,6 +143,8 @@ const i18n = {
         suggest_products: "Products",
         suggest_ingredients: "Ingredients",
         suggest_empty: "No matches for \"{q}\"",
+        export_csv: "📄 CSV",
+        export_pdf: "🖨️ PDF",
     }
 };
 
@@ -215,6 +219,24 @@ document.addEventListener("click", (e) => {
     const labelBtn = e.target.closest("[data-action='label']");
     if (labelBtn) {
         openLabelModal(labelBtn.dataset.name, labelBtn.dataset.date, labelBtn.dataset.time, labelBtn.dataset.storage);
+        return;
+    }
+    const exportCsvBtn = e.target.closest("[data-action='export-csv']");
+    if (exportCsvBtn) {
+        const a = document.createElement("a");
+        a.href = `/products/${exportCsvBtn.dataset.id}/export?format=csv&lang=${state.lang}`;
+        a.download = `producto-${exportCsvBtn.dataset.id}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        return;
+    }
+    const exportPdfBtn = e.target.closest("[data-action='export-pdf']");
+    if (exportPdfBtn) {
+        window.open(
+            `/products/${exportPdfBtn.dataset.id}/export?format=pdf&lang=${state.lang}`,
+            "_blank"
+        );
         return;
     }
     const favDetailBtn = e.target.closest("[data-action='fav-detail']");
@@ -510,7 +532,13 @@ async function openDetail(id) {
         body.innerHTML = `
             <div class="card-header-row" style="align-items:center">
                 <h2>${esc(p.name)}</h2>
-                <div style="display:flex; gap:0.4rem">
+                <div style="display:flex; gap:0.4rem; flex-wrap:wrap">
+                    <button type="button" class="btn btn-outline btn-sm" data-action="export-csv" data-id="${p.id}">
+                        ${t.export_csv}
+                    </button>
+                    <button type="button" class="btn btn-outline btn-sm" data-action="export-pdf" data-id="${p.id}">
+                        ${t.export_pdf}
+                    </button>
                     <button type="button" class="btn btn-outline btn-sm" data-action="label" data-name="${escAttr(p.name)}" data-date="${new Date().toISOString().slice(0,10)}" data-time="${escAttr(p.fermentation_time || '7-14 días')}" data-storage="${escAttr(p.storage_life || 'Refrigerado')}">
                         ${t.print_label_btn}
                     </button>

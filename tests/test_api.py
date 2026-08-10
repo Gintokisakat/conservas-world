@@ -156,3 +156,155 @@ def test_list_microbes(client):
     assert resp.headers.get("Cache-Control") == "public, max-age=3600"
 
 
+def test_get_product_detail_lang_en(client):
+    resp = client.get("/products/2?lang=en")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["name"] == "Sauerkraut"
+
+
+def test_filter_by_source(client):
+    resp = client.get("/products?source=test")
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 2
+
+
+def test_filter_by_source_no_match(client):
+    resp = client.get("/products?source=nonexistent")
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+
+
+def test_filter_by_ingredient(client):
+    resp = client.get("/products?ingredient=soybean")
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 1
+    assert resp.json()["items"][0]["name"] == "Miso"
+
+
+def test_filter_by_ingredient_no_match(client):
+    resp = client.get("/products?ingredient=chocolate")
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+
+
+def test_list_references(client):
+    resp = client.get("/references")
+    assert resp.status_code == 200
+    assert resp.headers.get("Cache-Control") == "public, max-age=3600"
+    data = resp.json()
+    assert len(data) >= 1
+    assert data[0]["title"] == "Test reference"
+
+
+def test_search_by_alias(client):
+    resp = client.get("/products?q=col fermentada")
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 1
+    assert resp.json()["items"][0]["name"] == "Sauerkraut"
+
+
+def test_recommendations_use_product(client):
+    resp = client.get("/recommendations?products=miso")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert len(data["make"]) == 0
+    assert len(data["use"]) == 0
+
+
+def test_product_detail_has_aliases(client):
+    resp = client.get("/products/2")
+    assert resp.status_code == 200
+    data = resp.json()
+    alias_names = [a["name"] for a in data["aliases"]]
+    assert "chucrut" in alias_names
+
+
+def test_product_detail_has_ingredients(client):
+    resp = client.get("/products/1")
+    assert resp.status_code == 200
+    data = resp.json()
+    ing_names = {i["name"] for i in data["ingredients"]}
+    assert ing_names == {"soybean", "rice"}
+
+
+def test_product_detail_has_microbes(client):
+    resp = client.get("/products/1")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert isinstance(data["microbes"], list)
+
+
+def test_product_detail_has_diet_tags(client):
+    resp = client.get("/products/1")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert isinstance(data["diet_tags"], list)
+    assert "vegan" in data["diet_tags"]
+    assert "soy_free" not in data["diet_tags"]
+
+
+def test_list_products_has_diet_tags(client):
+    resp = client.get("/products")
+    assert resp.status_code == 200
+    items = resp.json()["items"]
+    assert all("diet_tags" in item for item in items)
+
+
+def test_filter_by_diet_vegan(client):
+    resp = client.get("/products?diet=vegan")
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 2
+
+
+def test_filter_by_diet_spicy(client):
+    resp = client.get("/products?diet=spicy")
+    assert resp.status_code == 200
+    assert resp.json()["total"] == 0
+
+
+def test_filter_by_diet_invalid(client):
+    resp = client.get("/products?diet=malarkey")
+    assert resp.status_code == 400
+
+
+def test_list_diets(client):
+    resp = client.get("/diets")
+    assert resp.status_code == 200
+    assert resp.headers.get("Cache-Control") == "public, max-age=3600"
+    tags = resp.json()
+    assert "vegan" in tags
+    assert "spicy" in tags
+
+
+def test_random_product_always_returns_one(client):
+    for _ in range(5):
+        resp = client.get("/products/random")
+        assert resp.status_code == 200
+        assert resp.json()["name"] in {"Miso", "Sauerkraut"}
+
+
+def test_related_products_with_shared_categories(client):
+    resp = client.get("/products/1/related")
+    assert resp.status_code == 200
+    assert isinstance(resp.json(), list)
+
+
+def test_stats_has_all_fields(client):
+    resp = client.get("/stats")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert "products" in data
+    assert "countries" in data
+    assert "ingredients" in data
+    assert "categories" in data
+    assert "references" in data
+    assert "microbes" in data
+    assert "products_with_ingredients" in data
+    assert "products_with_substrate" in data
+    assert "uses" in data
+    assert "by_category" in data
+    assert "by_continent" in data
+    assert "by_source" in data
+
+

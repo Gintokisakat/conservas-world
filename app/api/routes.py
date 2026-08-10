@@ -18,6 +18,7 @@ from app.schemas import (
     Stats,
     UseRecommendationOut,
 )
+from app.services.diet import DIET_TAGS, REQUIRED, VIOLATIONS, product_diet_tags
 from ingest.ingredients import CANONICAL_INGREDIENTS, match_ingredients
 from ingest.normalize import normalize_name
 
@@ -91,12 +92,55 @@ def _product_out(product: models.Product, lang: str = "es") -> ProductOut:
         "references": product.references,
         "uses": sorted({u.used_product.name for u in product.uses if u.used_product}),
         "used_by": sorted({u.product.name for u in product.used_by if u.product}),
+        "diet_tags": product_diet_tags(product.ingredients),
     }
     return ProductOut.model_validate(data)
 
 
 def _split_terms(raw: str) -> list[str]:
     return [t.strip() for t in raw.replace(";", ",").split(",") if t.strip()]
+
+
+def _diet_ids(session: Session, diet: str) -> list[int] | None:
+    """IDs de productos que cumplen la etiqueta dietaria (None = etiqueta inválida)."""
+    if diet not in DIET_TAGS:
+        return None
+    if diet == "spicy":
+        required = REQUIRED[diet]
+        rows = session.execute(
+            select(models.product_ingredient.c.product_id)
+            .join(models.Ingredient, models.Ingredient.id == models.product_ingredient.c.ingredient_id)
+            .where(models.Ingredient.name.in_(required))
+        ).scalars().all()
+        return list(set(rows))
+    blocked = VIOLATIONS[diet]
+    rows = session.execute(
+        select(models.Product.id).where(
+            models.Product.id.in_(
+                select(models.product_ingredient.c.product_id)
+                .join(models.Ingredient, models.Ingredient.id == models.product_ingredient.c.ingredient_id)
+                .where(models.Ingredient.name.in_(blocked))
+            )
+        )
+    ).scalars().all()
+    blocked_ids = set(rows)
+    all_ids = session.execute(
+        select(models.Product.id).where(models.Product.status != "discarded")
+    ).scalars().all()
+    return [pid for pid in all_ids if pid not in blocked_ids]
+
+
+def _list_item(product: models.Product) -> ProductListItem:
+    return ProductListItem(
+        id=product.id,
+        name=product.name,
+        description=product.description,
+        source_tag=product.source_tag,
+        substrate=product.substrate,
+        categories=product.categories,
+        countries=product.countries,
+        diet_tags=product_diet_tags(product.ingredients),
+    )
 
 
 @router.get("/products", response_model=PaginatedProducts)
@@ -108,6 +152,10 @@ def list_products(
     ingredient: str | None = None,
     source: str | None = None,
     fermentation_time: str | None = None,
+    diet: str | None = Query(
+        default=None,
+        description="Filtro por etiqueta dietaria: vegan, vegetarian, gluten_free, dairy_free, soy_free, nut_free, egg_free, pescatarian, spicy",
+    ),
     status: str | None = None,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=200),
@@ -116,8 +164,16 @@ def list_products(
     query = select(models.Product).options(
         selectinload(models.Product.categories),
         selectinload(models.Product.countries),
+        selectinload(models.Product.ingredients),
     )
     count_query = select(func.count()).select_from(models.Product)
+
+    if diet:
+        diet_ids = _diet_ids(session, diet)
+        if diet_ids is None:
+            raise HTTPException(status_code=400, detail=f"Etiqueta dietaria inválida: {diet}")
+        query = query.where(models.Product.id.in_(diet_ids))
+        count_query = count_query.where(models.Product.id.in_(diet_ids))
 
     if fermentation_time:
         query = query.where(func.lower(models.Product.fermentation_time).contains(fermentation_time.lower()))
@@ -221,7 +277,7 @@ def list_products(
         total=total,
         page=page,
         page_size=page_size,
-        items=list(items),
+        items=[_list_item(p) for p in items],
     )
 
 
@@ -279,17 +335,18 @@ def recommendations(
     use: list[UseRecommendationOut] = []
     product_tokens = [normalize_name(t) for t in _split_terms(products)]
     if product_tokens:
-        user_product_ids = set()
+        user_product_ids: set[int] = set()
         for product in session.execute(
-            select(models.Product)
-            .options(selectinload(models.Product.aliases))
+            select(models.Product.id, models.Product.name)
             .where(models.Product.status != "discarded")
-        ).scalars().all():
-            keys = [normalize_name(product.name)] + [
-                normalize_name(a.name) for a in product.aliases
-            ]
-            if any(key in product_tokens for key in keys):
+        ).all():
+            if normalize_name(product.name) in product_tokens:
                 user_product_ids.add(product.id)
+        for alias_row in session.execute(
+            select(models.ProductAlias.product_id, models.ProductAlias.name)
+        ).all():
+            if normalize_name(alias_row.name) in product_tokens:
+                user_product_ids.add(alias_row.product_id)
         if user_product_ids:
             used_map: dict[int, list[str]] = {}
             rows = session.execute(
@@ -419,6 +476,12 @@ def list_ingredients(response: Response, session: Session = Depends(get_session)
     return session.execute(
         select(models.Ingredient).order_by(models.Ingredient.name)
     ).scalars().all()
+
+
+@router.get("/diets")
+def list_diets(response: Response):
+    response.headers["Cache-Control"] = "public, max-age=3600"
+    return DIET_TAGS
 
 
 @router.get("/microbes", response_model=list[MicrobeOut])

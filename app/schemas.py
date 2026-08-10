@@ -71,6 +71,7 @@ class ProductOut(BaseModel):
     references: list[ReferenceOut] = []
     uses: list[str] = []
     used_by: list[str] = []
+    diet_tags: list[str] = []
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -83,6 +84,7 @@ class ProductListItem(BaseModel):
     substrate: str | None
     categories: list[CategoryOut] = []
     countries: list[CountryOut] = []
+    diet_tags: list[str] = []
 
     model_config = ConfigDict(from_attributes=True)
 

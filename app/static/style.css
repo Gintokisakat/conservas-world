@@ -27,6 +27,9 @@
     --tag-source-text: #592e78;
     --tag-substr-bg: #fceddf;
     --tag-substr-text: #8c4217;
+    --tag-diet-bg: #eef7e3;
+    --tag-diet-text: #3d6b1e;
+    --tag-diet-border: #cfe3b3;
 
     --radius-sm: 8px;
     --radius-md: 14px;
@@ -37,6 +40,42 @@
     --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.12);
 
     --transition-fast: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+html.dark {
+    color-scheme: dark;
+
+    --bg-page: #11151a;
+    --bg-card: #1a2026;
+    --border-color: #2c353d;
+    --border-focus: #6ba07f;
+
+    --text-primary: #e6ebe8;
+    --text-secondary: #a9b6ad;
+    --text-muted: #7c8a80;
+
+    --color-primary: #6ba07f;
+    --color-primary-hover: #7fb892;
+    --color-accent: #e07b52;
+    --color-accent-hover: #ee8f68;
+    --color-gold: #d9a24f;
+    --color-gold-bg: #2a2516;
+
+    --tag-cat-bg: #22332a;
+    --tag-cat-text: #8fc9a4;
+    --tag-country-bg: #1d2b38;
+    --tag-country-text: #7db4dd;
+    --tag-source-bg: #2c2336;
+    --tag-source-text: #c39ae0;
+    --tag-substr-bg: #332319;
+    --tag-substr-text: #e09a63;
+    --tag-diet-bg: #26331b;
+    --tag-diet-text: #a8d48a;
+    --tag-diet-border: #3d552c;
+
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.35);
+    --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.45);
+    --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.6);
 }
 
 * {
@@ -224,6 +263,12 @@ body {
     animation: fadeIn 0.2s ease-in-out;
 }
 
+html.dark .chip {
+    background: #243229;
+    border-color: #34503d;
+    color: #8fc9a4;
+}
+
 .chip-remove {
     background: none;
     border: none;
@@ -305,12 +350,19 @@ input[type="search"] {
     font-family: inherit;
     font-size: 1rem;
     transition: var(--transition-fast);
+    background-color: var(--bg-card);
+    color: var(--text-primary);
 }
 
 input[type="search"]:focus {
     outline: none;
     border-color: var(--border-focus);
     box-shadow: 0 0 0 3px rgba(45, 90, 63, 0.12);
+}
+
+input[type="text"], input[type="number"], input[type="email"], input[type="password"] {
+    background-color: var(--bg-card);
+    color: var(--text-primary);
 }
 
 .selects-group {
@@ -323,7 +375,7 @@ select {
     padding: 0.65rem 0.8rem;
     border: 1.5px solid var(--border-color);
     border-radius: var(--radius-sm);
-    background-color: #ffffff;
+    background-color: var(--bg-card);
     font-family: inherit;
     font-size: 0.9rem;
     color: var(--text-primary);
@@ -376,6 +428,16 @@ select:focus {
 
 .btn-secondary:hover {
     background-color: #dceada;
+}
+
+html.dark .btn-secondary {
+    background-color: #243229;
+    color: #8fc9a4;
+    border-color: #34503d;
+}
+
+html.dark .btn-secondary:hover {
+    background-color: #2d3f33;
 }
 
 .btn-accent {
@@ -504,6 +566,12 @@ select:focus {
     color: var(--tag-substr-text);
 }
 
+.tag.diet {
+    background: var(--tag-diet-bg);
+    color: var(--tag-diet-text);
+    border: 1px solid var(--tag-diet-border);
+}
+
 .tag.ok {
     background: #e2f3e5;
     color: #1e6b30;
@@ -512,6 +580,16 @@ select:focus {
 .tag.missing {
     background: #fde8e8;
     color: #b91c1c;
+}
+
+html.dark .tag.ok {
+    background: #1e3225;
+    color: #7ecb92;
+}
+
+html.dark .tag.missing {
+    background: #3a2222;
+    color: #ef9a9a;
 }
 
 .empty {
@@ -575,6 +653,15 @@ select:focus {
 
 .modal-close:hover {
     background: #e2ded4;
+    color: var(--text-primary);
+}
+
+html.dark .modal-close {
+    background: #2c353d;
+}
+
+html.dark .modal-close:hover {
+    background: #39444d;
     color: var(--text-primary);
 }
 
@@ -673,6 +760,11 @@ select:focus {
     box-shadow: var(--shadow-sm);
 }
 
+html.dark .calc-card {
+    background: linear-gradient(135deg, #1a2026 0%, #1f2a24 100%);
+    border-color: #2d4435;
+}
+
 .calc-header h2 {
     font-family: var(--font-heading);
     font-size: 1.35rem;
@@ -717,6 +809,10 @@ select:focus {
     gap: 0.2rem;
 }
 
+html.dark .calc-result-box {
+    border-color: #6b532a;
+}
+
 .calc-result-label {
     font-size: 0.82rem;
     font-weight: 600;
@@ -732,9 +828,17 @@ select:focus {
     color: #8a530f;
 }
 
+html.dark .calc-result-val {
+    color: #e0a95c;
+}
+
 .calc-result-tip {
     font-size: 0.78rem;
     color: #8a6534;
+}
+
+html.dark .calc-result-tip {
+    color: #c9a15f;
 }
 
 /* Microbes Grid */
@@ -768,6 +872,16 @@ select:focus {
     transform: translateY(-1px);
 }
 
+html.dark .microbe-badge {
+    background: #2c2336;
+    color: #c39ae0;
+    border-color: #3d2f4d;
+}
+
+html.dark .microbe-badge:hover {
+    background: #352a43;
+}
+
 .ph-safety-banner {
     background: #eef7f0;
     border: 1px solid #c3e6cb;
@@ -779,6 +893,12 @@ select:focus {
     gap: 0.75rem;
     font-size: 0.9rem;
     color: #1e6b30;
+}
+
+html.dark .ph-safety-banner {
+    background: #1e3225;
+    border-color: #2f5a3c;
+    color: #7ecb92;
 }
 
 /* Temporizadores de Fermentación */
@@ -864,6 +984,10 @@ select:focus {
     overflow: hidden;
 }
 
+html.dark .progress-bar-bg {
+    background: #333c44;
+}
+
 .progress-bar-fill {
     background: var(--color-primary);
     height: 100%;
@@ -914,6 +1038,24 @@ select:focus {
     color: #9b1c1c;
 }
 
+html.dark .trouble-outcome-box.safe {
+    background: #1e3225;
+    border-color: #2f5a3c;
+    color: #7ecb92;
+}
+
+html.dark .trouble-outcome-box.warning {
+    background: #332b1c;
+    border-color: #5c4a26;
+    color: #e3b56b;
+}
+
+html.dark .trouble-outcome-box.danger {
+    background: #3a2222;
+    border-color: #6b3333;
+    color: #ef9a9a;
+}
+
 /* Dual Calculators Layout */
 .calcs-wrapper {
     display: grid;
@@ -935,6 +1077,28 @@ select:focus {
 .lang-picker option {
     background: #2d5a3f;
     color: #ffffff;
+}
+
+.theme-toggle {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    padding: 0;
+}
+
+.theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
 }
 
 /* Etiqueta Imprimible de Frasco */

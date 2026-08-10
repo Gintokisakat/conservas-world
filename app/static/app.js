@@ -4,11 +4,37 @@ const state = {
     continent: "",
     country: "",
     source: "",
+    diet: "",
     onlyFavs: false,
     page: 1,
     pageSize: 20,
     total: 0,
     lang: localStorage.getItem("pantry_lang") || "es"
+};
+
+const dietLabels = {
+    es: {
+        vegan: "Vegano",
+        vegetarian: "Vegetariano",
+        pescatarian: "Pescatariano",
+        gluten_free: "Sin gluten",
+        dairy_free: "Sin lácteos",
+        soy_free: "Sin soja",
+        nut_free: "Sin frutos secos",
+        egg_free: "Sin huevo",
+        spicy: "Picante"
+    },
+    en: {
+        vegan: "Vegan",
+        vegetarian: "Vegetarian",
+        pescatarian: "Pescatarian",
+        gluten_free: "Gluten-free",
+        dairy_free: "Dairy-free",
+        soy_free: "Soy-free",
+        nut_free: "Nut-free",
+        egg_free: "Egg-free",
+        spicy: "Spicy"
+    }
 };
 
 const i18n = {
@@ -40,6 +66,8 @@ const i18n = {
         print_label_btn: "🏷️ Imprimir Etiqueta",
         fav_saved: "❤️ Guardado",
         fav_add: "🤍 Favorito",
+        shopping_title: "🛒 Lista de Compras Requerida",
+        shopping_desc: "Ingredientes necesarios para preparar las recetas seleccionadas:",
     },
     en: {
         header_sub: "Global catalog of ferments, pickles, and traditional recipes",
@@ -69,10 +97,13 @@ const i18n = {
         print_label_btn: "🏷️ Print Label",
         fav_saved: "❤️ Saved",
         fav_add: "🤍 Favorite",
+        shopping_title: "🛒 Shopping List",
+        shopping_desc: "Ingredients needed to prepare the recommended recipes:",
     }
 };
 
 let chartInstances = {};
+let lastStats = null;
 
 // Register Service Worker for PWA / Offline support
 if ("serviceWorker" in navigator) {
@@ -109,6 +140,56 @@ function toggleFavorite(id, event) {
     }
 }
 
+document.addEventListener("click", (e) => {
+    const productCard = e.target.closest(".product-card[data-product-id]");
+    if (productCard && !e.target.closest(".fav-toggle")) {
+        openDetail(Number(productCard.dataset.productId));
+        return;
+    }
+    const favBtn = e.target.closest(".fav-toggle[data-id]");
+    if (favBtn) {
+        toggleFavorite(Number(favBtn.dataset.id), e);
+        return;
+    }
+    const microbeBadge = e.target.closest(".microbe-badge[data-name]");
+    if (microbeBadge) {
+        searchMicrobe(microbeBadge.dataset.name);
+        return;
+    }
+    const labelBtn = e.target.closest("[data-action='label']");
+    if (labelBtn) {
+        openLabelModal(labelBtn.dataset.name, labelBtn.dataset.date, labelBtn.dataset.time, labelBtn.dataset.storage);
+        return;
+    }
+    const favDetailBtn = e.target.closest("[data-action='fav-detail']");
+    if (favDetailBtn) {
+        const id = Number(favDetailBtn.dataset.id);
+        toggleFavorite(id);
+        favDetailBtn.textContent = favorites.has(id) ? (i18n[state.lang] || i18n.es).fav_saved : (i18n[state.lang] || i18n.es).fav_add;
+        return;
+    }
+    const removeTimerBtn = e.target.closest("[data-action='remove-timer']");
+    if (removeTimerBtn) {
+        removeTimer(Number(removeTimerBtn.dataset.index));
+        return;
+    }
+    const addToPantryBtn = e.target.closest("[data-action='add-to-pantry']");
+    if (addToPantryBtn) {
+        addIngredientToPantry(addToPantryBtn.dataset.item);
+        return;
+    }
+    const showShoppingBtn = e.target.closest("[data-action='show-shopping']");
+    if (showShoppingBtn) {
+        showShoppingList();
+        return;
+    }
+    const diagnoseBtn = e.target.closest("[data-action='diagnose']");
+    if (diagnoseBtn) {
+        diagnoseTrouble(diagnoseBtn.dataset.type);
+        return;
+    }
+});
+
 async function api(path) {
     const resp = await fetch(path);
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
@@ -121,8 +202,17 @@ function esc(text) {
     return div.innerHTML;
 }
 
+function escAttr(text) {
+    return (text ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 function tag(text, cls = "") {
     return `<span class="tag ${cls}">${esc(text)}</span>`;
+}
+
+function dietBadges(tags) {
+    const labels = dietLabels[state.lang] || dietLabels.es;
+    return (tags || []).map((t) => tag(labels[t] || t, "diet")).join("");
 }
 
 async function loadStats() {
@@ -167,6 +257,22 @@ async function loadCountries() {
     } catch (e) { /* ignore */ }
 }
 
+async function loadDiets() {
+    try {
+        const tags = await api("/diets");
+        const select = document.getElementById("diet");
+        if (!select) return;
+        const labels = dietLabels[state.lang] || dietLabels.es;
+        select.innerHTML = `<option value="">${state.lang === 'en' ? 'All diets' : 'Todas las dietas'}</option>`;
+        for (const t of tags) {
+            const opt = document.createElement("option");
+            opt.value = t;
+            opt.textContent = labels[t] || t;
+            select.appendChild(opt);
+        }
+    } catch (e) { /* ignore */ }
+}
+
 async function loadIngredientDatalist() {
     try {
         const ingredients = await api("/ingredients");
@@ -185,6 +291,7 @@ function buildQuery(page) {
     if (state.continent) params.set("continent", state.continent);
     if (state.country) params.set("country", state.country);
     if (state.source) params.set("source", state.source);
+    if (state.diet) params.set("diet", state.diet);
     params.set("lang", state.lang);
     params.set("page", page);
     params.set("page_size", state.pageSize);
@@ -203,7 +310,7 @@ async function search(page = 1) {
         renderResults(data.items);
         updatePagination();
     } catch (e) {
-        list.innerHTML = `<li class="empty">Error al conectar con la API. Verifica tu conexión.</li>`;
+        list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'Error connecting to API. Check your connection.' : 'Error al conectar con la API. Verifica tu conexión.'}</li>`;
     }
 }
 
@@ -219,7 +326,7 @@ async function renderFavorites() {
         return;
     }
 
-    list.innerHTML = `<li class="empty">Cargando tus favoritos...</li>`;
+    list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'Loading your favorites...' : 'Cargando tus favoritos...'}</li>`;
     try {
         const items = await Promise.all(favIds.map((id) => api(`/products/${id}?lang=${state.lang}`).catch(() => null)));
         const validItems = items.filter(Boolean);
@@ -228,7 +335,7 @@ async function renderFavorites() {
         renderResults(validItems);
         updatePagination(1);
     } catch (e) {
-        list.innerHTML = `<li class="empty">Error al cargar tus favoritos.</li>`;
+        list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'Error loading favorites.' : 'Error al cargar tus favoritos.'}</li>`;
     }
 }
 
@@ -240,23 +347,25 @@ function renderResults(items) {
         list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'No ferments found. Try adjusting your search filters.' : 'No encontramos fermentos con esos criterios. Prueba ajustando los filtros.'}</li>`;
         return;
     }
+    const noDesc = state.lang === 'en' ? 'No description available.' : 'Sin descripción disponible.';
     list.innerHTML = items.map((p) => {
         const isFav = favorites.has(p.id);
         return `
-        <li class="product-card" onclick="openDetail(${p.id})">
+        <li class="product-card" data-product-id="${p.id}">
             <div>
                 <div class="card-header-row">
                     <h3>${esc(p.name)}</h3>
-                    <button type="button" class="fav-toggle" data-id="${p.id}" onclick="toggleFavorite(${p.id}, event)" title="Marcar como favorito">
+                    <button type="button" class="fav-toggle" data-id="${p.id}" title="Marcar como favorito">
                         ${isFav ? "❤️" : "🤍"}
                     </button>
                 </div>
-                <p class="desc">${esc(p.description || "Sin descripción disponible.")}</p>
+                <p class="desc">${esc(p.description || noDesc)}</p>
             </div>
             <div class="tags">
                 ${p.substrate ? tag(p.substrate, "substrate") : ""}
                 ${p.categories.map((c) => tag(c.name)).join("")}
                 ${p.countries.map((c) => tag(c.name, "country")).join("")}
+                ${dietBadges(p.diet_tags)}
                 ${p.source_tag ? tag(p.source_tag, "source") : ""}
             </div>
         </li>
@@ -273,12 +382,12 @@ function updatePagination(overridePages) {
 
 async function openDetail(id) {
     const body = document.getElementById("detail-body");
-    body.innerHTML = `<p>Cargando información del fermento...</p>`;
+    const t = i18n[state.lang] || i18n.es;
+    body.innerHTML = `<p>${state.lang === 'en' ? 'Loading product info...' : 'Cargando información del fermento...'}</p>`;
     document.getElementById("detail").classList.remove("hidden");
     try {
         const p = await api(`/products/${id}?lang=${state.lang}`);
         const isFav = favorites.has(p.id);
-        const t = i18n[state.lang] || i18n.es;
 
         const section = (title, items) =>
             items && items.length ? `
@@ -299,10 +408,10 @@ async function openDetail(id) {
             <div class="card-header-row" style="align-items:center">
                 <h2>${esc(p.name)}</h2>
                 <div style="display:flex; gap:0.4rem">
-                    <button type="button" class="btn btn-outline btn-sm" onclick="openLabelModal('${esc(p.name)}', '${new Date().toISOString().slice(0,10)}', '${esc(p.fermentation_time || '7-14 días')}', '${esc(p.storage_life || 'Refrigerado')}')">
+                    <button type="button" class="btn btn-outline btn-sm" data-action="label" data-name="${escAttr(p.name)}" data-date="${new Date().toISOString().slice(0,10)}" data-time="${escAttr(p.fermentation_time || '7-14 días')}" data-storage="${escAttr(p.storage_life || 'Refrigerado')}">
                         ${t.print_label_btn}
                     </button>
-                    <button type="button" class="btn btn-outline btn-sm" onclick="toggleFavorite(${p.id}); this.textContent = favorites.has(${p.id}) ? '${t.fav_saved}' : '${t.fav_add}'">
+                    <button type="button" class="btn btn-outline btn-sm" data-action="fav-detail" data-id="${p.id}">
                         ${isFav ? t.fav_saved : t.fav_add}
                     </button>
                 </div>
@@ -313,9 +422,10 @@ async function openDetail(id) {
             ${p.storage_life ? `<p><strong>${t.storage_title}</strong> ${esc(p.storage_life)}</p>` : ""}
             
             <div class="tags" style="margin-top: 0.8rem">
-                ${p.substrate ? tag(`Sustrato: ${p.substrate}`, "substrate") : ""}
+                ${p.substrate ? tag(`${state.lang === 'en' ? 'Substrate' : 'Sustrato'}: ${p.substrate}`, "substrate") : ""}
                 ${p.categories.map((c) => tag(c.name)).join("")}
                 ${p.countries.map((c) => tag(c.name, "country")).join("")}
+                ${dietBadges(p.diet_tags)}
             </div>
 
             <div class="ph-safety-banner">
@@ -330,7 +440,7 @@ async function openDetail(id) {
             ${refs}
         `;
     } catch (e) {
-        body.innerHTML = `<p>Error al cargar el detalle del producto.</p>`;
+        body.innerHTML = `<p>${state.lang === 'en' ? 'Error loading product detail.' : 'Error al cargar el detalle del producto.'}</p>`;
     }
 }
 
@@ -385,6 +495,7 @@ async function openChartsModal() {
     document.getElementById("charts-modal").classList.remove("hidden");
     try {
         const s = await api("/stats");
+        lastStats = s;
         renderKPIs(s);
         renderCharts(s);
     } catch (e) { /* ignore */ }
@@ -422,6 +533,9 @@ function renderCharts(s) {
     Object.values(chartInstances).forEach((c) => c && c.destroy());
     chartInstances = {};
 
+    const tickColor = document.documentElement.classList.contains("dark") ? "#a9b6ad" : "#666";
+    const legendLabels = { color: tickColor };
+
     const contCtx = document.getElementById("chart-continent");
     if (contCtx) {
         chartInstances.continent = new Chart(contCtx, {
@@ -436,7 +550,7 @@ function renderCharts(s) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: "bottom" } }
+                plugins: { legend: { position: "bottom", labels: legendLabels } }
             }
         });
     }
@@ -455,7 +569,7 @@ function renderCharts(s) {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { position: "bottom" } }
+                plugins: { legend: { position: "bottom", labels: legendLabels } }
             }
         });
     }
@@ -478,7 +592,11 @@ function renderCharts(s) {
                 indexAxis: "y",
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: { legend: { display: false } }
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { ticks: { color: tickColor } },
+                    y: { ticks: { color: tickColor } }
+                }
             }
         });
     }
@@ -506,6 +624,7 @@ document.getElementById("search-form").addEventListener("submit", (e) => {
     state.continent = document.getElementById("continent").value;
     state.country = document.getElementById("country").value;
     state.source = document.getElementById("source").value;
+    state.diet = document.getElementById("diet").value;
     search(1);
 });
 
@@ -596,8 +715,8 @@ function renderTimers() {
                 <div class="timer-item-head">
                     <h4>🫙 ${esc(t.name)}</h4>
                     <div style="display:flex; gap:0.3rem; align-items:center">
-                        <button type="button" class="btn btn-outline btn-sm" onclick="openLabelModal('${esc(t.name)}', '${startDateStr}', '${t.days} días', 'Refrigerado en F1/F2')" title="Imprimir etiqueta">🏷️</button>
-                        <button type="button" class="chip-remove" onclick="removeTimer(${idx})" title="Eliminar frasco">&times;</button>
+                        <button type="button" class="btn btn-outline btn-sm" data-action="label" data-name="${escAttr(t.name)}" data-date="${startDateStr}" data-time="${t.days} días" data-storage="Refrigerado en F1/F2" title="${state.lang === 'en' ? 'Print label' : 'Imprimir etiqueta'}">🏷️</button>
+                        <button type="button" class="chip-remove" data-action="remove-timer" data-index="${idx}" title="${state.lang === 'en' ? 'Remove jar' : 'Eliminar frasco'}">&times;</button>
                     </div>
                 </div>
                 ${notesHtml}
@@ -738,22 +857,22 @@ document.getElementById("trouble-btn").addEventListener("click", openTroubleModa
 
 async function loadMicrobesModal() {
     const listEl = document.getElementById("microbes-list");
-    listEl.innerHTML = `<p>Cargando lista de microbios fermentadores...</p>`;
+    listEl.innerHTML = `<p>${state.lang === 'en' ? 'Loading fermenting microbes list...' : 'Cargando lista de microbios fermentadores...'}</p>`;
     document.getElementById("microbes-modal").classList.remove("hidden");
     try {
         const microbes = await api("/microbes");
         if (!microbes.length) {
-            listEl.innerHTML = `<p>No hay microbios registrados.</p>`;
+            listEl.innerHTML = `<p>${state.lang === 'en' ? 'No microbes registered.' : 'No hay microbios registrados.'}</p>`;
             return;
         }
         listEl.innerHTML = microbes.map((m) => `
-            <div class="microbe-badge" onclick="searchMicrobe('${esc(m.name)}')">
+            <div class="microbe-badge" data-name="${escAttr(m.name)}">
                 <span>🧫 ${esc(m.name)}</span>
-                <span style="font-size:0.75rem; opacity:0.7">🔍 Search</span>
+                <span style="font-size:0.75rem; opacity:0.7">${state.lang === 'en' ? 'Search' : 'Buscar'}</span>
             </div>
         `).join("");
     } catch (e) {
-        listEl.innerHTML = `<p>Error al cargar la lista de microbios.</p>`;
+        listEl.innerHTML = `<p>${state.lang === 'en' ? 'Error loading microbes list.' : 'Error al cargar la lista de microbios.'}</p>`;
     }
 }
 
@@ -811,7 +930,7 @@ document.getElementById("import-file-input").addEventListener("change", (e) => {
             }
             alert(state.lang === 'en' ? "Pantry, favorites, and timers imported successfully!" : "¡Despensa, favoritos y temporizadores importados exitosamente!");
         } catch (err) {
-            alert("Error al leer el archivo JSON.");
+            alert(state.lang === 'en' ? "Error reading JSON file." : "Error al leer el archivo JSON.");
         }
     };
     reader.readAsText(file);
@@ -891,12 +1010,12 @@ let missingIngredientsGlobal = [];
 async function loadRecommendations() {
     const box = document.getElementById("recommendations");
     box.classList.remove("hidden");
-    box.innerHTML = `<p>Analizando tus ingredientes y recomendando recetas...</p>`;
+    box.innerHTML = `<p>${state.lang === 'en' ? 'Analyzing your ingredients and recommending recipes...' : 'Analizando tus ingredientes y recomendando recetas...'}</p>`;
     const params = new URLSearchParams();
     if (pantry.ingredients.length) params.set("ingredients", pantry.ingredients.join(","));
     if (pantry.products.length) params.set("products", pantry.products.join(","));
     if (!pantry.ingredients.length && !pantry.products.length) {
-        box.innerHTML = `<p style="color:var(--text-muted)">Agrega al menos un ingrediente o fermentado a tu despensa arriba para consultar.</p>`;
+        box.innerHTML = `<p style="color:var(--text-muted)">${state.lang === 'en' ? 'Add at least one ingredient or fermented product to your pantry above to get recommendations.' : 'Agrega al menos un ingrediente o fermentado a tu despensa arriba para consultar.'}</p>`;
         return;
     }
     try {
@@ -907,52 +1026,55 @@ async function loadRecommendations() {
         });
         missingIngredientsGlobal = Array.from(new Set(missingIngredientsGlobal));
 
-        const card = (p, extra = "") => `
-            <li class="product-card rec-card" onclick="openDetail(${p.id})">
+        const card = (p, extra = "") => {
+            const substrateLabel = state.lang === 'en' ? 'Substrate' : 'Sustrato';
+            return `
+            <li class="product-card rec-card" data-product-id="${p.id}">
                 <div>
                     <h3>${esc(p.name)}</h3>
                     <p class="desc">${esc(p.description || "")}</p>
                     <div class="tags">
-                        ${p.substrate ? tag(`Sustrato: ${p.substrate}`, "substrate") : ""}
+                        ${p.substrate ? tag(`${substrateLabel}: ${p.substrate}`, "substrate") : ""}
                         ${p.categories.map((c) => tag(c.name)).join("")}
                     </div>
                 </div>
                 ${extra}
             </li>`;
+        };
             
         const shoppingBtnHtml = missingIngredientsGlobal.length ? `
             <div style="margin-bottom:1rem">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="showShoppingList()">
-                    🛒 Ver Lista de Compras recomendada (${missingIngredientsGlobal.length} ingredientes faltantes)
+                <button type="button" class="btn btn-secondary btn-sm" data-action="show-shopping">
+                    🛒 ${state.lang === 'en' ? `View Shopping List (${missingIngredientsGlobal.length} missing ingredients)` : `Ver Lista de Compras recomendada (${missingIngredientsGlobal.length} ingredientes faltantes)`}
                 </button>
             </div>` : "";
 
         const makeHtml = data.make.length ? `
             <div class="rec-group">
-                <h3>🍲 Puedes preparar (${data.make.length} opciones)</h3>
+                <h3>${state.lang === 'en' ? `You can prepare (${data.make.length} options)` : `Puedes preparar (${data.make.length} opciones)`}</h3>
                 ${shoppingBtnHtml}
                 <ul class="products-grid">${data.make.map((p) => {
                     const missing = p.missing && p.missing.length
-                        ? `<div class="rec-extra">Te falta: ${p.missing.map((m) => tag(m, "missing")).join("")}</div>`
-                        : `<div class="rec-extra" style="color:var(--color-primary); font-weight:600">¡Tienes todo lo esencial!</div>`;
+                        ? `<div class="rec-extra">${state.lang === 'en' ? 'Missing:' : 'Te falta:'} ${p.missing.map((m) => tag(m, "missing")).join("")}</div>`
+                        : `<div class="rec-extra" style="color:var(--color-primary); font-weight:600">${state.lang === 'en' ? 'You have everything!' : '¡Tienes todo lo esencial!'}</div>`;
                     const matched = p.matched && p.matched.length
-                        ? `<div class="rec-extra">Coincide con: ${p.matched.map((m) => tag(m, "ok")).join("")}</div>`
+                        ? `<div class="rec-extra">${state.lang === 'en' ? 'Matches:' : 'Coincide con:'} ${p.matched.map((m) => tag(m, "ok")).join("")}</div>`
                         : "";
                     return card(p, matched + missing);
                 }).join("")}</ul>
-            </div>` : (pantry.ingredients.length ? `<p style="color:var(--text-muted)">Con esos sustratos no hay coincidencias directas.</p>` : "");
+            </div>` : (pantry.ingredients.length ? `<p style="color:var(--text-muted)">${state.lang === 'en' ? 'No direct matches with those substrates.' : 'Con esos sustratos no hay coincidencias directas.'}</p>` : "");
             
         const useHtml = data.use.length ? `
             <div class="rec-group">
-                <h3>✨ Puedes usar lo fermentado (${data.use.length} opciones)</h3>
+                <h3>${state.lang === 'en' ? `You can use the fermented products (${data.use.length} options)` : `Puedes usar lo fermentado (${data.use.length} opciones)`}</h3>
                 <ul class="products-grid">${data.use.map((p) => card(p, `
-                    <div class="rec-extra">Utiliza: ${p.uses_products.map((u) => tag(u, "ok")).join("")}</div>
+                    <div class="rec-extra">${state.lang === 'en' ? 'Uses:' : 'Utiliza:'} ${p.uses_products.map((u) => tag(u, "ok")).join("")}</div>
                 `)).join("")}</ul>
-            </div>` : (pantry.products.length ? `<p style="color:var(--text-muted)">No encontramos preparaciones que usen esos fermentados.</p>` : "");
+            </div>` : (pantry.products.length ? `<p style="color:var(--text-muted)">${state.lang === 'en' ? 'No preparations found using those fermented products.' : 'No encontramos preparaciones que usen esos fermentados.'}</p>` : "");
             
         box.innerHTML = makeHtml + useHtml;
     } catch (e) {
-        box.innerHTML = `<p>Error al consultar recomendaciones.</p>`;
+        box.innerHTML = `<p>${state.lang === 'en' ? 'Error loading recommendations.' : 'Error al consultar recomendaciones.'}</p>`;
     }
 }
 
@@ -962,7 +1084,7 @@ function showShoppingList() {
     listEl.innerHTML = missingIngredientsGlobal.map((item) => `
         <li>
             <span>🛒 ${esc(item)}</span>
-            <button type="button" class="btn btn-sm btn-secondary" onclick="addIngredientToPantry('${esc(item)}')">+ Agregar a despensa</button>
+            <button type="button" class="btn btn-sm btn-secondary" data-action="add-to-pantry" data-item="${escAttr(item)}">${state.lang === 'en' ? '+ Add to pantry' : '+ Agregar a despensa'}</button>
         </li>
     `).join("");
     document.getElementById("shopping-modal").classList.remove("hidden");
@@ -979,10 +1101,38 @@ function addIngredientToPantry(item) {
 
 document.getElementById("copy-shopping-btn").addEventListener("click", () => {
     const text = missingIngredientsGlobal.map((i) => `- ${i}`).join("\n");
-    navigator.clipboard.writeText(`Lista de compras Conservas del Mundo:\n${text}`).then(() => {
-        alert("¡Lista copiada al portapapeles!");
+    const header = state.lang === 'en' ? 'Conservas del Mundo shopping list:' : 'Lista de compras Conservas del Mundo:';
+    const msg = state.lang === 'en' ? 'List copied to clipboard!' : '¡Lista copiada al portapapeles!';
+    navigator.clipboard.writeText(`${header}\n${text}`).then(() => {
+        alert(msg);
     });
 });
+
+// Dark Mode
+function applyTheme(theme) {
+    const root = document.documentElement;
+    root.classList.toggle("dark", theme === "dark");
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = theme === "dark" ? "#11151a" : "#2d5a3f";
+    const btn = document.getElementById("theme-toggle");
+    if (btn) btn.textContent = theme === "dark" ? "☀️" : "🌙";
+    localStorage.setItem("pantry_theme", theme);
+}
+
+document.getElementById("theme-toggle").addEventListener("click", () => {
+    applyTheme(document.documentElement.classList.contains("dark") ? "light" : "dark");
+    const chartsModal = document.getElementById("charts-modal");
+    if (chartsModal && !chartsModal.classList.contains("hidden") && lastStats) {
+        renderCharts(lastStats);
+    }
+});
+
+const mqDark = window.matchMedia ? window.matchMedia("(prefers-color-scheme: dark)") : null;
+if (mqDark && mqDark.addEventListener) {
+    mqDark.addEventListener("change", (e) => {
+        if (!localStorage.getItem("pantry_theme")) applyTheme(e.matches ? "dark" : "light");
+    });
+}
 
 // Selector de Idioma (i18n)
 function updateLanguageUI() {
@@ -996,6 +1146,7 @@ function updateLanguageUI() {
     loadStats();
     loadCategories();
     loadCountries();
+    loadDiets();
     renderTimers();
     search(1);
 }
@@ -1017,5 +1168,6 @@ renderPantry();
 loadStats();
 loadCategories();
 loadCountries();
+loadDiets();
 loadIngredientDatalist();
 search(1);

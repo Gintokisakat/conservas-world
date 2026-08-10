@@ -4,12 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Conservas del Mundo — Fermentos y Encurtidos Tradicionales</title>
-    <meta name="description" content="Explora y descubre más de 3400 fermentos, encurtidos y conservas del mundo. Encuentra recetas según los ingredientes que tienes en tu despensa.">
+    <meta name="description" content="Explora y descubre más de 4700 fermentos, encurtidos y conservas del mundo. Encuentra recetas según los ingredientes que tienes en tu despensa.">
     <meta name="theme-color" content="#2d5a3f">
+    <meta name="color-scheme" content="light dark">
     <link rel="manifest" href="/static/manifest.json">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        (function () {
+            var saved = localStorage.getItem("pantry_theme");
+            var dark = saved
+                ? saved === "dark"
+                : window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+            if (dark) document.documentElement.classList.add("dark");
+        })();
+    </script>
     <link rel="stylesheet" href="/static/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -32,6 +42,7 @@
                     <option value="es">🇪🇸 Español</option>
                     <option value="en">🇬🇧 English</option>
                 </select>
+                <button type="button" id="theme-toggle" class="theme-toggle" title="Cambiar tema" aria-label="Cambiar tema">🌙</button>
             </div>
         </div>
     </header>
@@ -178,6 +189,18 @@
                         <option value="openfoodfacts">Open Food Facts</option>
                         <option value="wikidata">Wikidata</option>
                     </select>
+                    <select id="diet">
+                        <option value="">Todas las dietas</option>
+                        <option value="vegan">Vegano</option>
+                        <option value="vegetarian">Vegetariano</option>
+                        <option value="pescatarian">Pescatariano</option>
+                        <option value="gluten_free">Sin gluten</option>
+                        <option value="dairy_free">Sin lácteos</option>
+                        <option value="soy_free">Sin soja</option>
+                        <option value="nut_free">Sin frutos secos</option>
+                        <option value="egg_free">Sin huevo</option>
+                        <option value="spicy">Picante</option>
+                    </select>
                 </div>
                 <div class="form-actions">
                     <button type="button" id="guide-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">📖 Manual del Fermentador</button>
@@ -216,8 +239,8 @@
     <div id="shopping-modal" class="modal-overlay hidden" onclick="closeShoppingModal(event)">
         <div class="modal-card">
             <button class="modal-close" onclick="closeShoppingModal()">&times;</button>
-            <h2>🛒 Lista de Compras Requerida</h2>
-            <p style="color:var(--text-secondary)">Ingredientes necesarios para preparar las recetas seleccionadas:</p>
+            <h2 data-i18n="shopping_title">🛒 Lista de Compras Requerida</h2>
+            <p style="color:var(--text-secondary)" data-i18n="shopping_desc">Ingredientes necesarios para preparar las recetas seleccionadas:</p>
             <ul id="shopping-list-items" class="shopping-list"></ul>
             <div style="margin-top:1.5rem; text-align:right">
                 <button type="button" id="copy-shopping-btn" class="btn btn-primary">📋 Copiar Lista</button>
@@ -243,19 +266,19 @@
             <p style="color:var(--text-secondary)">Selecciona el síntoma visual o de olor que presenta tu frasco:</p>
             
             <div class="trouble-symptoms-list">
-                <button type="button" class="btn btn-outline trouble-opt" onclick="diagnoseTrouble('kahm')">
+                <button type="button" class="btn btn-outline trouble-opt" data-action="diagnose" data-type="kahm">
                     ⚪ Película fina, plana y blanquecina en la superficie
                 </button>
-                <button type="button" class="btn btn-outline trouble-opt" onclick="diagnoseTrouble('mold')">
+                <button type="button" class="btn btn-outline trouble-opt" data-action="diagnose" data-type="mold">
                     🟢 Pelusa verde, negra, azul o blanca sobre vegetales flotantes
                 </button>
-                <button type="button" class="btn btn-outline trouble-opt" onclick="diagnoseTrouble('cloudy')">
+                <button type="button" class="btn btn-outline trouble-opt" data-action="diagnose" data-type="cloudy">
                     🌫️ Líquido / salmuera turbia u opaca
                 </button>
-                <button type="button" class="btn btn-outline trouble-opt" onclick="diagnoseTrouble('foul')">
+                <button type="button" class="btn btn-outline trouble-opt" data-action="diagnose" data-type="foul">
                     🤢 Olor fétido o putrefacto (a podrido)
                 </button>
-                <button type="button" class="btn btn-outline trouble-opt" onclick="diagnoseTrouble('soft')">
+                <button type="button" class="btn btn-outline trouble-opt" data-action="diagnose" data-type="soft">
                     🥬 Vegetales blandos o sin crocancia
                 </button>
             </div>
@@ -295,7 +318,7 @@
         <div class="modal-card modal-lg">
             <button class="modal-close" onclick="closeChartsModal()">&times;</button>
             <h2>📊 Panel de Estadísticas y Distribución Global</h2>
-            <p style="color:var(--text-secondary)">Análisis de datos de más de 3400 fermentos, fuentes y taxonomía tradicional:</p>
+            <p style="color:var(--text-secondary)">Análisis de datos de más de 4700 fermentos, fuentes y taxonomía tradicional:</p>
 
             <div class="kpi-grid" id="kpi-summary"></div>
 

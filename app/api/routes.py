@@ -230,8 +230,59 @@ def _apply_filters(query, count_query, session, *, q, category, country, contine
 
     if method:
         m_lower = method.lower()
-        query = query.where(func.lower(models.Product.method).contains(m_lower))
-        count_query = count_query.where(func.lower(models.Product.method).contains(m_lower))
+        if "acétic" in m_lower or "vinagre" in m_lower or "acetic" in m_lower:
+            cond = (
+                func.lower(models.Product.method).contains("acétic")
+                | func.lower(models.Product.method).contains("acetic")
+                | func.lower(models.Product.name).contains("vinagre")
+                | func.lower(models.Product.name).contains("vinegar")
+                | func.lower(models.Product.description).contains("vinagre")
+            )
+        elif "alcohól" in m_lower or "bebid" in m_lower or "drink" in m_lower or "viva" in m_lower:
+            cond = (
+                func.lower(models.Product.method).contains("alcohól")
+                | func.lower(models.Product.method).contains("alcohol")
+                | func.lower(models.Product.method).contains("bebida")
+                | func.lower(models.Product.name).contains("kombucha")
+                | func.lower(models.Product.name).contains("kefir")
+                | func.lower(models.Product.name).contains("kvass")
+                | func.lower(models.Product.name).contains("kvas")
+                | func.lower(models.Product.name).contains("tepache")
+                | func.lower(models.Product.name).contains("cerveza")
+                | func.lower(models.Product.name).contains("beer")
+                | func.lower(models.Product.name).contains("sidra")
+                | func.lower(models.Product.name).contains("cider")
+                | func.lower(models.Product.name).contains("hidromiel")
+                | func.lower(models.Product.name).contains("mead")
+                | func.lower(models.Product.name).contains("sake")
+                | func.lower(models.Product.name).contains("chicha")
+            )
+        elif "koji" in m_lower or "umami" in m_lower:
+            cond = (
+                func.lower(models.Product.method).contains("koji")
+                | func.lower(models.Product.name).contains("koji")
+                | func.lower(models.Product.name).contains("miso")
+                | func.lower(models.Product.name).contains("shoyu")
+            )
+        elif "encurtid" in m_lower or "pickle" in m_lower:
+            cond = (
+                func.lower(models.Product.method).contains("encurtid")
+                | func.lower(models.Product.name).contains("encurtid")
+                | func.lower(models.Product.name).contains("pickle")
+            )
+        elif "lacto" in m_lower:
+            cond = (
+                func.lower(models.Product.method).contains("lacto")
+                | func.lower(models.Product.name).contains("kimchi")
+                | func.lower(models.Product.name).contains("sauerkraut")
+                | func.lower(models.Product.name).contains("chucrut")
+                | func.lower(models.Product.name).contains("yogurt")
+            )
+        else:
+            cond = func.lower(models.Product.method).contains(m_lower)
+
+        query = query.where(cond)
+        count_query = count_query.where(cond)
 
     if fermentation_time:
         query = query.where(func.lower(models.Product.fermentation_time).contains(fermentation_time.lower()))

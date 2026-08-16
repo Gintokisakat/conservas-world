@@ -43,6 +43,15 @@ DEFAULT_PACE = 2.0
 
 _last_request: dict[str, float] = {}
 
+# Marca temporal del último 429: sirve para saltar fuentes no esenciales
+# (aliases, Wikidata) mientras el host nos está limitando el ritmo.
+_LAST_429: float = 0.0
+
+
+def _throttled() -> bool:
+    """True si el último 429 fue hace menos de 90s."""
+    return time.monotonic() - _LAST_429 < 90.0
+
 
 def _pace(url: str):
     host = url.split("/")[2]
@@ -98,6 +107,8 @@ def _get(url: str, params: dict, cache_key: str | None = None) -> dict:
                 flush=True,
             )
             if resp.status_code in {429, 500, 502, 503, 504}:
+                if resp.status_code == 429:
+                    _LAST_429 = time.monotonic()
                 time.sleep(_backoff(resp, attempt))
                 continue
             resp.raise_for_status()
@@ -355,30 +366,48 @@ def wikidata_image(product: models.Product) -> str | None:
 # ---------------------------------------------------------------------------
 
 
-def resolve_image(product: models.Product, off_map: dict[str, str] | None = None) -> str | None:
-    """Devuelve la mejor imagen disponible para el producto (en orden)."""
-    code = off_barcode(product)
-    if code:
-        url = off_map.get(code) if off_map else None
-        if not url:
-            url = off_image_by_barcode(code)
-        if url:
-            return url
+def resolve_image(
+    product: models.Product,
+    off_map: dict[str, str] | None = None,
+    skip_off: bool = False,
+) -> str | None:
+    """Devuelve la mejor imagen disponible para el producto (en orden).
 
-    candidates = [product.name]
-    for alias in product.aliases:
-        if alias.language in ("en", "orig", None):
-            candidates.append(alias.name)
-    seen = set()
-    for name in candidates:
-        key = name.lower().strip()
-        if not key or key in seen:
-            continue
-        seen.add(key)
-        url = commons_image(name)
-        if url:
-            return url
-    return wikidata_image(product)
+    - Si `skip_off` está activo no se consulta Open Food Facts.
+    - Mientras el host esté con rate-limit (429) se evitan las búsquedas de
+      aliases y el fallback de Wikidata para no encadenar más peticiones.
+    """
+    try:
+        code = off_barcode(product)
+        if code and not skip_off:
+            url = off_map.get(code) if off_map else None
+            if not url:
+                url = off_image_by_barcode(code)
+            if url:
+                return url
+
+        candidates = [product.name]
+        for alias in product.aliases:
+            if alias.language in ("en", "orig", None):
+                candidates.append(alias.name)
+        seen = set()
+        for name in candidates:
+            key = name.lower().strip()
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            url = commons_image(name)
+            if url:
+                return url
+            if _throttled():
+                return None
+        if not _throttled():
+            return wikidata_image(product)
+        return None
+    except RuntimeError:
+        # El host se negó de forma persistente (rate-limit agotado): sin imagen,
+        # pero no tiramos el pipeline.
+        return None
 
 
 def main():
@@ -416,10 +445,10 @@ def main():
 
         done = 0
         failed = 0
-        for product in products:
+        for index, product in enumerate(products, start=1):
             if product.image_url and not args.only_missing:
                 continue
-            url = resolve_image(product, off_map=off_map)
+            url = resolve_image(product, off_map=off_map, skip_off=args.skip_off)
             if url:
                 if not args.dry_run:
                     product.image_url = url
@@ -427,6 +456,9 @@ def main():
                 print(f"  [{product.id}] {product.name!r} -> {url}", flush=True)
             else:
                 failed += 1
+            # Commit incremental: no perder el progreso si se interrumpe.
+            if not args.dry_run and index % 20 == 0:
+                session.commit()
         if not args.dry_run:
             session.commit()
     finally:

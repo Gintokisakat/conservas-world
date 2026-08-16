@@ -10,7 +10,7 @@ TEST_DB_URL = "sqlite://"
 
 
 @pytest.fixture()
-def client(tmp_path):
+def session_factory(tmp_path):
     engine = create_engine(
         f"sqlite:///{tmp_path}/test.db", connect_args={"check_same_thread": False}
     )
@@ -23,6 +23,27 @@ def client(tmp_path):
 
     Base.metadata.create_all(bind=engine)
     TestingSessionLocal = sessionmaker(bind=engine, autoflush=False)
+    yield TestingSessionLocal
+    engine.dispose()
+
+
+@pytest.fixture()
+def db_session(session_factory):
+    session = session_factory()
+    try:
+        _seed(session)
+        session.commit()
+    finally:
+        session.close()
+
+    session = session_factory()
+    yield session
+    session.close()
+
+
+@pytest.fixture()
+def client(session_factory):
+    TestingSessionLocal = session_factory
 
     def override_get_session():
         session = TestingSessionLocal()

@@ -41,3 +41,42 @@ def test_export_invalid_format(client):
 def test_export_not_found(client):
     resp = client.get("/products/99999/export?format=csv")
     assert resp.status_code == 404
+
+
+def test_export_csv_incluye_imagen(client, db_session):
+    from app.db import models
+    from sqlalchemy import select
+
+    product = db_session.scalar(select(models.Product).where(models.Product.name == "Miso"))
+    product.image_url = "https://example.org/miso.jpg"
+    db_session.commit()
+
+    resp = client.get("/products/1/export?format=csv")
+    text = resp.content.decode("utf-8-sig")
+    assert "Imagen" in text
+    assert "https://example.org/miso.jpg" in text
+
+
+def test_export_csv_sin_imagen_campo_vacio(client):
+    resp = client.get("/products/2/export?format=csv")
+    text = resp.content.decode("utf-8-sig")
+    assert "Imagen" in text
+
+
+def test_export_pdf_incluye_img(client, db_session):
+    from app.db import models
+    from sqlalchemy import select
+
+    product = db_session.scalar(select(models.Product).where(models.Product.name == "Miso"))
+    product.image_url = "https://example.org/miso.jpg"
+    db_session.commit()
+
+    resp = client.get("/products/1/export?format=pdf")
+    assert 'src="https://example.org/miso.jpg"' in resp.text
+    assert 'class="hero"' in resp.text
+
+
+def test_export_pdf_sin_imagen_omite_img(client):
+    resp = client.get("/products/2/export?format=pdf")
+    assert "<img" not in resp.text
+    assert 'class="hero"' in resp.text

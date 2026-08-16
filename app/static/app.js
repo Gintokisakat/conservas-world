@@ -490,8 +490,12 @@ async function renderFavorites() {
 
 function productCardHtml(p, noDesc) {
     const isFav = favorites.has(p.id);
+    const img = p.image_url
+        ? `<img class="card-img" src="${escAttr(p.image_url)}" alt="${escAttr(p.name)}" loading="lazy" onerror="this.style.display='none'">`
+        : `<div class="card-img card-img-placeholder">${esc((p.substrate || p.name).charAt(0).toUpperCase())}</div>`;
     return `
     <li class="product-card" data-product-id="${p.id}">
+        ${img}
         <div>
             <div class="card-header-row">
                 <h3>${esc(p.name)}</h3>
@@ -569,6 +573,7 @@ async function openDetail(id) {
             </div>` : "";
             
         body.innerHTML = `
+            ${p.image_url ? `<img class="detail-img" src="${escAttr(p.image_url)}" alt="${escAttr(p.name)}" onerror="this.style.display='none'">` : ""}
             <div class="card-header-row" style="align-items:center">
                 <h2>${esc(p.name)}</h2>
                 <div style="display:flex; gap:0.4rem; flex-wrap:wrap">

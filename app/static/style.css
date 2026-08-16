@@ -715,6 +715,33 @@ html.dark .btn-secondary:hover {
     overflow: hidden;
 }
 
+.product-card .card-img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: var(--radius-sm);
+    margin-bottom: 0.85rem;
+    background: var(--bg-page);
+}
+
+.product-card .card-img-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.6rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: var(--tag-cat-bg);
+}
+
+.detail-img {
+    width: 100%;
+    max-height: 340px;
+    object-fit: cover;
+    border-radius: var(--radius-md);
+    margin-bottom: 1rem;
+}
+
 /* Tags */
 .tags {
     display: flex;

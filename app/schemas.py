@@ -80,6 +80,7 @@ class ProductOut(BaseModel):
     status: str
     source_tag: str | None
     substrate: str | None
+    image_url: str | None = None
     aliases: list[AliasOut] = []
     countries: list[CountryOut] = []
     ingredients: list[IngredientOut] = []
@@ -99,6 +100,7 @@ class ProductListItem(BaseModel):
     description: str | None
     source_tag: str | None
     substrate: str | None
+    image_url: str | None = None
     categories: list[CategoryOut] = []
     countries: list[CountryOut] = []
     diet_tags: list[str] = []

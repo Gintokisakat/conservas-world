@@ -87,6 +87,7 @@ class Product(Base):
     status: Mapped[str] = mapped_column(String(20), default="imported")
     source_tag: Mapped[str | None] = mapped_column(String(50), index=True)
     substrate: Mapped[str | None] = mapped_column(String(150), index=True)
+    image_url: Mapped[str | None] = mapped_column(String(500))
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), onupdate=func.now()

@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.config import DB_URL
@@ -32,3 +32,16 @@ def init_db():
     from app.db import models  # noqa: F401
 
     Base.metadata.create_all(bind=engine)
+    _migrate()
+
+
+def _migrate():
+    """ALTER TABLE idempotente para columnas añadidas tras crear la DB."""
+    with engine.begin() as conn:
+        has_image = conn.execute(
+            text(
+                "SELECT 1 FROM pragma_table_info('products') WHERE name = 'image_url'"
+            )
+        ).fetchone()
+        if has_image is None:
+            conn.execute(text("ALTER TABLE products ADD COLUMN image_url VARCHAR(500)"))

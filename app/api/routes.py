@@ -98,6 +98,7 @@ def _product_out(product: models.Product, lang: str = "es") -> ProductOut:
         "status": product.status,
         "source_tag": product.source_tag,
         "substrate": product.substrate,
+        "image_url": product.image_url,
         "aliases": product.aliases,
         "countries": product.countries,
         "ingredients": product.ingredients,
@@ -151,6 +152,7 @@ def _list_item(product: models.Product) -> ProductListItem:
         description=product.description,
         source_tag=product.source_tag,
         substrate=product.substrate,
+        image_url=product.image_url,
         categories=product.categories,
         countries=product.countries,
         diet_tags=product_diet_tags(product.ingredients),
@@ -670,6 +672,7 @@ def get_product(
 _EXPORT_LABELS = {
     "es": {
         "name": "Nombre",
+        "image": "Imagen",
         "aliases": "Alias",
         "description": "Descripción",
         "method": "Método",
@@ -686,6 +689,7 @@ _EXPORT_LABELS = {
     },
     "en": {
         "name": "Name",
+        "image": "Image",
         "aliases": "Aliases",
         "description": "Description",
         "method": "Method",
@@ -711,6 +715,7 @@ def _export_rows(data: ProductOut, lang: str) -> list[tuple[str, str]]:
 
     values = {
         "name": data.name,
+        "image": data.image_url or "",
         "aliases": join(a.name for a in data.aliases),
         "description": data.description or "",
         "method": data.method or "",
@@ -786,12 +791,20 @@ def _render_recipe_html(data: ProductOut, lang: str) -> str:
     body {{ padding: 0; }}
     .safety {{ page-break-inside: avoid; }}
   }}
+  .hero {{ display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 1rem; }}
+  .hero img {{ width: 140px; height: 140px; object-fit: cover; border-radius: 10px; }}
+  @media (max-width: 480px) {{ .hero {{ flex-direction: column; }} .hero img {{ width: 100%; height: auto; }} }}
 </style>
 </head>
 <body>
   <button type="button" class="btn" onclick="window.print()">🖨️ {t['print']}</button>
-  <h1>{html_mod.escape(data.name)}</h1>
-  <div class="meta">{html_mod.escape(data.substrate or "")}</div>
+  <div class="hero">
+    {f'<img src="{html_mod.escape(data.image_url)}" alt="{html_mod.escape(data.name)}">' if data.image_url else ""}
+    <div>
+      <h1>{html_mod.escape(data.name)}</h1>
+      <div class="meta">{html_mod.escape(data.substrate or "")}</div>
+    </div>
+  </div>
   <div class="tags">{tags}</div>
   {f"<div class='field'><h3>{t['method']}</h3><p>{html_mod.escape(data.method)}</p></div>" if data.method else ""}
   <div class="field"><h3>{t['ingredients']}</h3><ul>{ingredients}</ul></div>

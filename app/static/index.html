@@ -197,6 +197,15 @@
                     <input type="search" id="q" placeholder="Buscar por nombre o descripción (ej. kimchi, sauerkraut, choucroute...)" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest-box" aria-autocomplete="list">
                     <div id="suggest-box" class="suggest-box hidden" role="listbox"></div>
                 </div>
+                <div class="method-chips-wrapper" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.6rem; margin-bottom:0.6rem; align-items:center">
+                    <span style="font-size:0.85rem; font-weight:600; color:var(--text-secondary)">Técnica:</span>
+                    <button type="button" class="btn btn-sm btn-outline method-chip active" data-method="">Todas</button>
+                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="lacto">🥬 Lacto</button>
+                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="acética">🍶 Vinagres</button>
+                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="alcohólica">🍹 Bebidas Vivas</button>
+                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="koji">🧫 Koji / Umami</button>
+                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="encurtido">🥒 Encurtidos</button>
+                </div>
                 <div class="selects-group">
                     <select id="category">
                         <option value="">Todas las categorías</option>
@@ -442,6 +451,16 @@
                     <p style="font-size:0.9rem; color:var(--text-secondary)">
                         • Mantener siempre los vegetales <strong>100% sumergidos</strong> bajo la salmuera con un peso de cristal o cerámica limpia.<br>
                         • Utilizar válvulas de escape de gas (<em>Airlocks</em>) o aflojar la tapa 1 segundo al día para purgar el CO₂ sobrante.
+                    </p>
+                </div>
+
+                <div style="background:var(--bg-page); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-color)">
+                    <h3 style="color:var(--color-primary); margin-bottom:0.5rem">🍶 5. Madre de Vinagre & Acética</h3>
+                    <p style="font-size:0.9rem; color:var(--text-secondary)">
+                        La bacterias <em>Acetobacter aceti</em> convierten el alcohol en ácido acético en presencia de oxígeno:<br>
+                        • <strong>Oxigenación requerida:</strong> Cubrir el frasco con una tela o gasa respirable (sin tapa hermética).<br>
+                        • <strong>Relación alcohol/ácido:</strong> 5% de alcohol en la base produce aprox. 5% de acidez en el vinagre final.<br>
+                        • <strong>Temperatura ideal:</strong> Mantener entre 25°C y 30°C en un lugar oscuro por 3 a 6 semanas.
                     </p>
                 </div>
             </div>

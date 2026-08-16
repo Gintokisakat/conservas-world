@@ -4,6 +4,7 @@ const state = {
     continent: "",
     country: "",
     source: "",
+    method: "",
     diet: "",
     gi: false,
     onlyFavs: false,
@@ -505,6 +506,7 @@ function buildQuery(page) {
     if (state.continent) params.set("continent", state.continent);
     if (state.country) params.set("country", state.country);
     if (state.source) params.set("source", state.source);
+    if (state.method) params.set("method", state.method);
     if (state.diet) params.set("diet", state.diet);
     if (state.gi) params.set("gi", "true");
     params.set("lang", state.lang);
@@ -1763,6 +1765,15 @@ document.getElementById("lang-select").addEventListener("change", (e) => {
     state.lang = e.target.value;
     localStorage.setItem("pantry_lang", state.lang);
     updateLanguageUI();
+});
+
+document.querySelectorAll(".method-chip").forEach((btn) => {
+    btn.addEventListener("click", () => {
+        document.querySelectorAll(".method-chip").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        state.method = btn.dataset.method || "";
+        search(1);
+    });
 });
 
 document.getElementById("recommend-btn").addEventListener("click", loadRecommendations);

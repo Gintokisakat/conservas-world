@@ -209,7 +209,7 @@ def _list_item(product: models.Product) -> ProductListItem:
 
 
 def _apply_filters(query, count_query, session, *, q, category, country, continent,
-                   ingredient, source, fermentation_time, diet, status, gi=False):
+                   ingredient, source, fermentation_time, diet, status, gi=False, method=None):
     """Aplica los filtros comunes de listado a `query` y `count_query`."""
     if gi:
         gi_query = (
@@ -226,9 +226,16 @@ def _apply_filters(query, count_query, session, *, q, category, country, contine
         query = query.where(models.Product.id.in_(diet_ids))
         count_query = count_query.where(models.Product.id.in_(diet_ids))
 
+    if method:
+        m_lower = method.lower()
+        query = query.where(func.lower(models.Product.method).contains(m_lower))
+        count_query = count_query.where(func.lower(models.Product.method).contains(m_lower))
+
     if fermentation_time:
         query = query.where(func.lower(models.Product.fermentation_time).contains(fermentation_time.lower()))
         count_query = count_query.where(func.lower(models.Product.fermentation_time).contains(fermentation_time.lower()))
+
+
 
     if category:
         cat_query = (
@@ -328,6 +335,7 @@ def list_products(
     ingredient: str | None = None,
     source: str | None = None,
     fermentation_time: str | None = None,
+    method: str | None = Query(default=None, description="Filtro por técnica/método de fermentación"),
     diet: str | None = Query(
         default=None,
         description="Filtro por etiqueta dietaria: vegan, vegetarian, gluten_free, dairy_free, soy_free, nut_free, egg_free, pescatarian, spicy",
@@ -350,7 +358,7 @@ def list_products(
         query, count_query, session,
         q=q, category=category, country=country, continent=continent,
         ingredient=ingredient, source=source, fermentation_time=fermentation_time,
-        diet=diet, status=status, gi=gi,
+        method=method, diet=diet, status=status, gi=gi,
     )
 
     total = session.execute(count_query).scalar_one()

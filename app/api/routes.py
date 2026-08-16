@@ -15,6 +15,7 @@ from app.db import models
 from app.db.database import get_session
 from app.schemas import (
     CategoryOut,
+    CheeseMetagenomeOut,
     CountryOut,
     DairyFermentOut,
     GeoPointOut,
@@ -75,6 +76,7 @@ def _load_product(session: Session, product_id: int) -> models.Product:
             selectinload(models.Product.uses),
             selectinload(models.Product.used_by),
             selectinload(models.Product.dairy),
+            selectinload(models.Product.metagenome),
         )
         .where(models.Product.id == product_id)
     ).scalar_one_or_none()
@@ -102,6 +104,23 @@ def _dairy_out(dairy: models.DairyFerment | None) -> DairyFermentOut | None:
         microbiota=microbiota,
         geographical_indication=bool(dairy.geographical_indication),
         characteristics=dairy.characteristics,
+    )
+
+
+def _metagenome_out(meta: models.CheeseMetagenome | None) -> CheeseMetagenomeOut | None:
+    if meta is None:
+        return None
+    taxa = []
+    if meta.taxa_json:
+        try:
+            taxa = json.loads(meta.taxa_json)
+        except json.JSONDecodeError:
+            taxa = []
+    return CheeseMetagenomeOut(
+        subtype=meta.subtype,
+        sample_count=meta.sample_count,
+        taxa=taxa,
+        url=meta.url,
     )
 
 
@@ -133,6 +152,7 @@ def _product_out(product: models.Product, lang: str = "es") -> ProductOut:
         "used_by": sorted({u.product.name for u in product.used_by if u.product}),
         "diet_tags": product_diet_tags(product.ingredients),
         "dairy": _dairy_out(product.dairy),
+        "metagenome": _metagenome_out(product.metagenome),
     }
     return ProductOut.model_validate(data)
 

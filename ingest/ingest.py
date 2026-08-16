@@ -5,7 +5,7 @@ from app.db.database import SessionLocal, init_db
 
 from ingest.normalize import normalize_name
 
-SOURCES = ["fermdb", "wikipedia", "openfoodfacts", "wikidata", "regional", "fdfdb"]
+SOURCES = ["fermdb", "wikipedia", "openfoodfacts", "wikidata", "regional", "fdfdb", "metacheese"]
 
 
 def run(sources: list[str], reset: bool = False):
@@ -47,6 +47,8 @@ def run(sources: list[str], reset: bool = False):
                 from ingest.sources import regional
             elif source == "fdfdb":
                 from ingest.sources import fdfdb
+            elif source == "metacheese":
+                from ingest.sources import metacheese
             else:
                 raise ValueError(f"Fuente desconocida: {source}")
             print(f"Ingiriendo fuente: {source} ...", flush=True)
@@ -60,6 +62,8 @@ def run(sources: list[str], reset: bool = False):
                 records = wikidata.load_source()
             elif source == "fdfdb":
                 records = fdfdb.load_source()
+            elif source == "metacheese":
+                records = metacheese.load_source()
             else:
                 records = regional.load_source()
             by_source[source] = len(records)
@@ -78,6 +82,11 @@ def run(sources: list[str], reset: bool = False):
 
             dairy = fdfdb.populate_dairy(session)
             print(f"Metadatos de lácteos FDF-DB vinculados: {dairy}", flush=True)
+        if "metacheese" in sources:
+            from ingest.sources import metacheese
+
+            metagenomes = metacheese.populate_metacheese(session)
+            print(f"Metagenomas MetaCheeseDB vinculados: {metagenomes}", flush=True)
         added, updated = loader.enrich_ingredients(session)
         uses = loader.build_product_uses(session)
         loader.seed_country_coords(session)

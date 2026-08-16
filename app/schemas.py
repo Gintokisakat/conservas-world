@@ -84,6 +84,15 @@ class DairyFermentOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class CheeseMetagenomeOut(BaseModel):
+    subtype: str
+    sample_count: int = 0
+    taxa: list[dict] = []
+    url: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ProductOut(BaseModel):
     id: int
     name: str
@@ -105,6 +114,7 @@ class ProductOut(BaseModel):
     used_by: list[str] = []
     diet_tags: list[str] = []
     dairy: DairyFermentOut | None = None
+    metagenome: CheeseMetagenomeOut | None = None
 
     model_config = ConfigDict(from_attributes=True)
 

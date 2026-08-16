@@ -121,6 +121,9 @@ class Product(Base):
     dairy: Mapped["DairyFerment | None"] = relationship(
         back_populates="product", cascade="all, delete-orphan"
     )
+    metagenome: Mapped["CheeseMetagenome | None"] = relationship(
+        back_populates="product", cascade="all, delete-orphan"
+    )
 
 
 class ProductAlias(Base):
@@ -272,3 +275,24 @@ class DairyFerment(Base):
     characteristics: Mapped[str | None] = mapped_column(Text)
 
     product: Mapped["Product"] = relationship(back_populates="dairy")
+
+
+class CheeseMetagenome(Base):
+    """Subtipos de queso con metagenomas asociados según MetaCheeseDB (roadmap 2.13).
+
+    Almacena por producto el subtipo de queso de MetaCheeseDB y los taxones
+    característicos derivados de sus metagenomas (abundancia media y prevalencia).
+    """
+
+    __tablename__ = "cheese_metagenomes"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey("products.id", ondelete="CASCADE"), unique=True, index=True
+    )
+    subtype: Mapped[str] = mapped_column(String(255))
+    sample_count: Mapped[int] = mapped_column(default=0)
+    taxa_json: Mapped[str | None] = mapped_column(Text)
+    url: Mapped[str | None] = mapped_column(String(500))
+
+    product: Mapped["Product"] = relationship(back_populates="metagenome")

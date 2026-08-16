@@ -629,11 +629,24 @@ def main():
             targets[product.id] = (product, new_name, lang)
 
         # Fase 2: resolver colisiones de nombre de forma determinista
-        # (constraint único products.name), contando TODOS los targets,
-        # pero solo se renombra con sufijo al producto que cambia.
+        # (constraint único products.name). Cuando varios productos convergen al
+        # mismo nombre final, se conserva uno sin sufijo (el que ya lo tenía tal
+        # cual, o el de menor id) y los demás reciben "(Variedad {id})".
         name_counts = Counter(t[1] for t in targets.values())
-        for pid, (product, new_name, lang) in list(targets.items()):
-            if name_counts[new_name] > 1 and new_name.lower() != product.name.lower():
+        for name, count in name_counts.items():
+            if count <= 1:
+                continue
+            group = [
+                (pid, product, new_name, lang)
+                for pid, (product, new_name, lang) in targets.items()
+                if new_name == name
+            ]
+            keep = next(
+                (g for g in group if g[2] == g[1].name), None
+            ) or min(group, key=lambda g: g[0])
+            for pid, product, new_name, lang in group:
+                if pid == keep[0]:
+                    continue
                 targets[pid] = (product, f"{new_name} (Variedad {pid})", lang)
 
         # Fase 3: aplicar cambios.

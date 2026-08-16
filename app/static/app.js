@@ -575,6 +575,7 @@ function productCardHtml(p, noDesc) {
             <p class="desc">${esc(p.description || noDesc)}</p>
         </div>
         <div class="tags">
+            ${p.source_tag === "ark_of_taste" ? `<span class="tag" style="background:rgba(217,119,6,0.15); color:#b45309; border:1px solid rgba(217,119,6,0.3); font-weight:600">🏛️ Arca del Gusto</span>` : ""}
             ${p.fermentation_time ? `<span class="tag" style="background:rgba(45,90,63,0.12); color:var(--color-primary); border:1px solid rgba(45,90,63,0.25)">⏱️ ${esc(p.fermentation_time)}</span>` : ""}
             ${p.storage_life ? `<span class="tag" style="background:rgba(217,107,67,0.12); color:#d96b43; border:1px solid rgba(217,107,67,0.25)">🧊 ${esc(p.storage_life)}</span>` : ""}
             ${p.substrate ? tag(p.substrate, "substrate") : ""}
@@ -582,7 +583,7 @@ function productCardHtml(p, noDesc) {
             ${p.countries.map((c) => tag(c.name, "country")).join("")}
             ${giBadge(p)}
             ${dietBadges(p.diet_tags)}
-            ${p.source_tag ? tag(p.source_tag, "source") : ""}
+            ${p.source_tag && p.source_tag !== "ark_of_taste" ? tag(p.source_tag, "source") : ""}
         </div>
     </li>
     `;

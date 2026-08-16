@@ -291,16 +291,9 @@
 - **Dependencias**: Ninguna
 - **Riesgo**: Mapeo manual inicial requerido
 
-#### 2.6 Slow Food Ark of Taste
-- **Fuente**: slowfood.com/ark-of-taste (5,000+ alimentos)
-- **Qué hacer**:
-  - Scraping o descarga del catálogo de Ark of Taste
-  - Tabla `heritage_foods` (name, country, category, status, description, slow_food_url)
-  - Matching con nuestros productos por nombre/país
-  - Badge "Ark of Taste" en productos que estén en el catálogo
-  - Filtro "Alimentos en peligro de extinción"
-- **Dependencias**: requests, beautifulsoup4 (ya están)
-- **Riesgo**: Slow Food puede rate-limitear scraping; idealmente contactar para datos abiertos
+#### 2.6 Slow Food Ark of Taste [✅ COMPLETADO]
+- **Fuente**: slowfood.com/ark-of-taste
+- **Implementado**: Ingesta curada de conservas y fermentos patrimoniales tradicionales + insignia distintiva `🏛️ Arca del Gusto` y filtro por fuente en la interfaz.
 
 #### 2.7 Open Brewery DB
 - **Fuente**: openbrewerydb.org (11,745+ cervecerías, API gratuita)

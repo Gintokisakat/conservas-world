@@ -5,7 +5,7 @@ from app.db.database import SessionLocal, init_db
 
 from ingest.normalize import normalize_name
 
-SOURCES = ["fermdb", "wikipedia", "openfoodfacts", "wikidata"]
+SOURCES = ["fermdb", "wikipedia", "openfoodfacts", "wikidata", "regional"]
 
 
 def run(sources: list[str], reset: bool = False):
@@ -43,6 +43,8 @@ def run(sources: list[str], reset: bool = False):
                 from ingest.sources import openfoodfacts
             elif source == "wikidata":
                 from ingest.sources import wikidata
+            elif source == "regional":
+                from ingest.sources import regional
             else:
                 raise ValueError(f"Fuente desconocida: {source}")
             print(f"Ingiriendo fuente: {source} ...", flush=True)
@@ -52,8 +54,10 @@ def run(sources: list[str], reset: bool = False):
                 records = wikipedia.load_source()
             elif source == "openfoodfacts":
                 records = openfoodfacts.load_source()
-            else:
+            elif source == "wikidata":
                 records = wikidata.load_source()
+            else:
+                records = regional.load_source()
             by_source[source] = len(records)
             for record in records:
                 key = normalize_name(record["name"])

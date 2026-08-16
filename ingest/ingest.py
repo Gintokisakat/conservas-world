@@ -5,7 +5,7 @@ from app.db.database import SessionLocal, init_db
 
 from ingest.normalize import normalize_name
 
-SOURCES = ["fermdb", "wikipedia", "openfoodfacts", "wikidata", "regional"]
+SOURCES = ["fermdb", "wikipedia", "openfoodfacts", "wikidata", "regional", "fdfdb"]
 
 
 def run(sources: list[str], reset: bool = False):
@@ -45,6 +45,8 @@ def run(sources: list[str], reset: bool = False):
                 from ingest.sources import wikidata
             elif source == "regional":
                 from ingest.sources import regional
+            elif source == "fdfdb":
+                from ingest.sources import fdfdb
             else:
                 raise ValueError(f"Fuente desconocida: {source}")
             print(f"Ingiriendo fuente: {source} ...", flush=True)
@@ -56,6 +58,8 @@ def run(sources: list[str], reset: bool = False):
                 records = openfoodfacts.load_source()
             elif source == "wikidata":
                 records = wikidata.load_source()
+            elif source == "fdfdb":
+                records = fdfdb.load_source()
             else:
                 records = regional.load_source()
             by_source[source] = len(records)
@@ -69,6 +73,11 @@ def run(sources: list[str], reset: bool = False):
                 if product is not None:
                     total += 1
         session.commit()
+        if "fdfdb" in sources:
+            from ingest.sources import fdfdb
+
+            dairy = fdfdb.populate_dairy(session)
+            print(f"Metadatos de lácteos FDF-DB vinculados: {dairy}", flush=True)
         added, updated = loader.enrich_ingredients(session)
         uses = loader.build_product_uses(session)
         loader.seed_country_coords(session)

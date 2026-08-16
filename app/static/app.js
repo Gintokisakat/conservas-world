@@ -5,6 +5,7 @@ const state = {
     country: "",
     source: "",
     diet: "",
+    gi: false,
     onlyFavs: false,
     page: 1,
     pageSize: 20,
@@ -102,6 +103,7 @@ const i18n = {
         suggest_glossary: "Glosario",
         view_list: "Lista",
         view_map: "Mapa",
+        gi_filter: "Indicación geográfica",
         map_loading: "Cargando mapa…",
         map_empty: "Sin resultados para mostrar en el mapa.",
         map_detail: "Ver detalle",
@@ -169,6 +171,7 @@ const i18n = {
         suggest_glossary: "Glossary",
         view_list: "List",
         view_map: "Map",
+        gi_filter: "Geographical indication",
         map_loading: "Loading map…",
         map_empty: "No results to show on the map.",
         map_detail: "View details",
@@ -331,6 +334,13 @@ function dietBadges(tags) {
     return (tags || []).map((t) => tag(labels[t] || t, "diet")).join("");
 }
 
+function giBadge(p) {
+    const label = state.lang === 'en' ? 'Geographical Indication' : 'Indicación geográfica';
+    return (p.geographical_indication || (p.dairy && p.dairy.geographical_indication))
+        ? tag(label, "gi")
+        : "";
+}
+
 async function loadStats() {
     try {
         const s = await api("/stats");
@@ -440,6 +450,7 @@ function buildQuery(page) {
     if (state.country) params.set("country", state.country);
     if (state.source) params.set("source", state.source);
     if (state.diet) params.set("diet", state.diet);
+    if (state.gi) params.set("gi", "true");
     params.set("lang", state.lang);
     params.set("page", page);
     params.set("page_size", state.pageSize);
@@ -509,6 +520,7 @@ function productCardHtml(p, noDesc) {
             ${p.substrate ? tag(p.substrate, "substrate") : ""}
             ${p.categories.map((c) => tag(c.name)).join("")}
             ${p.countries.map((c) => tag(c.name, "country")).join("")}
+            ${giBadge(p)}
             ${dietBadges(p.diet_tags)}
             ${p.source_tag ? tag(p.source_tag, "source") : ""}
         </div>
@@ -603,6 +615,7 @@ async function openDetail(id) {
                 ${p.substrate ? tag(`${state.lang === 'en' ? 'Substrate' : 'Sustrato'}: ${p.substrate}`, "substrate") : ""}
                 ${p.categories.map((c) => tag(c.name)).join("")}
                 ${p.countries.map((c) => tag(c.name, "country")).join("")}
+                ${giBadge(p)}
                 ${dietBadges(p.diet_tags)}
             </div>
 
@@ -678,6 +691,7 @@ async function openIngredient(id, name) {
                                ${p.substrate ? tag(p.substrate, "substrate") : ""}
                                ${p.categories.map((c) => tag(c.name)).join("")}
                                ${p.countries.map((c) => tag(c.name, "country")).join("")}
+                               ${giBadge(p)}
                            </div>
                        </li>`).join("")}
                </ul>`
@@ -928,6 +942,7 @@ document.getElementById("search-form").addEventListener("submit", (e) => {
     state.country = document.getElementById("country").value;
     state.source = document.getElementById("source").value;
     state.diet = document.getElementById("diet").value;
+    state.gi = document.getElementById("gi").checked;
     closeSuggest();
     search(1);
 });

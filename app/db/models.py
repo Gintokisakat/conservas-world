@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from sqlalchemy import (
+    Boolean,
     Column,
     DateTime,
     Float,
@@ -116,6 +117,9 @@ class Product(Base):
     )
     used_by: Mapped[list["ProductUse"]] = relationship(
         back_populates="used_product", foreign_keys="ProductUse.used_product_id"
+    )
+    dairy: Mapped["DairyFerment | None"] = relationship(
+        back_populates="product", cascade="all, delete-orphan"
     )
 
 
@@ -245,3 +249,26 @@ class GlossaryTerm(Base):
     )
 
     related_product: Mapped["Product | None"] = relationship()
+
+
+class DairyFerment(Base):
+    """Metadatos de lácteo fermentado tradicional según FDF-DB (roadmap 2.13)."""
+
+    __tablename__ = "dairy_ferments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey("products.id", ondelete="CASCADE"), unique=True, index=True
+    )
+    name: Mapped[str] = mapped_column(String(255))
+    classification: Mapped[str | None] = mapped_column(String(50))
+    country: Mapped[str | None] = mapped_column(String(255))
+    region: Mapped[str | None] = mapped_column(String(255))
+    milk_type: Mapped[str | None] = mapped_column(String(150))
+    treatment: Mapped[str | None] = mapped_column(String(150))
+    ripening: Mapped[str | None] = mapped_column(String(255))
+    microbiota_json: Mapped[str | None] = mapped_column(Text)
+    geographical_indication: Mapped[bool] = mapped_column(Boolean, default=False)
+    characteristics: Mapped[str | None] = mapped_column(Text)
+
+    product: Mapped["Product"] = relationship(back_populates="dairy")

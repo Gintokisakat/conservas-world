@@ -16,6 +16,7 @@ from app.db.database import get_session
 from app.schemas import (
     CategoryOut,
     CountryOut,
+    DairyFermentOut,
     GeoPointOut,
     GlossaryOut,
     IngredientOut,
@@ -73,12 +74,35 @@ def _load_product(session: Session, product_id: int) -> models.Product:
             selectinload(models.Product.microbes),
             selectinload(models.Product.uses),
             selectinload(models.Product.used_by),
+            selectinload(models.Product.dairy),
         )
         .where(models.Product.id == product_id)
     ).scalar_one_or_none()
     if product is None:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
     return product
+
+
+def _dairy_out(dairy: models.DairyFerment | None) -> DairyFermentOut | None:
+    if dairy is None:
+        return None
+    microbiota = []
+    if dairy.microbiota_json:
+        try:
+            microbiota = json.loads(dairy.microbiota_json)
+        except json.JSONDecodeError:
+            microbiota = []
+    return DairyFermentOut(
+        classification=dairy.classification,
+        country=dairy.country,
+        region=dairy.region,
+        milk_type=dairy.milk_type,
+        treatment=dairy.treatment,
+        ripening=dairy.ripening,
+        microbiota=microbiota,
+        geographical_indication=bool(dairy.geographical_indication),
+        characteristics=dairy.characteristics,
+    )
 
 
 def _product_out(product: models.Product, lang: str = "es") -> ProductOut:
@@ -108,6 +132,7 @@ def _product_out(product: models.Product, lang: str = "es") -> ProductOut:
         "uses": sorted({u.used_product.name for u in product.uses if u.used_product}),
         "used_by": sorted({u.product.name for u in product.used_by if u.product}),
         "diet_tags": product_diet_tags(product.ingredients),
+        "dairy": _dairy_out(product.dairy),
     }
     return ProductOut.model_validate(data)
 
@@ -156,12 +181,21 @@ def _list_item(product: models.Product) -> ProductListItem:
         categories=product.categories,
         countries=product.countries,
         diet_tags=product_diet_tags(product.ingredients),
+        geographical_indication=bool(product.dairy and product.dairy.geographical_indication),
     )
 
 
 def _apply_filters(query, count_query, session, *, q, category, country, continent,
-                   ingredient, source, fermentation_time, diet, status):
+                   ingredient, source, fermentation_time, diet, status, gi=False):
     """Aplica los filtros comunes de listado a `query` y `count_query`."""
+    if gi:
+        gi_query = (
+            select(models.DairyFerment.product_id)
+            .where(models.DairyFerment.geographical_indication.is_(True))
+        )
+        query = query.where(models.Product.id.in_(gi_query))
+        count_query = count_query.where(models.Product.id.in_(gi_query))
+
     if diet:
         diet_ids = _diet_ids(session, diet)
         if diet_ids is None:
@@ -275,6 +309,7 @@ def list_products(
         default=None,
         description="Filtro por etiqueta dietaria: vegan, vegetarian, gluten_free, dairy_free, soy_free, nut_free, egg_free, pescatarian, spicy",
     ),
+    gi: bool = Query(default=False, description="Solo productos con indicación geográfica"),
     status: str | None = None,
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=20, ge=1, le=200),
@@ -284,6 +319,7 @@ def list_products(
         selectinload(models.Product.categories),
         selectinload(models.Product.countries),
         selectinload(models.Product.ingredients),
+        selectinload(models.Product.dairy),
     )
     count_query = select(func.count()).select_from(models.Product)
 
@@ -291,7 +327,7 @@ def list_products(
         query, count_query, session,
         q=q, category=category, country=country, continent=continent,
         ingredient=ingredient, source=source, fermentation_time=fermentation_time,
-        diet=diet, status=status,
+        diet=diet, status=status, gi=gi,
     )
 
     total = session.execute(count_query).scalar_one()
@@ -319,6 +355,7 @@ def list_products_geo(
     source: str | None = None,
     fermentation_time: str | None = None,
     diet: str | None = Query(default=None),
+    gi: bool = Query(default=False, description="Solo productos con indicación geográfica"),
     limit: int = Query(default=4000, ge=1, le=20000),
     session: Session = Depends(get_session),
 ):
@@ -331,7 +368,7 @@ def list_products_geo(
         query, count_query, session,
         q=q, category=category, country=country, continent=continent,
         ingredient=ingredient, source=source, fermentation_time=fermentation_time,
-        diet=diet, status=None,
+        diet=diet, status=None, gi=gi,
     )
     rows = session.execute(
         query.order_by(models.Product.name).limit(limit)
@@ -604,6 +641,57 @@ def recommendations(
     return Recommendations(make=make, use=use)
 
 
+@router.get("/products/dairy", response_model=PaginatedProducts)
+def list_dairy_products(
+    gi: bool = Query(default=False, description="Solo con indicación geográfica"),
+    classification: str | None = Query(
+        default=None, description="cheese, fermented milk o yogurt"
+    ),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=200),
+    session: Session = Depends(get_session),
+):
+    query = select(models.Product).options(
+        selectinload(models.Product.categories),
+        selectinload(models.Product.countries),
+        selectinload(models.Product.ingredients),
+        selectinload(models.Product.dairy),
+    )
+    count_query = select(func.count()).select_from(models.Product)
+    query = query.where(
+        models.Product.id.in_(select(models.DairyFerment.product_id))
+    )
+    count_query = count_query.where(
+        models.Product.id.in_(select(models.DairyFerment.product_id))
+    )
+    if gi:
+        gi_query = select(models.DairyFerment.product_id).where(
+            models.DairyFerment.geographical_indication.is_(True)
+        )
+        query = query.where(models.Product.id.in_(gi_query))
+        count_query = count_query.where(models.Product.id.in_(gi_query))
+    if classification:
+        class_query = select(models.DairyFerment.product_id).where(
+            models.DairyFerment.classification == classification
+        )
+        query = query.where(models.Product.id.in_(class_query))
+        count_query = count_query.where(models.Product.id.in_(class_query))
+
+    total = session.execute(count_query).scalar_one()
+    query = (
+        query.order_by(models.Product.name)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
+    items = session.execute(query).scalars().unique().all()
+    return PaginatedProducts(
+        total=total,
+        page=page,
+        page_size=page_size,
+        items=[_list_item(p) for p in items],
+    )
+
+
 @router.get("/products/random", response_model=ProductOut)
 def random_product(session: Session = Depends(get_session)):
     product_id = session.execute(
@@ -653,6 +741,7 @@ def related_products(
         .options(
             selectinload(models.Product.categories),
             selectinload(models.Product.countries),
+            selectinload(models.Product.dairy),
         )
         .where(models.Product.id.in_(ids), models.Product.status != "discarded")
     ).scalars().unique().all()
@@ -686,6 +775,7 @@ _EXPORT_LABELS = {
         "references": "Referencias",
         "uses": "Se usa como ingrediente en",
         "used_by": "Es ingrediente de",
+        "gi": "Indicación geográfica",
     },
     "en": {
         "name": "Name",
@@ -703,6 +793,7 @@ _EXPORT_LABELS = {
         "references": "References",
         "uses": "Used as ingredient in",
         "used_by": "Is ingredient of",
+        "gi": "Geographical indication",
     },
 }
 
@@ -729,6 +820,7 @@ def _export_rows(data: ProductOut, lang: str) -> list[tuple[str, str]]:
         "references": "; ".join(r.title for r in data.references),
         "uses": join(data.uses),
         "used_by": join(data.used_by),
+        "gi": "Sí" if data.dairy and data.dairy.geographical_indication else "No",
     }
     return [(labels[k], v) for k, v in values.items()]
 
@@ -750,6 +842,11 @@ def _render_recipe_html(data: ProductOut, lang: str) -> str:
             else "Seguridad alimentaria: pH objetivo < 4.6 para fermentación láctica/acética"
         ),
         "footer": "Conservas del Mundo" if lang == "en" else "Conservas del Mundo",
+        "gi": (
+            "Geographical Indication (PDO)"
+            if lang == "en"
+            else "Indicación geográfica (DOP)"
+        ),
     }
 
     def li(items):
@@ -759,6 +856,8 @@ def _render_recipe_html(data: ProductOut, lang: str) -> str:
         f'<span class="tag">{html_mod.escape(str(x))}</span>'
         for x in list(data.diet_tags) + [c.name for c in data.countries]
     )
+    if data.dairy and data.dairy.geographical_indication:
+        tags += f'<span class="tag gi">{html_mod.escape(t["gi"])}</span>'
     ingredients = li(i.name for i in data.ingredients) if data.ingredients else "<li>—</li>"
     microbes = li(m.name for m in data.microbes) if data.microbes else "<li>—</li>"
     refs = (
@@ -778,6 +877,7 @@ def _render_recipe_html(data: ProductOut, lang: str) -> str:
   .meta {{ color: #566359; margin-bottom: 1rem; }}
   .tags {{ margin: 0.6rem 0 1.2rem; }}
   .tag {{ display: inline-block; background: #eaf2eb; color: #225232; border-radius: 999px; padding: 0.15rem 0.6rem; font-size: 0.75rem; margin-right: 0.3rem; }}
+  .tag.gi {{ background: #eef0fb; color: #3b3f8f; border: 1px solid #c7cbea; }}
   .field {{ margin-bottom: 1.1rem; }}
   .field h3 {{ font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.06em; color: #88968b; margin-bottom: 0.25rem; }}
   ul {{ padding-left: 1.2rem; }}
@@ -999,6 +1099,7 @@ def seasonal(
             selectinload(models.Product.categories),
             selectinload(models.Product.countries),
             selectinload(models.Product.ingredients),
+            selectinload(models.Product.dairy),
         )
         .where(models.Product.id.in_(product_ids))
         .order_by(models.Product.name)

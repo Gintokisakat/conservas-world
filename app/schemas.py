@@ -70,6 +70,20 @@ class MicrobeOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class DairyFermentOut(BaseModel):
+    classification: str | None = None
+    country: str | None = None
+    region: str | None = None
+    milk_type: str | None = None
+    treatment: str | None = None
+    ripening: str | None = None
+    microbiota: list[str] = []
+    geographical_indication: bool = False
+    characteristics: str | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class ProductOut(BaseModel):
     id: int
     name: str
@@ -90,6 +104,7 @@ class ProductOut(BaseModel):
     uses: list[str] = []
     used_by: list[str] = []
     diet_tags: list[str] = []
+    dairy: DairyFermentOut | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -104,6 +119,7 @@ class ProductListItem(BaseModel):
     categories: list[CategoryOut] = []
     countries: list[CountryOut] = []
     diet_tags: list[str] = []
+    geographical_indication: bool = False
 
     model_config = ConfigDict(from_attributes=True)
 

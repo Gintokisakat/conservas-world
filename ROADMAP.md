@@ -6,30 +6,35 @@
 
 ### Stack actual
 - **Backend**: Python 3.11+ / FastAPI / SQLAlchemy / SQLite (FTS5)
-- **Frontend**: HTML/CSS/JS vanilla, i18n (ES/EN), PWA con service worker
-- **Ingesta**: Pipeline automatizado desde 4 fuentes (FermDB, Wikipedia, Open Food Facts, Wikidata)
+- **Frontend**: HTML/CSS/JS vanilla, i18n (ES/EN), PWA con service worker, Leaflet.js
+- **Integración AI**: Servidor MCP (`app/mcp_server.py`) con 5 herramientas
+- **Ingesta**: Pipeline automatizado desde 6 fuentes (FermDB, Wikipedia, Open Food Facts, Wikidata, FDF-DB, Curados Regionales)
 - **Despliegue**: Docker + Render, GitHub Actions CI (pytest)
-- **Tests**: 74 tests (API, ingredientes, normalización, wikidata)
+- **Tests**: 192 tests pasando al 100% (API, dietas, exportación, FDF-DB, geo, glosario, imágenes, ingredientes, MCP, metacheese, normalización, nutrición, pairings, sugerencias, timeline, vinagres, wikidata)
 
 ### Datos actuales
-- **4,736 productos activos** (247 descartados por curaduría)
+- **6,152 productos activos** (247 descartados por curaduría)
+- **Vinagres caseros, fermentos acéticos y bebidas vivas ancestrales** (Tepache, Ginger Bug, Kvass, Hidromiel, Kéfir de Agua, Shio Koji)
 - **193 ingredientes canónicos** con aliases multilingües (EN/ES/FR/DE/IT/PT/CZ/FI/TR/AR/JA)
 - **133 países**, ~4,900 referencias, 99.98% cobertura de ingredientes
-- **Sin imágenes**: gap crítico a resolver en 2.11
-- **16 categorías**: fermento_lactico (1,387), encurtido_fermentado (960), conserva_esterilizada (866), fermento_alcoholico (542), fermento_koji (519), conserva_azucar (449), encurtido_vinagre (372), fermento_acetico (221), encurtido_salmuera (155), ahumado (141), conserva_aceite (138), secado (117), curado_sal (68), fermento_mixto (44), fermento_alcalino (5), otros (28)
+- **Imágenes de productos**: Pipeline automatizado multinivel (OFF → Wikimedia Commons → Wikidata)
+- **1.166 lácteos FDF-DB** con Indicación Geográfica (GI/DOP/IGP) y 1.593 metagenomas MetaCheeseDB
+- **16 categorías**: fermento_lactico (1,387), encurtido_fermentado (960), conserva_esterilizada (866), fermento_alcoholico (542), fermento_koji (519), conserva_azucar (449), encurtido_vinagre (372), fermento_acetico (234), encurtido_salmuera (155), ahumado (141), conserva_aceite (138), secado (117), curado_sal (68), fermento_mixto (44), fermento_alcalino (5), otros (28)
 
 ### Features actuales
-- Búsqueda full-text (FTS5) con filtros (categoría, continente, país, fuente, ingrediente)
-- Detalle de producto (alias, países, ingredientes, categorías, microbios, referencias, sustrato, usos)
-- "Mi Despensa": recomendaciones basadas en sustratos disponibles
-- Temporizadores de fermentación (F1/F2) con barra de progreso
-- Calculadora de salinidad y ABV
-- Diagnóstico de problemas (kahm, moho, salmuera turbia, olor fétido, vegetales blandos)
-- Enciclopedia de microbios
+- Búsqueda full-text (FTS5) con filtro por técnica/método (Lacto, Acética, Alcohólica, Koji, Encurtidos)
+- Detalle de producto (alias, países, ingredientes, categorías, microbios, referencias, sustrato, usos, maridajes)
+- "Mi Despensa": recomendaciones basadas en sustratos e ingredientes disponibles
+- Temporizadores de fermentación (F1/F2) con lote y notificaciones
+- Calculadora interactiva de salinidad y graduación alcohólica (% ABV)
+- Asistente de diagnóstico de problemas (Kahm vs Moho, textura blanda, salmuera turbia, olor fétido)
+- Servidor MCP (Model Context Protocol) para consulta automatizada por agentes de IA
+- Cronología histórica de la fermentación (13.000 a.C. al presente)
+- Enciclopedia de microbios fermentadores y glosario técnico
 - Etiquetas imprimibles para frascos
-- Panel de estadísticas con Chart.js
-- Manual del fermentador (esterilización, salinidad, textura, control de oxígeno)
-- Favoritos y lista de compras
+- Panel de estadísticas e indicadores globales
+- Manual del fermentador (esterilización, salinidad, textura, oxígeno, cultivo de madre de vinagre)
+- Sistema de Favoritos y Generador de Lista de Compras
 - Despliegue Docker + Render
 
 ---
@@ -325,30 +330,13 @@
 - **Dependencias**: Ninguna
 - **Riesgo**: etymology-db es un dataset grande (~500MB), requiere filtrado por alimentos
 
-#### 2.10 Timeline histórico de fermentación
+#### 2.10 Timeline histórico de fermentación [✅ COMPLETADO]
 - **Fuentes**: Linda Hall Library, PMC, Wikipedia
-- **Qué hacer**:
-  - Crear `data/fermentation_timeline.json` con eventos desde 13,000 BCE
-  - Endpoint `GET /timeline`
-  - Frontend: timeline interactivo (librería simple tipo timeline.js o D3)
-  - Eventos: cerveza (13,000 BCE Haifa), vino (7,000 BCE Georgia), pan (4,000 BCE), queso (3,000 BCE), cerveza babilónica (1,750 BCE), etc.
-- **Dependencias**: Ninguna
-- **Riesgo**: Datos estáticos, bajo riesgo
+- **Implementado**: 25 hitos globales desde 13.000 a.C. con endpoint `/timeline` y sección bilingüe en frontend.
 
-#### 2.11 Imágenes de productos (PRIORIDAD ALTA)
-- **Fuentes**: Wikimedia Commons (API), Open Food Facts (fotos ODbL de productos ya en nuestra BD), Wikipedia
-- **Qué hacer**:
-  - Pipeline `ingest/images.py`:
-    1. Buscar por nombre canónico en Commons API (`w/api.php?action=query&generator=search&gsearch=kimchi`)
-    2. Validar licencia (evitar imágenes sin licencia libre o con restricciones no comerciales)
-    3. Descargar thumbnail (400px) a `data/images/{product_id}.webp` (o servir proxy)
-    4. Fallback: Open Food Facts photos por barcode, luego Wikidata image claim
-  - Fuente complementaria: **FooDI-ML** (1.5M imágenes, 37 países, 33 idiomas) para productos comerciales (licencia CC BY-NC-SA — solo si aceptamos no-comercial)
-  - Columna `image_url` en `products`, endpoint `GET /products/{id}` incluye imagen
-  - Frontend: <img> en cards (lazy loading), detalle y modo grid de búsqueda
-- **Dependencias**: httpx (ya está); imágenes requerirán almacenamiento (volume en Render o CDN)
-- **Riesgo**: Tamaño (4,736 imágenes ≈ 100-200MB); algunas búsquedas en Commons devuelven resultados incorrectos (validación manual por categoría)
-- **Valor**: es el cambio que más transforma un catálogo; los usuarios esperan ver el alimento
+#### 2.11 Imágenes de productos [✅ COMPLETADO]
+- **Fuentes**: Wikimedia Commons (API), Open Food Facts, Wikipedia, Wikidata
+- **Implementado**: Pipeline automatizado `ingest/images.py` con miniatura visual en API, cards y exportación.
 
 #### 2.12 Pairing granular con FlavorDB
 - **Fuente**: FlavorDB (720 compuestos de sabor, 690 alimentos, descargable)

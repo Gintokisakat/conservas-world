@@ -201,6 +201,8 @@ def _list_item(product: models.Product) -> ProductListItem:
         source_tag=product.source_tag,
         substrate=product.substrate,
         image_url=product.image_url,
+        fermentation_time=product.fermentation_time,
+        storage_life=product.storage_life,
         categories=product.categories,
         countries=product.countries,
         diet_tags=product_diet_tags(product.ingredients),

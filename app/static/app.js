@@ -575,6 +575,8 @@ function productCardHtml(p, noDesc) {
             <p class="desc">${esc(p.description || noDesc)}</p>
         </div>
         <div class="tags">
+            ${p.fermentation_time ? `<span class="tag" style="background:rgba(45,90,63,0.12); color:var(--color-primary); border:1px solid rgba(45,90,63,0.25)">⏱️ ${esc(p.fermentation_time)}</span>` : ""}
+            ${p.storage_life ? `<span class="tag" style="background:rgba(217,107,67,0.12); color:#d96b43; border:1px solid rgba(217,107,67,0.25)">🧊 ${esc(p.storage_life)}</span>` : ""}
             ${p.substrate ? tag(p.substrate, "substrate") : ""}
             ${p.categories.map((c) => tag(c.name)).join("")}
             ${p.countries.map((c) => tag(c.name, "country")).join("")}

@@ -126,6 +126,8 @@ class ProductListItem(BaseModel):
     source_tag: str | None
     substrate: str | None
     image_url: str | None = None
+    fermentation_time: str | None = None
+    storage_life: str | None = None
     categories: list[CategoryOut] = []
     countries: list[CountryOut] = []
     diet_tags: list[str] = []

@@ -146,6 +146,26 @@ class GeoPointOut(BaseModel):
     substrate: str | None = None
 
 
+class PairingOut(BaseModel):
+    id: int
+    name: str
+    description: str | None
+    source_tag: str | None
+    substrate: str | None
+    image_url: str | None = None
+    categories: list[CategoryOut] = []
+    countries: list[CountryOut] = []
+    shared_ingredients: list[str] = []
+    score: float
+
+
+class PairingsOut(BaseModel):
+    product_id: int
+    product_name: str
+    total: int
+    items: list[PairingOut]
+
+
 class PaginatedProducts(BaseModel):
     total: int
     page: int

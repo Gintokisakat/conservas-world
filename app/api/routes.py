@@ -24,6 +24,8 @@ from app.schemas import (
     MicrobeOut,
     NutritionOut,
     PaginatedProducts,
+    PairingOut,
+    PairingsOut,
     ProductListItem,
     ProductOut,
     RecommendationOut,
@@ -768,6 +770,92 @@ def related_products(
     ).scalars().unique().all()
     order = {pid: i for i, pid in enumerate(ids)}
     return sorted(related, key=lambda p: order[p.id])
+
+
+@router.get("/products/{product_id}/pairings", response_model=PairingsOut)
+def product_pairings(
+    product_id: int,
+    limit: int = Query(default=6, ge=1, le=20),
+    min_shared: int = Query(default=1, ge=1, le=5),
+    session: Session = Depends(get_session),
+):
+    """Combina bien con...: productos afines por ingredientes compartidos (similitud de Jaccard)."""
+    product = session.execute(
+        select(models.Product)
+        .options(selectinload(models.Product.ingredients))
+        .where(models.Product.id == product_id)
+    ).scalar_one_or_none()
+    if product is None:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+
+    target_ingredients = {i.id for i in product.ingredients}
+    if not target_ingredients:
+        return PairingsOut(product_id=product.id, product_name=product.name, total=0, items=[])
+
+    candidate_ids = session.execute(
+        select(models.product_ingredient.c.product_id)
+        .where(
+            models.product_ingredient.c.ingredient_id.in_(target_ingredients),
+            models.product_ingredient.c.product_id != product_id,
+        )
+        .group_by(models.product_ingredient.c.product_id)
+        .having(func.count() >= min_shared)
+    ).scalars().all()
+    if not candidate_ids:
+        return PairingsOut(product_id=product.id, product_name=product.name, total=0, items=[])
+
+    candidates = session.execute(
+        select(models.Product)
+        .options(
+            selectinload(models.Product.ingredients),
+            selectinload(models.Product.categories),
+            selectinload(models.Product.countries),
+        )
+        .where(
+            models.Product.id.in_(candidate_ids),
+            models.Product.status != "discarded",
+        )
+    ).scalars().unique().all()
+
+    def _jaccard(other: models.Product) -> tuple[float, list[str]]:
+        other_ingredients = {i.id for i in other.ingredients}
+        shared = target_ingredients & other_ingredients
+        union = target_ingredients | other_ingredients
+        if not union:
+            return 0.0, []
+        shared_names = [
+            i.name for i in product.ingredients if i.id in shared
+        ]
+        return len(shared) / len(union), shared_names
+
+    ranked = []
+    for other in candidates:
+        score, shared = _jaccard(other)
+        if score > 0:
+            ranked.append((score, other, shared))
+    ranked.sort(key=lambda item: (-item[0], item[1].name))
+
+    items = [
+        PairingOut(
+            id=other.id,
+            name=other.name,
+            description=other.description,
+            source_tag=other.source_tag,
+            substrate=other.substrate,
+            image_url=other.image_url,
+            categories=[CategoryOut.model_validate(c) for c in other.categories],
+            countries=[CountryOut.model_validate(c) for c in other.countries],
+            shared_ingredients=shared,
+            score=round(score, 4),
+        )
+        for score, other, shared in ranked[:limit]
+    ]
+    return PairingsOut(
+        product_id=product.id,
+        product_name=product.name,
+        total=len(ranked),
+        items=items,
+    )
 
 
 @router.get("/products/{product_id}", response_model=ProductOut)

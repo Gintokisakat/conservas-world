@@ -110,6 +110,8 @@ const i18n = {
         map_loading: "Cargando mapa…",
         map_empty: "Sin resultados para mostrar en el mapa.",
         map_detail: "Ver detalle",
+        pairings_title: "Combina bien con…",
+        pairings_shared: "Comparte",
     },
     en: {
         header_sub: "Global catalog of ferments, pickles, and traditional recipes",
@@ -181,6 +183,8 @@ const i18n = {
         map_loading: "Loading map…",
         map_empty: "No results to show on the map.",
         map_detail: "View details",
+        pairings_title: "Pairs well with…",
+        pairings_shared: "Shares",
     }
 };
 
@@ -284,6 +288,11 @@ document.addEventListener("click", (e) => {
     if (glossaryProductBtn) {
         closeGlossaryModal();
         openDetail(Number(glossaryProductBtn.dataset.id));
+        return;
+    }
+    const pairingBtn = e.target.closest("[data-action='pairing']");
+    if (pairingBtn) {
+        openDetail(Number(pairingBtn.dataset.id));
         return;
     }
     const favDetailBtn = e.target.closest("[data-action='fav-detail']");
@@ -601,7 +610,10 @@ async function openDetail(id) {
     body.innerHTML = `<p>${state.lang === 'en' ? 'Loading product info...' : 'Cargando información del fermento...'}</p>`;
     document.getElementById("detail").classList.remove("hidden");
     try {
-        const p = await api(`/products/${id}?lang=${state.lang}`);
+        const [p, pairings] = await Promise.all([
+            api(`/products/${id}?lang=${state.lang}`),
+            api(`/products/${id}/pairings`).catch(() => null),
+        ]);
         const isFav = favorites.has(p.id);
 
         const section = (title, items) =>
@@ -631,6 +643,21 @@ async function openDetail(id) {
                 </div>
             </div>` : "";
             
+        const pairingsHtml = pairings && pairings.items && pairings.items.length ? `
+            <div class="detail-section">
+                <h4>${t.pairings_title}</h4>
+                <div class="pairing-grid">
+                    ${pairings.items.map((pa) => `
+                        <button type="button" class="pairing-card" data-action="pairing" data-id="${pa.id}">
+                            ${pa.image_url ? `<img src="${escAttr(pa.image_url)}" alt="${escAttr(pa.name)}" loading="lazy" onerror="this.style.display='none'">` : ""}
+                            <span class="pairing-name">${esc(pa.name)}</span>
+                            <span class="pairing-cats">${pa.categories.map((c) => esc(c.name)).join(", ")}</span>
+                            <span class="pairing-shared">${t.pairings_shared}: ${pa.shared_ingredients.map(esc).join(", ")}</span>
+                        </button>
+                    `).join("")}
+                </div>
+            </div>` : "";
+
         body.innerHTML = `
             ${p.image_url ? `<img class="detail-img" src="${escAttr(p.image_url)}" alt="${escAttr(p.name)}" onerror="this.style.display='none'">` : ""}
             <div class="card-header-row" style="align-items:center">
@@ -676,6 +703,7 @@ async function openDetail(id) {
             ${section(state.lang === 'en' ? 'Used as ingredient in' : 'Utiliza como ingrediente', p.uses)}
             ${section(state.lang === 'en' ? 'Contains ingredient' : 'Es ingrediente de', p.used_by)}
             ${refs}
+            ${pairingsHtml}
         `;
     } catch (e) {
         body.innerHTML = `<p>${state.lang === 'en' ? 'Error loading product detail.' : 'Error al cargar el detalle del producto.'}</p>`;

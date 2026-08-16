@@ -1392,6 +1392,111 @@ html.dark .trouble-outcome-box.danger {
     margin-top: 1.2rem;
 }
 
+/* Timeline Histórico */
+.timeline-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.6rem 2rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.timeline-header h2 {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    margin: 0 0 0.2rem;
+    color: var(--color-primary);
+}
+
+.timeline-desc {
+    margin: 0 0 1.2rem;
+    color: var(--text-secondary);
+    font-size: 0.92rem;
+}
+
+.timeline-list {
+    position: relative;
+    max-height: 420px;
+    overflow-y: auto;
+    padding-left: 1.1rem;
+}
+
+.timeline-list::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 4px;
+    bottom: 4px;
+    width: 2px;
+    background: var(--color-primary);
+    opacity: 0.35;
+    border-radius: 2px;
+}
+
+.timeline-loading {
+    color: var(--text-secondary);
+    font-style: italic;
+}
+
+.timeline-item {
+    position: relative;
+    display: flex;
+    gap: 1rem;
+    padding: 0.55rem 0 0.55rem 1.1rem;
+}
+
+.timeline-item::before {
+    content: "";
+    position: absolute;
+    left: -1.12rem;
+    top: 1.05rem;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    border: 2px solid var(--bg-card);
+    box-shadow: 0 0 0 2px var(--color-primary);
+    box-sizing: border-box;
+}
+
+.timeline-marker {
+    flex: 0 0 7.5rem;
+    text-align: right;
+}
+
+.timeline-year {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    white-space: nowrap;
+}
+
+.timeline-content h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1.05rem;
+}
+
+.timeline-region {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+    font-weight: 400;
+}
+
+.timeline-content p {
+    margin: 0 0 0.4rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    line-height: 1.45;
+}
+
+.timeline-chip {
+    background: var(--tag-diet-bg);
+    color: var(--tag-diet-text);
+    border: 1px solid var(--tag-diet-border);
+    font-size: 0.72rem;
+}
+
 /* Selector de Idioma */
 .lang-picker {
     background: rgba(255, 255, 255, 0.15);

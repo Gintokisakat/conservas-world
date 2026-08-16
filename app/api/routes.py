@@ -34,6 +34,7 @@ from app.schemas import (
     SeasonalOut,
     Stats,
     SuggestItem,
+    TimelineOut,
     UseRecommendationOut,
 )
 from app.services.diet import DIET_TAGS, REQUIRED, VIOLATIONS, product_diet_tags
@@ -1133,6 +1134,29 @@ def seasonal(
         ingredients=ingredient_counts,
         products=[_list_item(p) for p in products],
     )
+
+
+_TIMELINE_PATH = Path(__file__).resolve().parents[2] / "data" / "fermentation_timeline.json"
+_timeline_cache: list[dict] | None = None
+
+
+def _load_timeline() -> list[dict]:
+    global _timeline_cache
+    if _timeline_cache is None:
+        _timeline_cache = json.loads(_TIMELINE_PATH.read_text(encoding="utf-8"))["events"]
+    return _timeline_cache
+
+
+@router.get("/timeline", response_model=TimelineOut)
+def timeline(response: Response):
+    response.headers["Cache-Control"] = "public, max-age=86400"
+    events = []
+    for event in _load_timeline():
+        normalized = dict(event)
+        normalized["era"] = "BCE" if normalized["year"] < 0 else "CE"
+        normalized["year"] = abs(normalized["year"])
+        events.append(normalized)
+    return TimelineOut(total=len(events), events=events)
 
 
 @router.get("/microbes", response_model=list[MicrobeOut])

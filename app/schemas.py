@@ -236,3 +236,22 @@ class SeasonalOut(BaseModel):
     total: int
     ingredients: list[SeasonalIngredientOut] = []
     products: list[ProductListItem] = []
+
+
+class TimelineText(BaseModel):
+    es: str
+    en: str
+
+
+class TimelineEventOut(BaseModel):
+    year: int
+    era: str
+    title: TimelineText
+    description: TimelineText
+    category: str
+    region: str | None = None
+
+
+class TimelineOut(BaseModel):
+    total: int
+    events: list[TimelineEventOut]

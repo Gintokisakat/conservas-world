@@ -72,6 +72,9 @@ const i18n = {
         shopping_desc: "Ingredientes necesarios para preparar las recetas seleccionadas:",
         seasonal_title: "🌿 Qué fermentar este mes",
         seasonal_desc: "Ingredientes de temporada y fermentos sugeridos.",
+        timeline_title: "🏺 Cronología de la fermentación",
+        timeline_desc: "13.000 años de cerveza, queso, pan y conservas.",
+        timeline_loading: "Cargando…",
         show_more: "Ver más",
         nutrition_title: "🧪 Información Nutricional (por 100 g)",
         nutrition_source: "Fuente: USDA FoodData Central (CC0)",
@@ -140,6 +143,9 @@ const i18n = {
         shopping_desc: "Ingredients needed to prepare the recommended recipes:",
         seasonal_title: "🌿 What to Ferment This Month",
         seasonal_desc: "In-season ingredients and suggested ferments.",
+        timeline_title: "🏺 A Timeline of Fermentation",
+        timeline_desc: "13,000 years of beer, cheese, bread and preserves.",
+        timeline_loading: "Loading…",
         show_more: "Show more",
         nutrition_title: "🧪 Nutrition Facts (per 100 g)",
         nutrition_source: "Source: USDA FoodData Central (CC0)",
@@ -429,6 +435,47 @@ async function loadSeasonal(reset = true) {
                 : `Ver más (${(s.total - seasonalLimit).toLocaleString()})`;
         }
     } catch (e) { /* ignore */ }
+}
+
+const timelineCategoryLabels = {
+    bebida: { es: "Bebida", en: "Drink" },
+    lacteo: { es: "Lácteo", en: "Dairy" },
+    salsa: { es: "Salsa", en: "Sauce" },
+    panaderia: { es: "Panadería", en: "Baking" },
+    encurtido: { es: "Encurtido", en: "Pickling" },
+    conserva: { es: "Conserva", en: "Preserving" },
+    ciencia: { es: "Ciencia", en: "Science" },
+    cultura: { es: "Cultura", en: "Culture" },
+};
+
+async function loadTimeline() {
+    const list = document.getElementById("timeline-list");
+    if (!list) return;
+    list.innerHTML = (i18n[state.lang] || i18n.es).timeline_loading || "…";
+    try {
+        const t = await api("/timeline");
+        const isEn = state.lang === "en";
+        list.innerHTML = t.events.map((e) => {
+            const title = (e.title[state.lang] || e.title.es);
+            const desc = (e.description[state.lang] || e.description.es);
+            const era = e.era === "BCE"
+                ? (isEn ? `${e.year.toLocaleString()} BCE` : `${e.year.toLocaleString()} a.C.`)
+                : (isEn ? `${e.year.toLocaleString()} CE` : `${e.year.toLocaleString()} d.C.`);
+            const cat = (timelineCategoryLabels[e.category] || {})[state.lang] || e.category;
+            return `<article class="timeline-item">
+                <div class="timeline-marker"><span class="timeline-year">${esc(era)}</span></div>
+                <div class="timeline-content">
+                    <h3>${esc(title)} <span class="timeline-region">${esc(e.region || "")}</span></h3>
+                    <p>${esc(desc)}</p>
+                    <span class="chip timeline-chip">${esc(cat)}</span>
+                </div>
+            </article>`;
+        }).join("");
+    } catch (err) {
+        list.innerHTML = state.lang === "en"
+            ? "Could not load the timeline."
+            : "No se pudo cargar la cronología.";
+    }
 }
 
 async function loadIngredientDatalist() {
@@ -1678,6 +1725,7 @@ function updateLanguageUI() {
     loadCountries();
     loadDiets();
     loadSeasonal();
+    loadTimeline();
     renderTimers();
     search(1);
 }
@@ -1701,5 +1749,6 @@ loadCategories();
 loadCountries();
 loadDiets();
 loadSeasonal();
+loadTimeline();
 loadIngredientDatalist();
 search(1);

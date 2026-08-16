@@ -1,0 +1,255 @@
+{
+  "description": "Cronología de la fermentación y la conservación de alimentos, del 13.000 a.C. a la actualidad. Los años negativos son a.C. (BCE); los positivos d.C. (CE).",
+  "events": [
+    {
+      "year": -13000,
+      "title": { "es": "Cerveza", "en": "Beer" },
+      "description": {
+        "es": "Restos de cerveza de la cultura natufiense en la cueva de Raqefet (Haifa, Israel): la bebida fermentada más antigua conocida, unos 13.000 años antes de nuestra era.",
+        "en": "Beer residues from the Natufian culture at Raqefet Cave (Haifa, Israel): the oldest known fermented beverage, some 13,000 years ago."
+      },
+      "category": "bebida",
+      "region": "Levante"
+    },
+    {
+      "year": -7000,
+      "title": { "es": "Queso", "en": "Cheese" },
+      "description": {
+        "es": "Evidencia de grasa láctea en cerámica de Kuyavia (Polonia): la elaboración de queso más temprana documentada, previa a la domesticación plena de la vaca.",
+        "en": "Dairy-fat residues in pottery from Kuyavia (Poland): the earliest documented cheesemaking, predating full cattle domestication."
+      },
+      "category": "lacteo",
+      "region": "Europa Central"
+    },
+    {
+      "year": -7000,
+      "title": { "es": "Vino de arroz", "en": "Rice wine" },
+      "description": {
+        "es": "Análisis de residuos en vasijas de Jiahu (China) muestran una bebida fermentada de arroz, miel y fruta, de unos 9.000 años de antigüedad.",
+        "en": "Residue analysis of jars from Jiahu (China) reveals a fermented beverage of rice, honey and fruit, about 9,000 years old."
+      },
+      "category": "bebida",
+      "region": "Asia Oriental"
+    },
+    {
+      "year": -6000,
+      "title": { "es": "Vino en kvevri", "en": "Kvevri wine" },
+      "description": {
+        "es": "Primeras tinajas kvevri de la región de Shulaveri (Georgia): orígenes de la vinificación en vasijas de barro enterradas, práctica viva hoy.",
+        "en": "Early kvevri jars from the Shulaveri region (Georgia): the origins of winemaking in buried clay vessels, still practiced today."
+      },
+      "category": "bebida",
+      "region": "Cáucaso"
+    },
+    {
+      "year": -6000,
+      "title": { "es": "Leche fermentada", "en": "Fermented milk" },
+      "description": {
+        "es": "Primeras evidencias de consumo y fermentación de leche en Oriente Próximo, base de yogures y quesos frescos.",
+        "en": "Earliest evidence of milk consumption and fermentation in the Near East, the basis of yogurts and fresh cheeses."
+      },
+      "category": "lacteo",
+      "region": "Mesopotamia"
+    },
+    {
+      "year": -5000,
+      "title": { "es": "Salsa de pescado", "en": "Fish sauce" },
+      "description": {
+        "es": "Fermentación de pescado con sal en la antigua China: el antecedente más remoto del garum romano y de las salsas del sudeste asiático.",
+        "en": "Salt-fermented fish in ancient China: the remote ancestor of Roman garum and Southeast Asian fish sauces."
+      },
+      "category": "salsa",
+      "region": "Asia Oriental"
+    },
+    {
+      "year": -4000,
+      "title": { "es": "Pan fermentado", "en": "Leavened bread" },
+      "description": {
+        "es": "Pan con levadura en Egipto y Sumeria: la fermentación de la masa impulsa la panadería y el cultivo de cereales.",
+        "en": "Yeast-leavened bread in Egypt and Sumer: dough fermentation drives baking and cereal farming."
+      },
+      "category": "panaderia",
+      "region": "Oriente Próximo"
+    },
+    {
+      "year": -3500,
+      "title": { "es": "Vinagre", "en": "Vinegar" },
+      "description": {
+        "es": "Primeras referencias a la fermentación acética en Mesopotamia; el vinagre se usa como conservante, condimento y bebida diluida.",
+        "en": "First records of acetic fermentation in Mesopotamia; vinegar is used as a preservative, condiment and diluted drink."
+      },
+      "category": "encurtido",
+      "region": "Mesopotamia"
+    },
+    {
+      "year": -3000,
+      "title": { "es": "Queso en Sumeria", "en": "Cheese in Sumer" },
+      "description": {
+        "es": "Relieves y textos sumerios documentan la producción de queso y mantequilla, ya como oficios especializados.",
+        "en": "Sumerian reliefs and texts document cheesemaking and butter, already as specialized crafts."
+      },
+      "category": "lacteo",
+      "region": "Mesopotamia"
+    },
+    {
+      "year": -1750,
+      "title": { "es": "Cerveza babilónica", "en": "Babylonian beer" },
+      "description": {
+        "es": "El Código de Hammurabi regula el precio y la calidad de la cerveza: la fermentación ya es industria y derecho.",
+        "en": "The Code of Hammurabi regulates beer price and quality: fermentation is already industry and law."
+      },
+      "category": "bebida",
+      "region": "Mesopotamia"
+    },
+    {
+      "year": -1000,
+      "title": { "es": "Jiang", "en": "Jiang" },
+      "description": {
+        "es": "Pasta fermentada de carne, pescado o soja con sal en la China clásica: el antepasado directo de la salsa de soja y el miso.",
+        "en": "Salt-fermented paste of meat, fish or soy in classical China: the direct ancestor of soy sauce and miso."
+      },
+      "category": "salsa",
+      "region": "China"
+    },
+    {
+      "year": -500,
+      "title": { "es": "Col en salmuera", "en": "Brine-fermented cabbage" },
+      "description": {
+        "es": "La fermentación de col en salmuera se practica en la antigua China; siglos después arraiga en Europa como chucrut.",
+        "en": "Cabbage is brine-fermented in ancient China; centuries later it takes root in Europe as sauerkraut."
+      },
+      "category": "encurtido",
+      "region": "Eurasia"
+    },
+    {
+      "year": 50,
+      "title": { "es": "Garum romano", "en": "Roman garum" },
+      "description": {
+        "es": "Plinio el Viejo describe la producción industrial de garum en Hispania: salsas de pescado fermentado exportadas por todo el Imperio.",
+        "en": "Pliny the Elder describes industrial garum production in Hispania: fermented fish sauces exported across the Empire."
+      },
+      "category": "salsa",
+      "region": "Imperio Romano"
+    },
+    {
+      "year": 700,
+      "title": { "es": "Miso", "en": "Miso" },
+      "description": {
+        "es": "En el periodo Nara llega el miso a Japón desde China, donde evoluciona junto al sake y el shoyu en la tradición culinaria nipona.",
+        "en": "During the Nara period, miso arrives in Japan from China, evolving alongside sake and shoyu in Japanese cuisine."
+      },
+      "category": "salsa",
+      "region": "Japón"
+    },
+    {
+      "year": 1300,
+      "title": { "es": "Vinagre balsámico", "en": "Balsamic vinegar" },
+      "description": {
+        "es": "Primeras menciones del vinagre balsámico tradicional de Módena, elaborado por fermentación y añejamiento en batería de toneles.",
+        "en": "First mentions of traditional balsamic vinegar from Modena, made by fermentation and aging in a battery of barrels."
+      },
+      "category": "encurtido",
+      "region": "Italia"
+    },
+    {
+      "year": 1500,
+      "title": { "es": "Encurtidos en Europa", "en": "Pickling in Europe" },
+      "description": {
+        "es": "El pepino y el encurtido en vinagre se popularizan en Europa; la salmuera y el vinagre alimentan las expediciones oceánicas.",
+        "en": "Cucumber and vinegar pickling spread through Europe; brine and vinegar sustain the great ocean expeditions."
+      },
+      "category": "encurtido",
+      "region": "Europa"
+    },
+    {
+      "year": 1650,
+      "title": { "es": "Kombucha", "en": "Kombucha" },
+      "description": {
+        "es": "Probables orígenes del té fermentado (SCOBY) en China, difundido luego por Rusia y Europa del Este; su popularidad moderna es tardía.",
+        "en": "Likely origins of fermented tea (SCOBY) in China, later spreading through Russia and Eastern Europe; its modern popularity is recent."
+      },
+      "category": "bebida",
+      "region": "Eurasia"
+    },
+    {
+      "year": 1795,
+      "title": { "es": "Experimentos de Appert", "en": "Appert's experiments" },
+      "description": {
+        "es": "Nicolas Appert comienza a conservar alimentos en frascos sellados mediante calor, respondiendo al premio del ejército francés.",
+        "en": "Nicolas Appert begins preserving food in sealed jars with heat, answering the French army's prize."
+      },
+      "category": "conserva",
+      "region": "Francia"
+    },
+    {
+      "year": 1809,
+      "title": { "es": "Invención del enlatado", "en": "Invention of canning" },
+      "description": {
+        "es": "Appert publica su método y gana el premio: nace la conserva moderna y la esterilización por calor como industria.",
+        "en": "Appert publishes his method and wins the prize: modern canning and heat sterilization are born as an industry."
+      },
+      "category": "conserva",
+      "region": "Francia"
+    },
+    {
+      "year": 1858,
+      "title": { "es": "Frasco Mason", "en": "Mason jar" },
+      "description": {
+        "es": "John Landis Mason patenta el frasco de boca ancha con cierre de rosca y junta de goma, icono del conservado casero.",
+        "en": "John Landis Mason patents the wide-mouth jar with screw-on threaded lid and rubber seal, icon of home preserving."
+      },
+      "category": "conserva",
+      "region": "EE. UU."
+    },
+    {
+      "year": 1864,
+      "title": { "es": "Pasteurización", "en": "Pasteurization" },
+      "description": {
+        "es": "Louis Pasteur demuestra que los microorganismos causan la fermentación y la putrefacción, y desarrolla el calentamiento controlado que lleva su nombre.",
+        "en": "Louis Pasteur shows that microorganisms cause fermentation and spoilage, and develops the controlled heating that bears his name."
+      },
+      "category": "ciencia",
+      "region": "Francia"
+    },
+    {
+      "year": 1924,
+      "title": { "es": "Congelación rápida", "en": "Quick freezing" },
+      "description": {
+        "es": "Clarence Birdseye comercializa la congelación rápida, que conserva sabor y textura y transforma la alimentación doméstica.",
+        "en": "Clarence Birdseye commercializes quick freezing, preserving flavor and texture and transforming home food."
+      },
+      "category": "conserva",
+      "region": "EE. UU."
+    },
+    {
+      "year": 1928,
+      "title": { "es": "Penicilina", "en": "Penicillin" },
+      "description": {
+        "es": "Alexander Fleming descubre la penicilina a partir del hongo Penicillium: la fermentación fúngica se convierte en industria farmacéutica.",
+        "en": "Alexander Fleming discovers penicillin from the mold Penicillium: fungal fermentation becomes a pharmaceutical industry."
+      },
+      "category": "ciencia",
+      "region": "Reino Unido"
+    },
+    {
+      "year": 1980,
+      "title": { "es": "Probióticos", "en": "Probiotics" },
+      "description": {
+        "es": "La ciencia del microbioma y el comercio de probióticos popularizan los fermentos por sus efectos en la salud intestinal.",
+        "en": "Microbiome science and the probiotic trade popularize ferments for their effects on gut health."
+      },
+      "category": "ciencia",
+      "region": "Global"
+    },
+    {
+      "year": 2010,
+      "title": { "es": "Renacimiento fermentador", "en": "Fermentation revival" },
+      "description": {
+        "es": "El movimiento artesanal de kimchi, kombucha, masa madre y miso doméstico recupera y reinventa miles de años de saber fermentador.",
+        "en": "The craft movement of kimchi, kombucha, sourdough and home miso recovers and reinvents thousands of years of fermentation know-how."
+      },
+      "category": "cultura",
+      "region": "Global"
+    }
+  ]
+}

@@ -780,11 +780,12 @@ async function openDetail(id) {
     body.innerHTML = `<p>${state.lang === 'en' ? 'Loading product info...' : 'Cargando información del fermento...'}</p>`;
     document.getElementById("detail").classList.remove("hidden");
     try {
-        const [p, pairings, timer, safety] = await Promise.all([
+        const [p, pairings, timer, safety, etymology] = await Promise.all([
             api(`/products/${id}?lang=${state.lang}`),
             api(`/products/${id}/pairings`).catch(() => null),
             api(`/timers/${id}?temp_c=21`).catch(() => null),
             api(`/products/${id}/safety?lang=${state.lang}`).catch(() => null),
+            api(`/products/${id}/etymology?lang=${state.lang}`).catch(() => null),
         ]);
         const isFav = favorites.has(p.id);
 
@@ -851,9 +852,21 @@ async function openDetail(id) {
                 </ul>
             </div>` : "";
 
+        const etymologyHtml = etymology ? `
+            <div class="detail-section">
+                <h4>💡 ${state.lang === 'en' ? 'Did you know?' : '¿Sabías que...?'}</h4>
+                <p style="font-size:0.9rem; line-height:1.55; color:var(--text-secondary)">
+                    <em>«${esc(etymology.text)}»</em>
+                </p>
+                <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.4rem">
+                    🏷️ ${esc(etymology.term)} · ${esc(etymology.origin)} · ${esc(etymology.period)}
+                </div>
+            </div>` : "";
+
         body.innerHTML = `
             ${p.image_url ? `<img class="detail-img" src="${escAttr(p.image_url)}" alt="${escAttr(p.name)}" onerror="this.style.display='none'">` : ""}
             ${safetyHtml}
+            ${etymologyHtml}
             <div class="card-header-row" style="align-items:center">
                 <h2>${esc(p.name)}</h2>
                 <div style="display:flex; gap:0.4rem; flex-wrap:wrap">

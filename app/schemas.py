@@ -261,6 +261,24 @@ class SafetyOut(BaseModel):
     alerts: list[str]
 
 
+class EtymologyHit(BaseModel):
+    term: str
+    origin: str
+    period: str
+
+
+class EtymologySearchOut(BaseModel):
+    query: str
+    hits: list[EtymologyHit]
+
+
+class EtymologyOut(BaseModel):
+    term: str
+    origin: str
+    period: str
+    text: str
+
+
 class GlossaryOut(BaseModel):
     id: int
     term: str

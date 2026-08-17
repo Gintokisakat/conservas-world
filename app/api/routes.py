@@ -18,6 +18,9 @@ from app.schemas import (
     CheeseMetagenomeOut,
     CountryOut,
     DairyFermentOut,
+    EtymologyHit,
+    EtymologyOut,
+    EtymologySearchOut,
     FlavorMapOut,
     FlavorProductOut,
     GeoPointOut,
@@ -48,6 +51,7 @@ from app.schemas import (
     UseRecommendationOut,
 )
 from app.services.diet import DIET_TAGS, REQUIRED, VIOLATIONS, product_diet_tags
+from app.services.etymology import etymology_out, lookup, search_terms
 from app.services.flavors import AXES, aggregate_by_continent, products_with_profile
 from app.services.guides import get_guide, list_guides
 from app.services.safety import safety_assessment
@@ -1225,6 +1229,33 @@ def list_countries(
     if continent:
         query = query.where(models.Country.continent == continent)
     return session.execute(query).scalars().all()
+
+
+@router.get("/etymology/search", response_model=EtymologySearchOut)
+def etymology_search(
+    q: str = Query(default="", description="Término a buscar (ingrediente o producto)"),
+    lang: str = Query(default="es", pattern="^(es|en)$"),
+):
+    """Etimología de alimentos fermentados (2.9): búsqueda por término."""
+    hits = [
+        EtymologyHit(**h)
+        for h in search_terms(q)
+    ]
+    return EtymologySearchOut(query=q, hits=hits)
+
+
+@router.get("/products/{product_id}/etymology", response_model=EtymologyOut | None)
+def product_etymology(
+    product_id: int,
+    lang: str = Query(default="es", pattern="^(es|en)$"),
+    session: Session = Depends(get_session),
+):
+    """Etimología del producto si existe una entrada para su nombre."""
+    product = _load_product(session, product_id)
+    entry = lookup(product.name)
+    if entry is None:
+        return None
+    return etymology_out(entry, lang)
 
 
 @router.get("/ingredients", response_model=list[IngredientOut])

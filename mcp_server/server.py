@@ -11,13 +11,12 @@ Se sirve por stdio con `mcp.server.stdio`; se usa el SDK oficial `mcp`
 """
 
 import json
-import re
-import unicodedata
 from typing import Any
 
 import httpx
 from app.db import models
 from app.db.database import SessionLocal
+from app.services.timers import REFERENCE_TEMP_C, estimate_days, parse_days
 from mcp import types
 from mcp.server.lowlevel import Server
 from mcp.server.request_state import ServerRequestContext
@@ -27,42 +26,8 @@ from sqlalchemy.orm import selectinload
 SERVER_NAME = "conservas-world"
 SERVER_VERSION = "0.1.0"
 
-# Patrones para parsear tiempos de fermentación en días.
-_TIME_PATTERNS = [
-    (re.compile(r"(\d+)\s*[-–]\s*(\d+)\s*(d[íi]as?|dias?|semanas?|meses?|a[ñn]os?)", re.I), 1),
-    (re.compile(r"(\d+)\s*(d[íi]as?|dias?|semanas?|meses?|a[ñn]os?)", re.I), 2),
-]
-_UNIT_DAYS = {
-    "dia": 1,
-    "dias": 1,
-    "semana": 7,
-    "semanas": 7,
-    "mes": 30,
-    "meses": 30,
-    "ano": 365,
-    "anos": 365,
-}
-
-
-def _norm_unit(unit: str) -> str:
-    unit = unit.lower()
-    return "".join(c for c in unicodedata.normalize("NFD", unit) if unicodedata.category(c) != "Mn")
-
-
-def _parse_days(text: str | None) -> tuple[int, int] | None:
-    """Devuelve (min_days, max_days) aproximados a partir del texto de fermentación."""
-    if not text:
-        return None
-    for pattern, kind in _TIME_PATTERNS:
-        m = pattern.search(text)
-        if m:
-            unit = _norm_unit(m.group(3) if kind == 1 else m.group(2))
-            mult = _UNIT_DAYS.get(unit, 1)
-            if kind == 1:
-                return (int(m.group(1)) * mult, int(m.group(2)) * mult)
-            value = int(m.group(1))
-            return (value * mult, value * mult)
-    return None
+# Alias para compatibilidad con versiones previas (lógica movida a app.services.timers).
+_parse_days = parse_days
 
 
 def _product_detail(session, product_id: int) -> dict | None:
@@ -209,15 +174,10 @@ def get_timer(session, product_id: int, temp_c: int = 21) -> dict | None:
     ).scalar_one_or_none()
     if product is None:
         return None
-    base = _parse_days(product.fermentation_time)
+    days = estimate_days(product.fermentation_time, temp_c)
     note = None
-    days = None
-    if base is None:
+    if days["min"] is None:
         note = "Sin rango de días declarado; usa los tiempos de referencia."
-    else:
-        lo, hi = base
-        factor = 2 ** ((21 - temp_c) / 10)
-        days = {"min": round(lo * factor), "max": round(hi * factor)}
     return {
         "product_id": product.id,
         "name": product.name,
@@ -226,7 +186,7 @@ def get_timer(session, product_id: int, temp_c: int = 21) -> dict | None:
         "storage_life": product.storage_life,
         "temperature_c": temp_c,
         "estimated_days": days,
-        "model": "Q10 (x2 cada +10 °C, referencia 21 °C)",
+        "model": f"Q10 (x2 cada +10 °C, referencia {REFERENCE_TEMP_C:.0f} °C)",
         "note": note,
     }
 

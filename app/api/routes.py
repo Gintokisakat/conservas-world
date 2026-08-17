@@ -8,7 +8,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from ingest.ingredients import CANONICAL_INGREDIENTS, match_ingredients
 from ingest.normalize import normalize_name
-from sqlalchemy import func, select, text
+from sqlalchemy import ColumnElement, func, select, text
 from sqlalchemy.orm import Session, selectinload
 
 from app.db import models
@@ -37,6 +37,7 @@ from app.schemas import (
     Stats,
     SuggestItem,
     TimelineOut,
+    TimerOut,
     UseRecommendationOut,
 )
 from app.services.diet import DIET_TAGS, REQUIRED, VIOLATIONS, product_diet_tags
@@ -230,6 +231,7 @@ def _apply_filters(query, count_query, session, *, q, category, country, contine
 
     if method:
         m_lower = method.lower()
+        cond: ColumnElement[bool]
         if "acétic" in m_lower or "vinagre" in m_lower or "acetic" in m_lower:
             cond = (
                 func.lower(models.Product.method).contains("acétic")
@@ -916,6 +918,30 @@ def product_pairings(
         product_name=product.name,
         total=len(ranked),
         items=items,
+    )
+
+
+@router.get("/timers/{product_id}", response_model=TimerOut)
+def product_timer(
+    product_id: int,
+    temp_c: float = Query(default=21.0, ge=-5, le=50, description="Temperatura ambiente en °C"),
+    session: Session = Depends(get_session),
+):
+    """Perfil de fermentación de un producto y días estimados ajustados a la temperatura (modelo Q10)."""
+    from app.services.timers import REFERENCE_TEMP_C, estimate_days
+
+    product = session.get(models.Product, product_id)
+    if product is None:
+        raise HTTPException(status_code=404, detail="Producto no encontrado")
+    return TimerOut(
+        product_id=product.id,
+        product_name=product.name,
+        fermentation_time=product.fermentation_time,
+        method=product.method,
+        storage_life=product.storage_life,
+        temperature_c=temp_c,
+        estimated_days=estimate_days(product.fermentation_time, temp_c),
+        model=f"Q10 (x2 cada +10 °C, referencia {REFERENCE_TEMP_C:.0f} °C)",
     )
 
 

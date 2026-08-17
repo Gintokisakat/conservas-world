@@ -168,6 +168,17 @@ class PairingsOut(BaseModel):
     items: list[PairingOut]
 
 
+class TimerOut(BaseModel):
+    product_id: int
+    product_name: str
+    fermentation_time: str | None = None
+    method: str | None = None
+    storage_life: str | None = None
+    temperature_c: float
+    estimated_days: dict[str, int | None]
+    model: str
+
+
 class PaginatedProducts(BaseModel):
     total: int
     page: int

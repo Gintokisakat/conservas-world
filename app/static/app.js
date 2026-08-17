@@ -608,6 +608,25 @@ function updatePagination(overridePages) {
     document.getElementById("next-btn").disabled = state.page >= pages || state.onlyFavs;
 }
 
+function updateDetailTimerEstimate(estMin, estMax) {
+    const slider = document.getElementById("timer-slider");
+    const out = document.getElementById("timer-estimate");
+    if (!slider || !out) return;
+    const temp = parseFloat(slider.value);
+    if (estMin == null) {
+        out.textContent = state.lang === 'en'
+            ? `No declared range. Use reference times.`
+            : `Sin rango declarado; usa los tiempos de referencia.`;
+        return;
+    }
+    const factor = Math.pow(2, (21 - temp) / 10);
+    const lo = Math.round(estMin * factor);
+    const hi = Math.round(estMax * factor);
+    out.textContent = state.lang === 'en'
+        ? `≈ ${lo}–${hi} days at ${temp}°C`
+        : `≈ ${lo}–${hi} días a ${temp}°C`;
+}
+
 async function openDetail(id) {
     const body = document.getElementById("detail-body");
     const t = i18n[state.lang] || i18n.es;
@@ -615,9 +634,10 @@ async function openDetail(id) {
     body.innerHTML = `<p>${state.lang === 'en' ? 'Loading product info...' : 'Cargando información del fermento...'}</p>`;
     document.getElementById("detail").classList.remove("hidden");
     try {
-        const [p, pairings] = await Promise.all([
+        const [p, pairings, timer] = await Promise.all([
             api(`/products/${id}?lang=${state.lang}`),
             api(`/products/${id}/pairings`).catch(() => null),
+            api(`/timers/${id}?temp_c=21`).catch(() => null),
         ]);
         const isFav = favorites.has(p.id);
 
@@ -688,6 +708,14 @@ async function openDetail(id) {
             ${p.description ? `<p style="font-size:1.05rem; color:var(--text-secondary); margin-bottom:1rem">${esc(p.description)}</p>` : ""}
             ${p.method ? `<p style="background:var(--bg-page); padding:0.8rem; border-radius:var(--radius-sm)"><strong>${state.lang === 'en' ? 'Traditional Method:' : 'Método tradicional:'}</strong> ${esc(p.method)}</p>` : ""}
             ${p.fermentation_time ? `<p><strong>${t.fermentation_time_title}</strong> ${esc(p.fermentation_time)}</p>` : ""}
+            ${timer && timer.estimated_days ? `
+                <div style="background:var(--bg-page); padding:0.7rem 0.9rem; border-radius:var(--radius-sm); margin-top:0.5rem">
+                    <div style="display:flex; align-items:center; gap:0.6rem; flex-wrap:wrap">
+                        <label for="timer-slider" style="font-size:0.85rem; font-weight:600">🌡️ ${state.lang === 'en' ? 'Estimate at temp:' : 'Estimación a temp:'}</label>
+                        <input type="range" id="timer-slider" min="4" max="45" step="1" value="21" style="flex:1; max-width:220px">
+                        <span style="font-size:0.85rem; font-weight:600" id="timer-estimate"></span>
+                    </div>
+                </div>` : ""}
             ${p.storage_life ? `<p><strong>${t.storage_title}</strong> ${esc(p.storage_life)}</p>` : ""}
             
             <div class="tags" style="margin-top: 0.8rem">
@@ -710,6 +738,15 @@ async function openDetail(id) {
             ${refs}
             ${pairingsHtml}
         `;
+        if (timer && timer.estimated_days) {
+            updateDetailTimerEstimate(timer.estimated_days.min, timer.estimated_days.max);
+            const slider = document.getElementById("timer-slider");
+            if (slider) {
+                slider.addEventListener("input", () =>
+                    updateDetailTimerEstimate(timer.estimated_days.min, timer.estimated_days.max)
+                );
+            }
+        }
     } catch (e) {
         body.innerHTML = `<p>${state.lang === 'en' ? 'Error loading product detail.' : 'Error al cargar el detalle del producto.'}</p>`;
     }
@@ -1313,7 +1350,10 @@ function renderTimers() {
     const now = Date.now();
     container.innerHTML = timers.map((t, idx) => {
         const start = t.startDate;
-        const totalMs = t.days * 86400000;
+        const tempC = t.tempC || 21;
+        const factor = Math.pow(2, (21 - tempC) / 10);
+        const effectiveDays = Math.max(1, Math.round(t.days * factor));
+        const totalMs = effectiveDays * 86400000;
         const elapsedMs = now - start;
         const remainingMs = totalMs - elapsedMs;
 
@@ -1323,6 +1363,9 @@ function renderTimers() {
         const isReady = remainingMs <= 0;
         const startDateStr = new Date(start).toISOString().slice(0, 10);
         const notesHtml = t.notes ? `<div style="font-size:0.82rem; color:var(--color-primary); background:rgba(45,90,63,0.06); padding:0.3rem 0.5rem; border-radius:4px; margin-top:0.3rem">📝 <strong>${state.lang === 'en' ? 'Notes:' : 'Notas:'}</strong> ${esc(t.notes)}</div>` : "";
+        const tempHtml = tempC !== 21
+            ? `<div style="font-size:0.78rem; color:var(--text-muted); margin-top:0.2rem">🌡️ ${state.lang === 'en' ? `Adjusted to ${tempC}°C (≈ ${effectiveDays} days)` : `Ajustado a ${tempC}°C (≈ ${effectiveDays} días)`}</div>`
+            : "";
 
         return `
             <div class="timer-item-card">
@@ -1334,6 +1377,7 @@ function renderTimers() {
                     </div>
                 </div>
                 ${notesHtml}
+                ${tempHtml}
                 <div class="progress-bar-bg" style="margin-top:0.5rem">
                     <div class="progress-bar-fill" style="width: ${pct}%; background-color: ${isReady ? '#2e7d52' : 'var(--color-primary)'}"></div>
                 </div>
@@ -1349,10 +1393,12 @@ function renderTimers() {
 function addTimer() {
     const nameEl = document.getElementById("timer-name");
     const daysEl = document.getElementById("timer-days");
+    const tempEl = document.getElementById("timer-temp");
     const notesEl = document.getElementById("timer-notes");
 
     const name = nameEl.value.trim();
     const days = parseInt(daysEl.value, 10);
+    const tempC = parseFloat(tempEl ? tempEl.value : 21);
     const notes = notesEl ? notesEl.value.trim() : "";
 
     if (!name || isNaN(days) || days < 1) {
@@ -1363,6 +1409,7 @@ function addTimer() {
     timers.push({
         name,
         days,
+        tempC: isNaN(tempC) || tempC <= 0 ? 21 : tempC,
         notes,
         startDate: Date.now()
     });

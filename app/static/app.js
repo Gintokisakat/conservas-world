@@ -774,10 +774,11 @@ async function openDetail(id) {
     body.innerHTML = `<p>${state.lang === 'en' ? 'Loading product info...' : 'Cargando información del fermento...'}</p>`;
     document.getElementById("detail").classList.remove("hidden");
     try {
-        const [p, pairings, timer] = await Promise.all([
+        const [p, pairings, timer, safety] = await Promise.all([
             api(`/products/${id}?lang=${state.lang}`),
             api(`/products/${id}/pairings`).catch(() => null),
             api(`/timers/${id}?temp_c=21`).catch(() => null),
+            api(`/products/${id}/safety?lang=${state.lang}`).catch(() => null),
         ]);
         const isFav = favorites.has(p.id);
 
@@ -823,8 +824,30 @@ async function openDetail(id) {
                 </div>
             </div>` : "";
 
+        const safetyHtml = safety ? `
+            <div class="detail-section safety-card">
+                <h4>🛡️ ${state.lang === 'en' ? 'Safety & pH' : 'Seguridad y pH'}</h4>
+                <div class="safety-risk" style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem">
+                    <span class="tag" style="${safety.risk === 'medio' ? "background:rgba(217,119,6,0.15); color:#b45309; border:1px solid rgba(217,119,6,0.35)" : "background:rgba(45,90,63,0.12); color:var(--color-primary); border:1px solid rgba(45,90,63,0.25)"}">
+                        ${state.lang === 'en' ? 'Risk:' : 'Riesgo:'} ${esc(safety.category)}
+                    </span>
+                    <span class="tag" style="background:rgba(139,92,246,0.12); color:#8b5cf6; border:1px solid rgba(139,92,246,0.3)">${safety.ph_requirement}</span>
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:0.4rem; font-size:0.85rem; margin-bottom:0.6rem">
+                    <span><strong>pH:</strong> ${safety.ph_min}–${safety.ph_max}</span>
+                    <span><strong>aw:</strong> ${safety.aw_min}–${safety.aw_max}</span>
+                    <span><strong>${state.lang === 'en' ? 'Salt' : 'Sal'}:</strong> ${safety.salt_pct_min}–${safety.salt_pct_max}%</span>
+                    <span><strong>${state.lang === 'en' ? 'Temp' : 'Temp'}:</strong> ${safety.storage_temp_c}°C</span>
+                    <span><strong>${state.lang === 'en' ? 'Shelf life' : 'Vida útil'}:</strong> ~${safety.shelf_life_days} ${state.lang === 'en' ? 'days' : 'días'}</span>
+                </div>
+                <ul style="margin:0; padding-left:1.1rem; font-size:0.85rem; color:var(--text-secondary)">
+                    ${safety.alerts.map((a) => `<li>${esc(a)}</li>`).join("")}
+                </ul>
+            </div>` : "";
+
         body.innerHTML = `
             ${p.image_url ? `<img class="detail-img" src="${escAttr(p.image_url)}" alt="${escAttr(p.name)}" onerror="this.style.display='none'">` : ""}
+            ${safetyHtml}
             <div class="card-header-row" style="align-items:center">
                 <h2>${esc(p.name)}</h2>
                 <div style="display:flex; gap:0.4rem; flex-wrap:wrap">

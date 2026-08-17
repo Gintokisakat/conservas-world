@@ -244,6 +244,23 @@ class GuideOut(BaseModel):
     steps: list[GuideStepOut]
 
 
+class SafetyOut(BaseModel):
+    product_id: int
+    name: str
+    category: str
+    risk: str
+    ph_min: float
+    ph_max: float
+    ph_requirement: str
+    aw_min: float
+    aw_max: float
+    salt_pct_min: float
+    salt_pct_max: float
+    storage_temp_c: str
+    shelf_life_days: int
+    alerts: list[str]
+
+
 class GlossaryOut(BaseModel):
     id: int
     term: str

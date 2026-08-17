@@ -35,6 +35,7 @@ from app.schemas import (
     RecommendationOut,
     Recommendations,
     ReferenceOut,
+    SafetyOut,
     SearchSuggest,
     SeasonalMonthName,
     SeasonalOut,
@@ -49,6 +50,7 @@ from app.schemas import (
 from app.services.diet import DIET_TAGS, REQUIRED, VIOLATIONS, product_diet_tags
 from app.services.flavors import AXES, aggregate_by_continent, products_with_profile
 from app.services.guides import get_guide, list_guides
+from app.services.safety import safety_assessment
 from app.services.semantic import semantic_search
 
 router = APIRouter()
@@ -878,6 +880,17 @@ def related_products(
     ).scalars().unique().all()
     order = {pid: i for i, pid in enumerate(ids)}
     return sorted(related, key=lambda p: order[p.id])
+
+
+@router.get("/products/{product_id}/safety", response_model=SafetyOut)
+def product_safety(
+    product_id: int,
+    lang: str = Query(default="es", pattern="^(es|en)$"),
+    session: Session = Depends(get_session),
+):
+    """Evaluación predictiva de pH/seguridad según el tipo de fermento (2.3)."""
+    product = _load_product(session, product_id)
+    return safety_assessment(product, lang)
 
 
 @router.get("/products/{product_id}/pairings", response_model=PairingsOut)

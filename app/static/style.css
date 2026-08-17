@@ -1449,6 +1449,162 @@ html.dark .trouble-outcome-box.danger {
     border-radius: var(--radius-lg);
     padding: 1.6rem 2rem;
     box-shadow: var(--shadow-sm);
+    margin-bottom: 1.8rem;
+}
+
+/* Mapa de Sabores del Mundo (3.6) */
+.flavormap-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-lg);
+    padding: 1.6rem 2rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.8rem;
+}
+
+.flavormap-header h2 {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    margin: 0 0 0.2rem;
+    color: var(--color-primary);
+}
+
+.flavormap-desc {
+    color: var(--text-muted);
+    margin: 0 0 1rem;
+    font-size: 0.95rem;
+}
+
+.flavormap-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.2rem;
+}
+
+.flavormap-controls select {
+    padding: 0.45rem 0.7rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    background: var(--bg-page);
+    color: var(--text-color);
+    font-size: 0.95rem;
+}
+
+.flavormap-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.flavormap-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.2rem;
+}
+
+.flavormap-continent-card {
+    background: var(--bg-page);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.2rem;
+}
+
+.flavormap-continent-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+}
+
+.flavormap-continent-head h3 {
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--text-color);
+}
+
+.flavormap-count {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-weight: 400;
+}
+
+.flavormap-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.flavormap-bar-row {
+    display: grid;
+    grid-template-columns: 84px 1fr 44px;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+}
+
+.flavormap-axis {
+    color: var(--text-muted);
+    text-align: right;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.flavormap-bar {
+    height: 10px;
+    background: var(--border-color);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.flavormap-bar-fill {
+    height: 100%;
+    border-radius: 5px;
+    transition: width 0.4s ease;
+}
+
+.flavormap-val {
+    font-variant-numeric: tabular-nums;
+    color: var(--text-color);
+}
+
+.flavormap-detail {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.7rem;
+    padding-top: 0.7rem;
+    border-top: 1px dashed var(--border-color);
+}
+
+.flavormap-detail-item {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.78rem;
+    color: var(--color-primary);
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.flavormap-detail-item:hover {
+    transform: translateY(-1px);
+    background: rgba(45, 90, 63, 0.1);
+}
+
+.flavormap-empty {
+    grid-column: 1 / -1;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 1rem 0;
+}
 }
 
 .timeline-header h2 {

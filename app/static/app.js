@@ -73,6 +73,8 @@ const i18n = {
         shopping_desc: "Ingredientes necesarios para preparar las recetas seleccionadas:",
         seasonal_title: "🌿 Qué fermentar este mes",
         seasonal_desc: "Ingredientes de temporada y fermentos sugeridos.",
+        flavormap_title: "🗺️ Mapa de sabores del mundo",
+        flavormap_desc: "Perfil de sabor promedio por continente (clasificación heurística por ingredientes).",
         timeline_title: "🏺 Cronología de la fermentación",
         timeline_desc: "13.000 años de cerveza, queso, pan y conservas.",
         timeline_loading: "Cargando…",
@@ -146,6 +148,8 @@ const i18n = {
         shopping_desc: "Ingredients needed to prepare the recommended recipes:",
         seasonal_title: "🌿 What to Ferment This Month",
         seasonal_desc: "In-season ingredients and suggested ferments.",
+        flavormap_title: "🗺️ World flavor map",
+        flavormap_desc: "Average flavor profile by continent (heuristic classification by ingredients).",
         timeline_title: "🏺 A Timeline of Fermentation",
         timeline_desc: "13,000 years of beer, cheese, bread and preserves.",
         timeline_loading: "Loading…",
@@ -203,7 +207,90 @@ const favorites = new Set(JSON.parse(localStorage.getItem("pantry_favs") || "[]"
 
 function saveFavorites() {
     localStorage.setItem("pantry_favs", JSON.stringify(Array.from(favorites)));
-    updateFavBadge();
+async function loadFlavorMap() {
+    const continent = document.getElementById("flavormap-continent").value;
+    const detail = document.getElementById("flavormap-detail").checked;
+    const container = document.getElementById("flavormap-container");
+    const isEn = state.lang === 'en';
+
+    const axesTitles = {
+        picante: isEn ? 'Spicy' : 'Picante',
+        ácido: isEn ? 'Sour' : 'Ácido',
+        umami: isEn ? 'Umami' : 'Umami',
+        dulce: isEn ? 'Sweet' : 'Dulce',
+        salado: isEn ? 'Salty' : 'Salado',
+        amargo: isEn ? 'Bitter' : 'Amargo',
+        fermentado: isEn ? 'Fermented' : 'Fermentado'
+    };
+
+    let data;
+    try {
+        const params = new URLSearchParams();
+        if (continent) params.set("continent", continent);
+        if (detail) params.set("detail", "1");
+        data = await api(`/flavor-map${params.toString() ? "?" + params : ""}`);
+    } catch (e) {
+        container.innerHTML = `<p class="flavormap-empty">${isEn ? 'Could not load flavor map.' : 'No se pudo cargar el mapa de sabores.'}</p>`;
+        return;
+    }
+
+    const sel = document.getElementById("flavormap-continent");
+    if (sel.options.length <= 1) {
+        const all = new Set(["Sin dato", ...data.continents.map(c => c.continent)]);
+        all.forEach(name => {
+            const opt = document.createElement("option");
+            opt.value = name;
+            opt.textContent = name;
+            sel.appendChild(opt);
+        });
+    }
+
+    if (!data.continents.length) {
+        container.innerHTML = `<p class="flavormap-empty">${isEn ? 'No data for the selected filters.' : 'Sin datos para los filtros seleccionados.'}</p>`;
+        return;
+    }
+
+    const axes = data.axes;
+    const accent = (v) => `hsla(${Math.round((1 - v) * 130)}, 70%, 42%, ${0.35 + v * 0.65})`;
+
+    container.innerHTML = data.continents.map(c => {
+        const bars = axes.map(a => `
+            <div class="flavormap-bar-row">
+                <span class="flavormap-axis" title="${axesTitles[a]}">${axesTitles[a]}</span>
+                <div class="flavormap-bar">
+                    <div class="flavormap-bar-fill" style="width:${Math.round(c.profile[a] * 100)}%; background:${accent(c.profile[a])}"></div>
+                </div>
+                <span class="flavormap-val">${c.profile[a].toFixed(2)}</span>
+            </div>`).join("");
+
+        const detailRows = detail && data.detail
+            ? `<div class="flavormap-detail">` + data.detail
+                .filter(p => p.continent === c.continent)
+                .sort((a, b) => (state.lang === 'en' ? 0 : a.name.localeCompare(b.name)))
+                .slice(0, 20)
+                .map(p => `<span class="flavormap-detail-item" data-id="${p.product_id}">${esc(p.name)}</span>`).join("")
+                + `</div>`
+            : "";
+
+        return `
+            <div class="flavormap-continent-card">
+                <div class="flavormap-continent-head">
+                    <h3>📍 ${esc(c.continent)} <span class="flavormap-count">${c.products} ${isEn ? 'products' : 'productos'}</span></h3>
+                </div>
+                <div class="flavormap-bars">${bars}</div>
+                ${detailRows}
+            </div>`;
+    }).join("");
+}
+
+document.getElementById("flavormap-continent").addEventListener("change", loadFlavorMap);
+document.getElementById("flavormap-detail").addEventListener("change", loadFlavorMap);
+document.getElementById("flavormap-container").addEventListener("click", (e) => {
+    const item = e.target.closest(".flavormap-detail-item");
+    if (item && item.dataset.id) openDetail(parseInt(item.dataset.id, 10));
+});
+
+updateFavBadge();
 }
 
 function updateFavBadge() {
@@ -1897,6 +1984,7 @@ function updateLanguageUI() {
     loadDiets();
     loadSeasonal();
     loadTimeline();
+    loadFlavorMap();
     renderTimers();
     search(1);
 }
@@ -1935,4 +2023,5 @@ loadDiets();
 loadSeasonal();
 loadTimeline();
 loadIngredientDatalist();
+loadFlavorMap();
 search(1);

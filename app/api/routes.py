@@ -18,6 +18,8 @@ from app.schemas import (
     CheeseMetagenomeOut,
     CountryOut,
     DairyFermentOut,
+    FlavorMapOut,
+    FlavorProductOut,
     GeoPointOut,
     GlossaryOut,
     IngredientOut,
@@ -41,6 +43,7 @@ from app.schemas import (
     UseRecommendationOut,
 )
 from app.services.diet import DIET_TAGS, REQUIRED, VIOLATIONS, product_diet_tags
+from app.services.flavors import AXES, aggregate_by_continent, products_with_profile
 
 router = APIRouter()
 
@@ -1348,6 +1351,22 @@ def list_references(response: Response, session: Session = Depends(get_session))
     return session.execute(
         select(models.Reference).order_by(models.Reference.title)
     ).scalars().all()
+
+
+@router.get("/flavor-map", response_model=FlavorMapOut)
+def flavor_map(
+    continent: str | None = Query(default=None, description="Filtrar por continente"),
+    category: str | None = Query(default=None, description="Código de categoría"),
+    detail: bool = Query(default=False, description="Incluir desglose por producto"),
+    session: Session = Depends(get_session),
+):
+    """Mapa de sabores: perfil de sabor promedio por continente (clasificación heurística)."""
+    rows = products_with_profile(session, continent=continent, category=category)
+    return {
+        "axes": AXES,
+        "continents": aggregate_by_continent(rows),
+        "detail": [FlavorProductOut(**r) for r in rows] if detail else [],
+    }
 
 
 @router.get("/stats", response_model=Stats)

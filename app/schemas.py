@@ -253,6 +253,36 @@ class Stats(BaseModel):
     by_source: dict[str, int]
 
 
+class FlavorProfileOut(BaseModel):
+    picante: float
+    ácido: float
+    umami: float
+    dulce: float
+    salado: float
+    amargo: float
+    fermentado: float
+
+
+class FlavorProductOut(BaseModel):
+    product_id: int
+    name: str
+    continent: str
+    category: str | None
+    profile: FlavorProfileOut
+
+
+class FlavorContinentOut(BaseModel):
+    continent: str
+    products: int
+    profile: FlavorProfileOut
+
+
+class FlavorMapOut(BaseModel):
+    axes: list[str]
+    continents: list[FlavorContinentOut]
+    detail: list[FlavorProductOut] = []
+
+
 class SeasonalIngredientOut(BaseModel):
     name: str
     count: int

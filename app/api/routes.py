@@ -36,6 +36,8 @@ from app.schemas import (
     SearchSuggest,
     SeasonalMonthName,
     SeasonalOut,
+    SemanticHit,
+    SemanticSearchOut,
     Stats,
     SuggestItem,
     TimelineOut,
@@ -44,6 +46,7 @@ from app.schemas import (
 )
 from app.services.diet import DIET_TAGS, REQUIRED, VIOLATIONS, product_diet_tags
 from app.services.flavors import AXES, aggregate_by_continent, products_with_profile
+from app.services.semantic import semantic_search
 
 router = APIRouter()
 
@@ -595,6 +598,23 @@ def search_suggest(
         )
 
     return SearchSuggest(products=products, ingredients=ingredients, glossary=terms)
+
+
+@router.get("/search/semantic", response_model=SemanticSearchOut)
+def search_semantic(
+    q: str = Query(default="", description="Consulta en lenguaje natural (ej. 'algo picante fermentado')"),
+    limit: int = Query(default=20, ge=1, le=50),
+    session: Session = Depends(get_session),
+):
+    """Búsqueda semántica ligera: similitud coseno TF-IDF sobre nombre+descripción+método+ingredientes."""
+    term = q.strip()
+    if not term:
+        return SemanticSearchOut(query=q, hits=[])
+    hits = [
+        SemanticHit(**h)
+        for h in semantic_search(session, term, limit=limit)
+    ]
+    return SemanticSearchOut(query=q, hits=hits)
 
 
 @router.get("/glossary", response_model=list[GlossaryOut])

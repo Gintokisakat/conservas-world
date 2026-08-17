@@ -76,6 +76,7 @@ const i18n = {
         flavormap_title: "🗺️ Mapa de sabores del mundo",
         flavormap_desc: "Perfil de sabor promedio por continente (clasificación heurística por ingredientes).",
         skip_link: "Saltar al contenido principal",
+        semantic_filter: "🧠 Búsqueda semántica",
         timeline_title: "🏺 Cronología de la fermentación",
         timeline_desc: "13.000 años de cerveza, queso, pan y conservas.",
         timeline_loading: "Cargando…",
@@ -152,6 +153,7 @@ const i18n = {
         flavormap_title: "🗺️ World flavor map",
         flavormap_desc: "Average flavor profile by continent (heuristic classification by ingredients).",
         skip_link: "Skip to main content",
+        semantic_filter: "🧠 Semantic search",
         timeline_title: "🏺 A Timeline of Fermentation",
         timeline_desc: "13,000 years of beer, cheese, bread and preserves.",
         timeline_loading: "Loading…",
@@ -609,6 +611,11 @@ async function search(page = 1) {
     document.getElementById("fav-filter-btn").classList.remove("active");
     state.page = page;
     const list = document.getElementById("product-list");
+    const q = document.getElementById("q").value.trim();
+    if (state.semantic && q) {
+        await searchSemantic(q);
+        return;
+    }
     list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'Searching ferments...' : 'Buscando fermentos y conservas...'}</li>`;
     try {
         const data = await api(`/products?${buildQuery(page)}`);
@@ -619,6 +626,50 @@ async function search(page = 1) {
     } catch (e) {
         list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'Error connecting to API. Check your connection.' : 'Error al conectar con la API. Verifica tu conexión.'}</li>`;
     }
+}
+
+async function searchSemantic(q) {
+    const list = document.getElementById("product-list");
+    list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'Analyzing text similarity...' : 'Analizando similitud de texto...'}</li>`;
+    try {
+        const data = await api(`/search/semantic?q=${encodeURIComponent(q)}&limit=30`);
+        state.total = data.hits.length;
+        renderSemanticResults(data.hits);
+        updatePagination(1);
+        if (state.view === "map") loadMap();
+    } catch (e) {
+        list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'Semantic search failed.' : 'La búsqueda semántica falló.'}</li>`;
+    }
+}
+
+function renderSemanticResults(hits) {
+    const list = document.getElementById("product-list");
+    document.getElementById("count").textContent =
+        `${state.total} ${state.lang === 'en' ? 'semantic result' : 'resultado semántico'}${state.total === 1 ? "" : "s"}`;
+    if (!hits.length) {
+        list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'No matches found for the semantic query.' : 'Sin coincidencias para la consulta semántica.'}</li>`;
+        return;
+    }
+    list.innerHTML = hits.map((h) => {
+        const img = h.image_url
+            ? `<img class="card-img" src="${escAttr(h.image_url)}" alt="${escAttr(h.name)}" loading="lazy" onerror="this.style.display='none'">`
+            : `<div class="card-img card-img-placeholder">${esc(h.name.charAt(0).toUpperCase())}</div>`;
+        return `
+        <li class="product-card" data-product-id="${h.product_id}">
+            ${img}
+            <div>
+                <div class="card-header-row">
+                    <h3>${esc(h.name)}</h3>
+                    <span class="tag" style="background:rgba(45,90,63,0.12); color:var(--color-primary); border:1px solid rgba(45,90,63,0.25)">🧠 ${(h.score * 100).toFixed(0)}%</span>
+                </div>
+                <p class="desc">${esc(h.description || (state.lang === 'en' ? 'No description available.' : 'Sin descripción disponible.'))}</p>
+            </div>
+            <div class="tags">
+                ${h.source_tag ? tag(h.source_tag, "source") : ""}
+                <span class="tag" style="background:rgba(139,92,246,0.12); color:#8b5cf6; border:1px solid rgba(139,92,246,0.3)">🧠 ${state.lang === 'en' ? 'semantic' : 'semántico'}</span>
+            </div>
+        </li>`;
+    }).join("");
 }
 
 async function renderFavorites() {
@@ -2009,6 +2060,14 @@ document.querySelectorAll(".method-chip").forEach((btn) => {
 });
 
 document.getElementById("recommend-btn").addEventListener("click", loadRecommendations);
+
+const semanticToggle = document.getElementById("semantic");
+if (semanticToggle) {
+    semanticToggle.addEventListener("change", () => {
+        state.semantic = semanticToggle.checked;
+        search(1);
+    });
+}
 
 updateFavBadge();
 updateBrineCalculator();

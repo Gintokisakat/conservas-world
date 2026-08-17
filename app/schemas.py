@@ -201,6 +201,20 @@ class SearchSuggest(BaseModel):
     glossary: list[SuggestItem] = []
 
 
+class SemanticHit(BaseModel):
+    product_id: int
+    score: float
+    name: str
+    description: str | None = None
+    image_url: str | None = None
+    source_tag: str | None = None
+
+
+class SemanticSearchOut(BaseModel):
+    query: str
+    hits: list[SemanticHit]
+
+
 class GlossaryOut(BaseModel):
     id: int
     term: str

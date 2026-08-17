@@ -163,6 +163,106 @@
                     </div>
                 </div>
             </section>
+
+            <section class="calc-card">
+                <div class="calc-header">
+                    <h2>🧂 Conversor de Salinidad</h2>
+                    <p class="calc-desc">Equivalencias entre % m/m, gramos por litro y cucharaditas por litro.</p>
+                </div>
+                <div class="calc-grid">
+                    <div class="calc-input-group">
+                        <label for="salt-conv-value" class="label-title">Valor:</label>
+                        <input type="number" id="salt-conv-value" min="0" max="100" value="2.5" step="0.1">
+                    </div>
+                    <div class="calc-input-group">
+                        <label for="salt-conv-unit" class="label-title">Unidad de origen:</label>
+                        <select id="salt-conv-unit">
+                            <option value="pct" selected>% m/m (g por 100 g)</option>
+                            <option value="gl">g/L (salmuera)</option>
+                            <option value="tsp">Cucharaditas por L</option>
+                        </select>
+                    </div>
+                    <div class="calc-result-box">
+                        <span class="calc-result-label">Equivalencias:</span>
+                        <strong id="salt-conv-result" class="calc-result-val">25 g/L · 2.5%</strong>
+                        <span class="calc-result-tip">🥄 1 cucharadita ≈ 5 g de sal</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="calc-card">
+                <div class="calc-header">
+                    <h2>🫙 Calculadora de Vinagre</h2>
+                    <p class="calc-desc">Dilución de ácido acético para salmueras de encurtido.</p>
+                </div>
+                <div class="calc-grid">
+                    <div class="calc-input-group">
+                        <label for="vin-strength" class="label-title">Acidez del vinagre (%):</label>
+                        <input type="number" id="vin-strength" min="1" max="30" value="5" step="0.5">
+                    </div>
+                    <div class="calc-input-group">
+                        <label for="vin-target" class="label-title">Acidez objetivo (%):</label>
+                        <input type="number" id="vin-target" min="1" max="30" value="4.5" step="0.1">
+                    </div>
+                    <div class="calc-input-group">
+                        <label for="vin-volume" class="label-title">Volumen final (L):</label>
+                        <input type="number" id="vin-volume" min="0.1" max="100" value="1" step="0.1">
+                    </div>
+                    <div class="calc-result-box">
+                        <span class="calc-result-label">Necesitas:</span>
+                        <strong id="vin-result" class="calc-result-val">0.9 L vinagre + 0.1 L agua</strong>
+                        <span class="calc-result-tip">⚖️ Regla: volumen × acidez objetivo ÷ acidez disponible</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="calc-card">
+                <div class="calc-header">
+                    <h2>🏔️ Ajuste por Altitud</h2>
+                    <p class="calc-desc">Tiempos de procesamiento en conservas según la altitud (baño maría).</p>
+                </div>
+                <div class="calc-grid">
+                    <div class="calc-input-group">
+                        <label for="alt-meters" class="label-title">Altitud (m):</label>
+                        <input type="number" id="alt-meters" min="0" max="5000" value="600" step="10">
+                    </div>
+                    <div class="calc-input-group">
+                        <label for="alt-base" class="label-title">Tiempo base (min):</label>
+                        <input type="number" id="alt-base" min="1" max="300" value="15" step="1">
+                    </div>
+                    <div class="calc-result-box">
+                        <span class="calc-result-label">Tiempo ajustado:</span>
+                        <strong id="alt-result" class="calc-result-val">20 min</strong>
+                        <span class="calc-result-tip">🌡️ +5 min por cada ~900 m (regla USDA)</span>
+                    </div>
+                </div>
+            </section>
+
+            <section class="calc-card">
+                <div class="calc-header">
+                    <h2>🧪 pH Estimado de la Salmuera</h2>
+                    <p class="calc-desc">Modelo simplificado de acidificación láctica (Q10).</p>
+                </div>
+                <div class="calc-grid">
+                    <div class="calc-input-group">
+                        <label for="ph-initial" class="label-title">pH inicial (agua/salmuera):</label>
+                        <input type="number" id="ph-initial" min="3" max="8" value="6.5" step="0.1">
+                    </div>
+                    <div class="calc-input-group">
+                        <label for="ph-days" class="label-title">Días de fermentación:</label>
+                        <input type="number" id="ph-days" min="1" max="90" value="7" step="1">
+                    </div>
+                    <div class="calc-input-group">
+                        <label for="ph-temp" class="label-title">Temperatura (°C):</label>
+                        <input type="number" id="ph-temp" min="4" max="45" value="21" step="1">
+                    </div>
+                    <div class="calc-result-box">
+                        <span class="calc-result-label">pH estimado:</span>
+                        <strong id="ph-result" class="calc-result-val">4.4 · seguro</strong>
+                        <span class="calc-result-tip">🍋 Conservar por debajo de pH 4.6</span>
+                    </div>
+                </div>
+            </section>
         </div>
 
         <!-- Calendario Estacional -->

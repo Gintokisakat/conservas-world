@@ -1197,11 +1197,102 @@ function updateABVCalculator() {
     resultEl.textContent = `${abv} %`;
 }
 
+function updateSaltConverter() {
+    const valueEl = document.getElementById("salt-conv-value");
+    const unitEl = document.getElementById("salt-conv-unit");
+    const resultEl = document.getElementById("salt-conv-result");
+
+    if (!valueEl || !unitEl || !resultEl) return;
+    const value = parseFloat(valueEl.value) || 0;
+    const unit = unitEl.value;
+
+    let pct, gpl, tsp;
+    if (unit === "pct") {
+        pct = value;
+        gpl = value * 10;
+        tsp = gpl / 5;
+    } else if (unit === "gl") {
+        gpl = value;
+        pct = gpl / 10;
+        tsp = gpl / 5;
+    } else {
+        tsp = value;
+        gpl = tsp * 5;
+        pct = gpl / 10;
+    }
+    const fmt = (n) => (Math.round(n * 10) / 10).toString();
+    resultEl.textContent = `${fmt(gpl)} g/L · ${fmt(pct)}% · ${fmt(tsp)} cdtas/L`;
+}
+
+function updateVinegarCalculator() {
+    const strengthEl = document.getElementById("vin-strength");
+    const targetEl = document.getElementById("vin-target");
+    const volumeEl = document.getElementById("vin-volume");
+    const resultEl = document.getElementById("vin-result");
+
+    if (!strengthEl || !targetEl || !volumeEl || !resultEl) return;
+    const strength = parseFloat(strengthEl.value) || 5;
+    const target = parseFloat(targetEl.value) || 4.5;
+    const volume = parseFloat(volumeEl.value) || 1;
+
+    if (strength <= 0 || target > strength) {
+        resultEl.textContent = "Vinagre insuficiente: usa mayor acidez";
+        return;
+    }
+    const vinegarL = volume * (target / strength);
+    const waterL = volume - vinegarL;
+    const fmt = (n) => `${(Math.round(n * 100) / 100).toString()} L`;
+    resultEl.textContent = `${fmt(vinegarL)} vinagre + ${fmt(Math.max(0, waterL))} agua`;
+}
+
+function updateAltitudeCalculator() {
+    const metersEl = document.getElementById("alt-meters");
+    const baseEl = document.getElementById("alt-base");
+    const resultEl = document.getElementById("alt-result");
+
+    if (!metersEl || !baseEl || !resultEl) return;
+    const meters = parseFloat(metersEl.value) || 0;
+    const base = parseFloat(baseEl.value) || 0;
+
+    const extra = meters > 2745 ? 20 : meters > 1830 ? 15 : meters > 915 ? 10 : meters > 305 ? 5 : 0;
+    const adjusted = base + extra;
+    resultEl.textContent = `${adjusted} min`;
+}
+
+function updatePHCalculator() {
+    const initEl = document.getElementById("ph-initial");
+    const daysEl = document.getElementById("ph-days");
+    const tempEl = document.getElementById("ph-temp");
+    const resultEl = document.getElementById("ph-result");
+
+    if (!initEl || !daysEl || !tempEl || !resultEl) return;
+    const initial = parseFloat(initEl.value) || 6.5;
+    const days = parseFloat(daysEl.value) || 7;
+    const temp = parseFloat(tempEl.value) || 21;
+
+    const tempFactor = Math.pow(2, (temp - 21) / 10);
+    const drop = 0.3 * Math.min(days, 10) * tempFactor;
+    const ph = Math.max(3.2, initial - drop);
+    const safe = ph <= 4.6;
+    resultEl.textContent = `${ph.toFixed(1)} · ${safe ? "seguro" : "precaución"}`;
+}
+
 document.getElementById("calc-weight").addEventListener("input", updateBrineCalculator);
 document.getElementById("calc-target").addEventListener("change", updateBrineCalculator);
 
 document.getElementById("abv-og").addEventListener("input", updateABVCalculator);
 document.getElementById("abv-fg").addEventListener("input", updateABVCalculator);
+
+document.getElementById("salt-conv-value").addEventListener("input", updateSaltConverter);
+document.getElementById("salt-conv-unit").addEventListener("change", updateSaltConverter);
+document.getElementById("vin-strength").addEventListener("input", updateVinegarCalculator);
+document.getElementById("vin-target").addEventListener("input", updateVinegarCalculator);
+document.getElementById("vin-volume").addEventListener("input", updateVinegarCalculator);
+document.getElementById("alt-meters").addEventListener("input", updateAltitudeCalculator);
+document.getElementById("alt-base").addEventListener("input", updateAltitudeCalculator);
+document.getElementById("ph-initial").addEventListener("input", updatePHCalculator);
+document.getElementById("ph-days").addEventListener("input", updatePHCalculator);
+document.getElementById("ph-temp").addEventListener("input", updatePHCalculator);
 
 // ---- Temporizadores de Fermentación (F1 / F2) ----
 
@@ -1784,6 +1875,10 @@ document.getElementById("recommend-btn").addEventListener("click", loadRecommend
 updateFavBadge();
 updateBrineCalculator();
 updateABVCalculator();
+updateSaltConverter();
+updateVinegarCalculator();
+updateAltitudeCalculator();
+updatePHCalculator();
 renderTimers();
 renderPantry();
 loadStats();

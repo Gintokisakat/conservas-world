@@ -206,6 +206,43 @@ def test_resolve_image_retorna_none():
         assert images.resolve_image(p, off_map={}) is None
 
 
+def test_resolve_image_skip_off_no_consulta_off():
+    """--skip-off debe evitar también la consulta OFF por barcode."""
+    p = _product_refs(["https://world.openfoodfacts.org/product/1234567890123"])
+    with (
+        patch.object(images, "off_image_by_barcode") as off,
+        patch.object(images, "commons_image", return_value="https://commons/thumb.jpg") as commons,
+        patch.object(images, "wikidata_image") as wd,
+    ):
+        url = images.resolve_image(p, off_map={}, skip_off=True)
+    assert url == "https://commons/thumb.jpg"
+    off.assert_not_called()
+    commons.assert_called_with(p.name)
+    wd.assert_not_called()
+
+
+def test_resolve_image_throttled_evita_fallback_wikidata(monkeypatch):
+    """Con rate-limit reciente no se hace el fallback de Wikidata."""
+    p = _product_refs(["https://www.wikidata.org/wiki/Q12345"])
+    monkeypatch.setattr(images, "_LAST_429", 999999999.0)
+    with (
+        patch.object(images, "commons_image", return_value=None),
+        patch.object(images, "wikidata_image") as wd,
+    ):
+        assert images.resolve_image(p, off_map={}) is None
+    wd.assert_not_called()
+
+
+def test_resolve_image_throttled_cae_a_none_sin_crash(monkeypatch):
+    """Un rate-limit persistente devuelve None sin propagar RuntimeError."""
+    p = _product_refs([])
+    monkeypatch.setattr(images, "_LAST_429", 0.0)
+    with (
+        patch.object(images, "commons_image", side_effect=RuntimeError("agotado")),
+    ):
+        assert images.resolve_image(p, off_map={}) is None
+
+
 def test_off_barcode_regex_acepta_variantes():
     assert re.fullmatch(images._OFF_BARCODE_RE, "openfoodfacts.org/product/12345")
     assert not re.fullmatch(images._OFF_BARCODE_RE, "openfoodfacts.org/product/abc")

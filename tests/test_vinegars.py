@@ -4,6 +4,7 @@ Tests para Vinagres Caseros, Bebidas Vivas y Filtro por Método.
 
 import sqlite3
 
+
 def test_vinegars_ingest_integrity():
     conn = sqlite3.connect("data/build.db")
     cursor = conn.cursor()

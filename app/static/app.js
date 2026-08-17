@@ -75,6 +75,7 @@ const i18n = {
         seasonal_desc: "Ingredientes de temporada y fermentos sugeridos.",
         flavormap_title: "🗺️ Mapa de sabores del mundo",
         flavormap_desc: "Perfil de sabor promedio por continente (clasificación heurística por ingredientes).",
+        skip_link: "Saltar al contenido principal",
         timeline_title: "🏺 Cronología de la fermentación",
         timeline_desc: "13.000 años de cerveza, queso, pan y conservas.",
         timeline_loading: "Cargando…",
@@ -150,6 +151,7 @@ const i18n = {
         seasonal_desc: "In-season ingredients and suggested ferments.",
         flavormap_title: "🗺️ World flavor map",
         flavormap_desc: "Average flavor profile by continent (heuristic classification by ingredients).",
+        skip_link: "Skip to main content",
         timeline_title: "🏺 A Timeline of Fermentation",
         timeline_desc: "13,000 years of beer, cheese, bread and preserves.",
         timeline_loading: "Loading…",
@@ -1119,6 +1121,7 @@ function renderCharts(s) {
 document.addEventListener("keydown", (e) => {
     if (e.key === "Escape") {
         document.getElementById("detail").classList.add("hidden");
+        document.getElementById("ingredient-modal").classList.add("hidden");
         document.getElementById("shopping-modal").classList.add("hidden");
         document.getElementById("microbes-modal").classList.add("hidden");
         document.getElementById("trouble-modal").classList.add("hidden");
@@ -1459,8 +1462,8 @@ function renderTimers() {
                 <div class="timer-item-head">
                     <h4>🫙 ${esc(t.name)}</h4>
                     <div style="display:flex; gap:0.3rem; align-items:center">
-                        <button type="button" class="btn btn-outline btn-sm" data-action="label" data-name="${escAttr(t.name)}" data-date="${startDateStr}" data-time="${t.days} días" data-storage="Refrigerado en F1/F2" title="${state.lang === 'en' ? 'Print label' : 'Imprimir etiqueta'}">🏷️</button>
-                        <button type="button" class="chip-remove" data-action="remove-timer" data-index="${idx}" title="${state.lang === 'en' ? 'Remove jar' : 'Eliminar frasco'}">&times;</button>
+                        <button type="button" class="btn btn-outline btn-sm" data-action="label" data-name="${escAttr(t.name)}" data-date="${startDateStr}" data-time="${t.days} días" data-storage="Refrigerado en F1/F2" title="${state.lang === 'en' ? 'Print label' : 'Imprimir etiqueta'}" aria-label="${state.lang === 'en' ? 'Print label' : 'Imprimir etiqueta'}">🏷️</button>
+                        <button type="button" class="chip-remove" data-action="remove-timer" data-index="${idx}" title="${state.lang === 'en' ? 'Remove jar' : 'Eliminar frasco'}" aria-label="${state.lang === 'en' ? 'Remove jar' : 'Eliminar frasco'} ${escAttr(t.name)}">&times;</button>
                     </div>
                 </div>
                 ${notesHtml}
@@ -1788,7 +1791,7 @@ function renderChips(list, containerId, onRemove) {
     if (!container) return;
     container.innerHTML = list.map((item, i) => `
         <span class="chip">${esc(item)}
-            <button type="button" class="chip-remove" data-index="${i}" title="Quitar">&times;</button>
+            <button type="button" class="chip-remove" data-index="${i}" title="Quitar" aria-label="${state.lang === 'en' ? 'Remove' : 'Quitar'} ${escAttr(item)}">&times;</button>
         </span>
     `).join("");
     container.querySelectorAll(".chip-remove").forEach((btn) => {

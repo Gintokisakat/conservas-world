@@ -29,6 +29,7 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
 </head>
 <body>
+    <a href="#main-content" class="skip-link" data-i18n="skip_link">Saltar al contenido principal</a>
     <header class="site-header">
         <div class="header-container">
             <div class="brand">
@@ -52,7 +53,7 @@
         </div>
     </header>
 
-    <main class="app-container">
+    <main class="app-container" id="main-content">
         <!-- Sección Mi Despensa -->
         <section class="pantry-card" id="dashboard">
             <div class="pantry-header">
@@ -94,7 +95,7 @@
                 </button>
             </div>
 
-            <div id="recommendations" class="recommendations-container hidden"></div>
+            <div id="recommendations" class="recommendations-container hidden" aria-live="polite"></div>
         </section>
 
         <!-- Temporizador de Fermentos Activos -->
@@ -110,7 +111,7 @@
                 <input type="text" id="timer-notes" placeholder="Notas de lote (ej. 2.5% sal rosa, ajo, laurel)" autocomplete="off" style="flex:1">
                 <button type="button" id="add-timer-btn" class="btn btn-secondary">+ Iniciar Frasco</button>
             </div>
-            <div id="timers-list" class="timers-grid"></div>
+            <div id="timers-list" class="timers-grid" aria-live="polite"></div>
         </section>
 
         <!-- Calculadoras: Salmuera y ABV Alcohólico -->
@@ -380,7 +381,7 @@
         <!-- Lista de Resultados -->
         <section id="results" class="results-section">
             <div class="results-head">
-                <span id="count" class="count-badge">Cargando resultados...</span>
+                <span id="count" class="count-badge" aria-live="polite">Cargando resultados...</span>
                 <div style="display:flex; gap:0.4rem; align-items:center">
                     <button type="button" id="view-list-btn" class="btn btn-sm view-toggle active">☰ <span data-i18n="view_list">Lista</span></button>
                     <button type="button" id="view-map-btn" class="btn btn-sm view-toggle">🗺️ <span data-i18n="view_map">Mapa</span></button>
@@ -394,13 +395,13 @@
             <ul id="product-list" class="products-grid"></ul>
             <div id="map-view" class="hidden">
                 <div id="map"></div>
-                <div id="map-loading" class="hidden"></div>
+                <div id="map-loading" class="hidden" role="status" aria-live="polite"></div>
             </div>
         </section>
     </main>
 
     <!-- Modal Detalle del Producto -->
-    <div id="detail" class="modal-overlay hidden" onclick="closeDetail(event)">
+    <div id="detail" class="modal-overlay hidden" onclick="closeDetail(event)" role="dialog" aria-modal="true" aria-label="Detalle del producto">
         <div class="modal-card">
             <button class="modal-close" onclick="closeDetail()" aria-label="Cerrar modal">&times;</button>
             <div id="detail-body"></div>
@@ -408,7 +409,7 @@
     </div>
 
     <!-- Modal Detalle de Ingrediente -->
-    <div id="ingredient-modal" class="modal-overlay hidden" onclick="closeIngredientModal(event)">
+    <div id="ingredient-modal" class="modal-overlay hidden" onclick="closeIngredientModal(event)" role="dialog" aria-modal="true" aria-label="Detalle del ingrediente">
         <div class="modal-card">
             <button class="modal-close" onclick="closeIngredientModal()" aria-label="Cerrar modal">&times;</button>
             <div id="ingredient-body"></div>
@@ -416,9 +417,9 @@
     </div>
 
     <!-- Modal Lista de Compras -->
-    <div id="shopping-modal" class="modal-overlay hidden" onclick="closeShoppingModal(event)">
+    <div id="shopping-modal" class="modal-overlay hidden" onclick="closeShoppingModal(event)" role="dialog" aria-modal="true" aria-label="Lista de compras">
         <div class="modal-card">
-            <button class="modal-close" onclick="closeShoppingModal()">&times;</button>
+            <button class="modal-close" onclick="closeShoppingModal()" aria-label="Cerrar modal">&times;</button>
             <h2 data-i18n="shopping_title">🛒 Lista de Compras Requerida</h2>
             <p style="color:var(--text-secondary)" data-i18n="shopping_desc">Ingredientes necesarios para preparar las recetas seleccionadas:</p>
             <ul id="shopping-list-items" class="shopping-list"></ul>
@@ -429,9 +430,9 @@
     </div>
 
     <!-- Modal Enciclopedia de Microbios -->
-    <div id="microbes-modal" class="modal-overlay hidden" onclick="closeMicrobesModal(event)">
+    <div id="microbes-modal" class="modal-overlay hidden" onclick="closeMicrobesModal(event)" role="dialog" aria-modal="true" aria-label="Microbiología">
         <div class="modal-card">
-            <button class="modal-close" onclick="closeMicrobesModal()">&times;</button>
+            <button class="modal-close" onclick="closeMicrobesModal()" aria-label="Cerrar modal">&times;</button>
             <h2>🔬 Enciclopedia de Microbios Fermentadores</h2>
             <p style="color:var(--text-secondary)">Bacterias, hongos y levaduras involucrados en la fermentación tradicional:</p>
             <div id="microbes-list" class="microbes-grid"></div>
@@ -439,9 +440,9 @@
     </div>
 
     <!-- Modal Diagnóstico de Problemas (Troubleshooting) -->
-    <div id="trouble-modal" class="modal-overlay hidden" onclick="closeTroubleModal(event)">
+    <div id="trouble-modal" class="modal-overlay hidden" onclick="closeTroubleModal(event)" role="dialog" aria-modal="true" aria-label="Solución de problemas">
         <div class="modal-card">
-            <button class="modal-close" onclick="closeTroubleModal()">&times;</button>
+            <button class="modal-close" onclick="closeTroubleModal()" aria-label="Cerrar modal">&times;</button>
             <h2>🚨 Diagnóstico de Problemas en Fermentación</h2>
             <p style="color:var(--text-secondary)">Selecciona el síntoma visual o de olor que presenta tu frasco:</p>
             
@@ -468,9 +469,9 @@
     </div>
 
     <!-- Modal Generación e Impresión de Etiquetas para Frascos -->
-    <div id="label-modal" class="modal-overlay hidden" onclick="closeLabelModal(event)">
+    <div id="label-modal" class="modal-overlay hidden" onclick="closeLabelModal(event)" role="dialog" aria-modal="true" aria-label="Etiqueta del frasco">
         <div class="modal-card">
-            <button class="modal-close" onclick="closeLabelModal()">&times;</button>
+            <button class="modal-close" onclick="closeLabelModal()" aria-label="Cerrar modal">&times;</button>
             <h2>🏷️ Etiqueta de Frasco Imprimible</h2>
             <p style="color:var(--text-secondary)">Previsualización lista para imprimir o pegar en tu frasco:</p>
             
@@ -494,9 +495,9 @@
     </div>
 
     <!-- Modal Cuadro de Mando y Gráficos Estadísticos -->
-    <div id="charts-modal" class="modal-overlay hidden" onclick="closeChartsModal(event)">
+    <div id="charts-modal" class="modal-overlay hidden" onclick="closeChartsModal(event)" role="dialog" aria-modal="true" aria-label="Gráficos detallados">
         <div class="modal-card modal-lg">
-            <button class="modal-close" onclick="closeChartsModal()">&times;</button>
+            <button class="modal-close" onclick="closeChartsModal()" aria-label="Cerrar modal">&times;</button>
             <h2>📊 Panel de Estadísticas y Distribución Global</h2>
             <p style="color:var(--text-secondary)">Análisis de datos de más de 4700 fermentos, fuentes y taxonomía tradicional:</p>
 
@@ -528,9 +529,9 @@
     </div>
 
     <!-- Modal Manual Científico del Fermentador -->
-    <div id="guide-modal" class="modal-overlay hidden" onclick="closeGuideModal(event)">
+    <div id="guide-modal" class="modal-overlay hidden" onclick="closeGuideModal(event)" role="dialog" aria-modal="true" aria-label="Guía paso a paso">
         <div class="modal-card modal-lg">
-            <button class="modal-close" onclick="closeGuideModal()">&times;</button>
+            <button class="modal-close" onclick="closeGuideModal()" aria-label="Cerrar modal">&times;</button>
             <h2>📖 Manual Científico para Fermentadores</h2>
             <p style="color:var(--text-secondary); margin-bottom:1.2rem">Guía técnica y de inocuidad alimentaria para la elaboración artesanal de conservas y fermentos.</p>
 
@@ -586,9 +587,9 @@
     </div>
 
     <!-- Modal Glosario de Fermentación -->
-    <div id="glossary-modal" class="modal-overlay hidden" onclick="closeGlossaryModal(event)">
+    <div id="glossary-modal" class="modal-overlay hidden" onclick="closeGlossaryModal(event)" role="dialog" aria-modal="true" aria-label="Glosario">
         <div class="modal-card modal-lg">
-            <button class="modal-close" onclick="closeGlossaryModal()">&times;</button>
+            <button class="modal-close" onclick="closeGlossaryModal()" aria-label="Cerrar modal">&times;</button>
             <h2 data-i18n="glossary_title">📚 Glosario de Fermentación</h2>
             <p style="color:var(--text-secondary); margin-bottom:1rem" data-i18n="glossary_sub">Términos esenciales de fermentación y conservación, con definiciones breves.</p>
             <input type="search" id="glossary-search" class="search-input" placeholder="🔎 Buscar un término…" data-i18n-placeholder="glossary_search" autocomplete="off" style="width:100%; margin-bottom:1rem">

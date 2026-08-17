@@ -80,6 +80,7 @@ const i18n = {
         search_placeholder: "Buscar por nombre o descripción (ej. kimchi, sauerkraut, choucroute...)",
         ing_placeholder: "Ej: repollo, zanahoria, sal...",
         prod_placeholder: "Ej: miso, kimchi, masa madre...",
+        install_btn: "Instalar",
         timeline_title: "🏺 Cronología de la fermentación",
         timeline_desc: "13.000 años de cerveza, queso, pan y conservas.",
         timeline_loading: "Cargando…",
@@ -160,6 +161,7 @@ const i18n = {
         search_placeholder: "Search by name or description (e.g. kimchi, sauerkraut, choucroute...)",
         ing_placeholder: "E.g. cabbage, carrot, salt...",
         prod_placeholder: "E.g. miso, kimchi, sourdough...",
+        install_btn: "Install",
         timeline_title: "🏺 A Timeline of Fermentation",
         timeline_desc: "13,000 years of beer, cheese, bread and preserves.",
         timeline_loading: "Loading…",
@@ -210,6 +212,35 @@ let lastStats = null;
 if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
         navigator.serviceWorker.register("/static/sw.js").catch(() => {});
+    });
+
+    // Persist storage so the cache survives eviction
+    if (navigator.storage && navigator.storage.persist) {
+        navigator.storage.persist().catch(() => {});
+    }
+
+    // Install prompt (PWA)
+    let deferredPrompt = null;
+    window.addEventListener("beforeinstallprompt", (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        const btn = document.getElementById("install-btn");
+        if (btn) btn.hidden = false;
+    });
+    window.addEventListener("appinstalled", () => {
+        const btn = document.getElementById("install-btn");
+        if (btn) btn.hidden = true;
+        deferredPrompt = null;
+    });
+    document.addEventListener("click", (e) => {
+        if (e.target.closest("#install-btn") && deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then(() => {
+                deferredPrompt = null;
+                const btn = document.getElementById("install-btn");
+                if (btn) btn.hidden = true;
+            });
+        }
     });
 }
 

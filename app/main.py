@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.public import RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW, check_rate_limit
 from app.api.public import router as public_router
 from app.api.routes import router
+from app.api.seo import router as seo_router
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -28,6 +29,7 @@ def create_app() -> FastAPI:
     app.include_router(router)
     app.include_router(router, prefix="/api/v1")
     app.include_router(public_router)
+    app.include_router(seo_router)
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
     @app.middleware("http")

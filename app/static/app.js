@@ -77,6 +77,9 @@ const i18n = {
         flavormap_desc: "Perfil de sabor promedio por continente (clasificación heurística por ingredientes).",
         skip_link: "Saltar al contenido principal",
         semantic_filter: "🧠 Búsqueda semántica",
+        search_placeholder: "Buscar por nombre o descripción (ej. kimchi, sauerkraut, choucroute...)",
+        ing_placeholder: "Ej: repollo, zanahoria, sal...",
+        prod_placeholder: "Ej: miso, kimchi, masa madre...",
         timeline_title: "🏺 Cronología de la fermentación",
         timeline_desc: "13.000 años de cerveza, queso, pan y conservas.",
         timeline_loading: "Cargando…",
@@ -154,6 +157,9 @@ const i18n = {
         flavormap_desc: "Average flavor profile by continent (heuristic classification by ingredients).",
         skip_link: "Skip to main content",
         semantic_filter: "🧠 Semantic search",
+        search_placeholder: "Search by name or description (e.g. kimchi, sauerkraut, choucroute...)",
+        ing_placeholder: "E.g. cabbage, carrot, salt...",
+        prod_placeholder: "E.g. miso, kimchi, sourdough...",
         timeline_title: "🏺 A Timeline of Fermentation",
         timeline_desc: "13,000 years of beer, cheese, bread and preserves.",
         timeline_loading: "Loading…",
@@ -2166,9 +2172,16 @@ if (mqDark && mqDark.addEventListener) {
 function updateLanguageUI() {
     const t = i18n[state.lang] || i18n.es;
 
+    document.documentElement.lang = state.lang;
+
     document.querySelectorAll("[data-i18n]").forEach((el) => {
         const key = el.dataset.i18n;
         if (t[key]) el.innerHTML = t[key];
+    });
+
+    document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+        const key = el.dataset.i18nPlaceholder;
+        if (t[key]) el.placeholder = t[key];
     });
 
     loadStats();

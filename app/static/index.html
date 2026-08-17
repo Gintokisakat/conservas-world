@@ -68,7 +68,7 @@
                     </label>
                     <div class="chips" id="ing-chips"></div>
                     <div class="input-with-button">
-                        <input type="text" id="ing-input" list="ingredient-list" placeholder="Ej: repollo, zanahoria, sal..." autocomplete="off">
+                        <input type="text" id="ing-input" list="ingredient-list" placeholder="Ej: repollo, zanahoria, sal..." autocomplete="off" data-i18n-placeholder="ing_placeholder">
                         <datalist id="ingredient-list"></datalist>
                         <button type="button" class="btn btn-secondary" id="ing-add">+ Agregar</button>
                     </div>
@@ -80,7 +80,7 @@
                     </label>
                     <div class="chips" id="prod-chips"></div>
                     <div class="input-with-button">
-                        <input type="text" id="prod-input" placeholder="Ej: miso, kimchi, masa madre..." autocomplete="off">
+                        <input type="text" id="prod-input" placeholder="Ej: miso, kimchi, masa madre..." autocomplete="off" data-i18n-placeholder="prod_placeholder">
                         <button type="button" class="btn btn-secondary" id="prod-add">+ Agregar</button>
                     </div>
                 </div>
@@ -311,7 +311,7 @@
             <form id="search-form" class="filters-form">
                 <div class="search-input-wrapper">
                     <span class="search-icon">🔍</span>
-                    <input type="search" id="q" placeholder="Buscar por nombre o descripción (ej. kimchi, sauerkraut, choucroute...)" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest-box" aria-autocomplete="list">
+                    <input type="search" id="q" placeholder="Buscar por nombre o descripción (ej. kimchi, sauerkraut, choucroute...)" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest-box" aria-autocomplete="list" data-i18n-placeholder="search_placeholder">
                     <div id="suggest-box" class="suggest-box hidden" role="listbox"></div>
                 </div>
                 <div class="method-chips-wrapper" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.6rem; margin-bottom:0.6rem; align-items:center">

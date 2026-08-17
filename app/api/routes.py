@@ -22,6 +22,8 @@ from app.schemas import (
     FlavorProductOut,
     GeoPointOut,
     GlossaryOut,
+    GuideListItem,
+    GuideOut,
     IngredientOut,
     MicrobeOut,
     NutritionOut,
@@ -46,6 +48,7 @@ from app.schemas import (
 )
 from app.services.diet import DIET_TAGS, REQUIRED, VIOLATIONS, product_diet_tags
 from app.services.flavors import AXES, aggregate_by_continent, products_with_profile
+from app.services.guides import get_guide, list_guides
 from app.services.semantic import semantic_search
 
 router = APIRouter()
@@ -615,6 +618,25 @@ def search_semantic(
         for h in semantic_search(session, term, limit=limit)
     ]
     return SemanticSearchOut(query=q, hits=hits)
+
+
+@router.get("/guides", response_model=list[GuideListItem])
+def list_guide_items(
+    lang: str = Query(default="es", pattern="^(es|en)$"),
+):
+    """Guías paso a paso curadas (3.4)."""
+    return [GuideListItem(**g) for g in list_guides(lang)]
+
+
+@router.get("/guides/{slug}", response_model=GuideOut)
+def guide_detail(
+    slug: str,
+    lang: str = Query(default="es", pattern="^(es|en)$"),
+):
+    g = get_guide(slug, lang)
+    if g is None:
+        raise HTTPException(status_code=404, detail="Guía no encontrada")
+    return GuideOut(**g)
 
 
 @router.get("/glossary", response_model=list[GlossaryOut])

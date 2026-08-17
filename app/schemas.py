@@ -215,6 +215,35 @@ class SemanticSearchOut(BaseModel):
     hits: list[SemanticHit]
 
 
+class GuideStepOut(BaseModel):
+    number: int
+    title: str
+    body: str
+    duration_min: int | None = None
+    temp_c: int | None = None
+    safety: bool = False
+
+
+class GuideListItem(BaseModel):
+    slug: str
+    category: str
+    title: str
+    intro: str
+    total_min: int
+    difficulty: str
+    steps: int
+
+
+class GuideOut(BaseModel):
+    slug: str
+    category: str
+    title: str
+    intro: str
+    total_min: int
+    difficulty: str
+    steps: list[GuideStepOut]
+
+
 class GlossaryOut(BaseModel):
     id: int
     term: str

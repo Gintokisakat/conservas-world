@@ -989,8 +989,124 @@ function closeChartsModal(event) {
     document.getElementById("charts-modal").classList.add("hidden");
 }
 
+let guidesCache = [];
+let guideState = null;
+
+async function loadGuides() {
+    try {
+        guidesCache = await api(`/guides?lang=${state.lang}`);
+    } catch (e) {
+        guidesCache = [];
+    }
+}
+
+function renderGuideList() {
+    const body = document.getElementById("guide-body");
+    const isEn = state.lang === 'en';
+    body.innerHTML = `
+        <h2>📖 ${isEn ? 'Step-by-step guides' : 'Guías paso a paso'}</h2>
+        <p style="color:var(--text-secondary); margin-bottom:1.2rem">${isEn ? 'Interactive fermentation recipes with steps, timings and temperatures.' : 'Recetas interactivas de fermentación con pasos, tiempos y temperaturas.'}</p>
+        <div id="guide-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem">
+            ${guidesCache.map((g) => `
+                <button type="button" class="guide-card" data-slug="${escAttr(g.slug)}" style="text-align:left; cursor:pointer; background:var(--bg-page); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem">
+                    <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em">${esc(g.category)} · ${esc(g.difficulty)}</div>
+                    <h3 style="margin:0.3rem 0 0.4rem; color:var(--color-primary)">${esc(g.title)}</h3>
+                    <p style="font-size:0.88rem; color:var(--text-secondary); margin:0 0 0.5rem">${esc(g.intro)}</p>
+                    <span class="tag" style="background:rgba(45,90,63,0.12); color:var(--color-primary); border:1px solid rgba(45,90,63,0.25)">⏱️ ${g.total_min} ${isEn ? 'min' : 'min'} · ${g.steps} ${isEn ? 'steps' : 'pasos'}</span>
+                </button>`).join("") || `<p style="color:var(--text-muted)">${isEn ? 'No guides available.' : 'No hay guías disponibles.'}</p>`}
+        </div>`;
+    body.querySelectorAll(".guide-card").forEach((card) => {
+        card.addEventListener("click", () => openGuide(card.dataset.slug));
+    });
+}
+
+async function openGuide(slug) {
+    const body = document.getElementById("guide-body");
+    const isEn = state.lang === 'en';
+    body.innerHTML = `<p style="color:var(--text-muted)">${isEn ? 'Loading guide...' : 'Cargando guía...'}</p>`;
+    let g;
+    try {
+        g = await api(`/guides/${slug}?lang=${state.lang}`);
+    } catch (e) {
+        body.innerHTML = `<p style="color:var(--text-muted)">${isEn ? 'Could not load guide.' : 'No se pudo cargar la guía.'}</p>`;
+        return;
+    }
+    guideState = { guide: g, index: 0 };
+    renderGuideStep();
+}
+
+function guideTimerLabel(step) {
+    const isEn = state.lang === 'en';
+    let s = "";
+    if (step.temp_c != null) s += `${isEn ? 'at' : 'a'} ${step.temp_c}°C `;
+    if (step.duration_min != null) s += `· ${step.duration_min} ${isEn ? 'min' : 'min'}`;
+    return s.trim();
+}
+
+function renderGuideStep() {
+    if (!guideState) return;
+    const body = document.getElementById("guide-body");
+    const isEn = state.lang === 'en';
+    const g = guideState.guide;
+    const step = g.steps[guideState.index];
+    const pct = Math.round(((guideState.index + 1) / g.steps.length) * 100);
+
+    const safetyHtml = step.safety ? `<p style="margin-top:0.8rem; padding:0.6rem 0.8rem; border-radius:var(--radius-sm); background:rgba(217,119,6,0.12); border:1px solid rgba(217,119,6,0.3); color:#b45309; font-size:0.88rem">⚠️ ${isEn ? 'Safety check: never taste if the brine smells foul or has black mold.' : 'Control de inocuidad: nunca pruebes si la salmuera huele mal o tiene moho negro.'}</p>` : "";
+
+    body.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.6rem">
+            <button type="button" class="btn btn-sm btn-outline" id="guide-back-btn">← ${isEn ? 'All guides' : 'Todas las guías'}</button>
+            <span class="tag" style="background:rgba(45,90,63,0.12); color:var(--color-primary); border:1px solid rgba(45,90,63,0.25)">${esc(g.category)} · ${esc(g.difficulty)}</span>
+        </div>
+        <h2 style="margin:0 0 0.2rem">${esc(g.title)}</h2>
+        <div class="guide-progress" style="height:8px; background:var(--border-color); border-radius:4px; margin:0.8rem 0">
+            <div style="height:100%; width:${pct}%; background:var(--color-accent); border-radius:4px; transition:width 0.3s ease"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem">
+            <span>${isEn ? 'Step' : 'Paso'} ${step.number} ${isEn ? 'of' : 'de'} ${g.steps.length}</span>
+            <span>${guideTimerLabel(step)}</span>
+        </div>
+        <h3 style="color:var(--color-primary); margin:0 0 0.6rem">${step.number}. ${esc(step.title)}</h3>
+        <p style="line-height:1.6; color:var(--text-color)">${esc(step.body)}</p>
+        ${safetyHtml}
+        <div style="display:flex; gap:0.6rem; margin-top:1.2rem; flex-wrap:wrap">
+            ${step.duration_min ? `<button type="button" class="btn btn-secondary" id="guide-timer-btn">⏱️ ${isEn ? 'Start timer' : 'Iniciar temporizador'} (${step.duration_min} min)</button>` : ""}
+            <button type="button" class="btn btn-outline" id="guide-prev-btn" ${guideState.index === 0 ? "disabled" : ""}>← ${isEn ? 'Prev' : 'Anterior'}</button>
+            <button type="button" class="btn btn-primary" id="guide-next-btn" style="margin-left:auto">${guideState.index < g.steps.length - 1 ? (isEn ? 'Next step →' : 'Siguiente paso →') : (isEn ? 'Finish ✓' : 'Finalizar ✓')}</button>
+        </div>`;
+
+    document.getElementById("guide-back-btn").addEventListener("click", renderGuideList);
+    const timerBtn = document.getElementById("guide-timer-btn");
+    if (timerBtn) {
+        timerBtn.addEventListener("click", () => {
+            const t = guideState.guide;
+            timers.push({
+                name: `${t.title} — ${isEn ? 'step' : 'paso'} ${step.number}`,
+                days: Math.max(1, Math.ceil(step.duration_min / 1440)),
+                tempC: step.temp_c || 21,
+                notes: isEn ? `Guide step ${step.number}` : `Paso ${step.number} de la guía`,
+                startDate: Date.now()
+            });
+            saveTimers();
+            renderTimers();
+        });
+    }
+    document.getElementById("guide-prev-btn").addEventListener("click", () => {
+        if (guideState.index > 0) { guideState.index--; renderGuideStep(); }
+    });
+    document.getElementById("guide-next-btn").addEventListener("click", () => {
+        if (guideState.index < guideState.guide.steps.length - 1) {
+            guideState.index++;
+            renderGuideStep();
+        } else {
+            renderGuideList();
+        }
+    });
+}
+
 function openGuideModal() {
     document.getElementById("guide-modal").classList.remove("hidden");
+    renderGuideList();
 }
 
 function closeGuideModal(event) {
@@ -2039,6 +2155,7 @@ function updateLanguageUI() {
     loadSeasonal();
     loadTimeline();
     loadFlavorMap();
+    loadGuides();
     renderTimers();
     search(1);
 }
@@ -2086,4 +2203,5 @@ loadSeasonal();
 loadTimeline();
 loadIngredientDatalist();
 loadFlavorMap();
+loadGuides();
 search(1);

@@ -536,56 +536,10 @@
     <div id="guide-modal" class="modal-overlay hidden" onclick="closeGuideModal(event)" role="dialog" aria-modal="true" aria-label="Guía paso a paso">
         <div class="modal-card modal-lg">
             <button class="modal-close" onclick="closeGuideModal()" aria-label="Cerrar modal">&times;</button>
-            <h2>📖 Manual Científico para Fermentadores</h2>
-            <p style="color:var(--text-secondary); margin-bottom:1.2rem">Guía técnica y de inocuidad alimentaria para la elaboración artesanal de conservas y fermentos.</p>
-
-            <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1.2rem">
-                <div style="background:var(--bg-page); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-color)">
-                    <h3 style="color:var(--color-primary); margin-bottom:0.5rem">🧪 1. Esterilización e Higiene</h3>
-                    <p style="font-size:0.9rem; color:var(--text-secondary)">
-                        • <strong>Agua Hirviendo:</strong> Sumérgete frascos y tapas limpia por 10 minutos a 100°C.<br>
-                        • <strong>Vapor:</strong> Mantener frascos boca abajo 15 minutos en vaporera.<br>
-                        • <strong>Desinfección alcohol 70°:</strong> Pulverizar el interior y dejar secar al aire.<br>
-                        • <em>Importante:</em> Lavarse las manos adecuadamente antes de masajear vegetales.
-                    </p>
-                </div>
-
-                <div style="background:var(--bg-page); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-color)">
-                    <h3 style="color:var(--color-primary); margin-bottom:0.5rem">🧂 2. Salinidad Recomendada</h3>
-                    <p style="font-size:0.9rem; color:var(--text-secondary)">
-                        • <strong>Chucrut / Kimchi (Salado seco):</strong> 2.0% - 2.5% del peso vegetal.<br>
-                        • <strong>Pepinillos / Zanahorias (Salmuera):</strong> 3.0% - 3.5% del peso total (agua+vegetal).<br>
-                        • <strong>Chiles / Salsas picantes:</strong> 3.5% - 4.5% para fermentaciones largas.<br>
-                        • <strong>Aceitunas verdes:</strong> 6.0% - 8.0% para desamargar y curar.
-                    </p>
-                </div>
-
-                <div style="background:var(--bg-page); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-color)">
-                    <h3 style="color:var(--color-primary); margin-bottom:0.5rem">🍃 3. Conservar la Textura Crocante</h3>
-                    <p style="font-size:0.9rem; color:var(--text-secondary)">
-                        Las enzimas pectinolíticas ablandan los vegetales. Para mantener un crocante perfecto:<br>
-                        • Añadir <strong>taninos naturales</strong>: 1 hoja de roble, hoja de parra, hoja de frambuesa o 1 bolsa de té negro sin usar.<br>
-                        • Mantener la temperatura entre 18°C y 22°C.
-                    </p>
-                </div>
-
-                <div style="background:var(--bg-page); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-color)">
-                    <h3 style="color:var(--color-primary); margin-bottom:0.5rem">🛡️ 4. Control de Oxígeno & Airlocks</h3>
-                    <p style="font-size:0.9rem; color:var(--text-secondary)">
-                        • Mantener siempre los vegetales <strong>100% sumergidos</strong> bajo la salmuera con un peso de cristal o cerámica limpia.<br>
-                        • Utilizar válvulas de escape de gas (<em>Airlocks</em>) o aflojar la tapa 1 segundo al día para purgar el CO₂ sobrante.
-                    </p>
-                </div>
-
-                <div style="background:var(--bg-page); padding:1rem; border-radius:var(--radius-sm); border:1px solid var(--border-color)">
-                    <h3 style="color:var(--color-primary); margin-bottom:0.5rem">🍶 5. Madre de Vinagre & Acética</h3>
-                    <p style="font-size:0.9rem; color:var(--text-secondary)">
-                        La bacterias <em>Acetobacter aceti</em> convierten el alcohol en ácido acético en presencia de oxígeno:<br>
-                        • <strong>Oxigenación requerida:</strong> Cubrir el frasco con una tela o gasa respirable (sin tapa hermética).<br>
-                        • <strong>Relación alcohol/ácido:</strong> 5% de alcohol en la base produce aprox. 5% de acidez en el vinagre final.<br>
-                        • <strong>Temperatura ideal:</strong> Mantener entre 25°C y 30°C en un lugar oscuro por 3 a 6 semanas.
-                    </p>
-                </div>
+            <div id="guide-body">
+                <h2>📖 Guías paso a paso</h2>
+                <p style="color:var(--text-secondary); margin-bottom:1.2rem">Recetas interactivas de fermentación con pasos, tiempos y temperaturas.</p>
+                <div id="guide-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem"></div>
             </div>
         </div>
     </div>

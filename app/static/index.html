@@ -373,6 +373,7 @@
                 </div>
                 <div class="form-actions">
                     <button type="button" id="guide-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">📖 Manual del Fermentador</button>
+                    <button type="button" id="course-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">🎓 Curso</button>
                     <button type="button" id="glossary-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">📚 Glosario</button>
                     <button type="button" id="trouble-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43">🚨 Diagnóstico de Problemas</button>
                     <button type="button" id="microbes-btn" class="btn btn-outline">🔬 Microbios Fermentadores</button>
@@ -541,6 +542,18 @@
                 <h2>📖 Guías paso a paso</h2>
                 <p style="color:var(--text-secondary); margin-bottom:1.2rem">Recetas interactivas de fermentación con pasos, tiempos y temperaturas.</p>
                 <div id="guide-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Curso de Fermentación -->
+    <div id="course-modal" class="modal-overlay hidden" onclick="closeCourseModal(event)" role="dialog" aria-modal="true" aria-label="Curso de fermentación">
+        <div class="modal-card modal-lg">
+            <button class="modal-close" onclick="closeCourseModal()" aria-label="Cerrar modal">&times;</button>
+            <div id="course-body">
+                <h2>🎓 <span data-i18n="course_title">Curso de Fermentación</span></h2>
+                <p style="color:var(--text-secondary); margin-bottom:1.2rem" data-i18n="course_sub">Cinco módulos desde la historia hasta recetas prácticas. Marca tu progreso y obtén tu certificado.</p>
+                <div id="course-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem"></div>
             </div>
         </div>
     </div>

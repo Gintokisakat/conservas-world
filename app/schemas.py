@@ -279,6 +279,32 @@ class EtymologyOut(BaseModel):
     text: str
 
 
+class CourseSection(BaseModel):
+    heading: str
+    body: str
+    bullets: list[str]
+
+
+class CourseLesson(BaseModel):
+    slug: str
+    title: str
+    duration_min: int
+    sections: list[CourseSection]
+
+
+class CourseModuleItem(BaseModel):
+    slug: str
+    title: str
+    subtitle: str
+    difficulty: int
+    estimated_hours: int
+    lesson_count: int
+
+
+class CourseModuleDetail(CourseModuleItem):
+    lessons: list[CourseLesson]
+
+
 class GlossaryOut(BaseModel):
     id: int
     term: str

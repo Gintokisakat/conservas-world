@@ -17,6 +17,8 @@ from app.schemas import (
     CategoryOut,
     CheeseMetagenomeOut,
     CountryOut,
+    CourseModuleDetail,
+    CourseModuleItem,
     DairyFermentOut,
     EtymologyHit,
     EtymologyOut,
@@ -50,6 +52,7 @@ from app.schemas import (
     TimerOut,
     UseRecommendationOut,
 )
+from app.services.course import module_detail, module_list
 from app.services.diet import DIET_TAGS, REQUIRED, VIOLATIONS, product_diet_tags
 from app.services.etymology import etymology_out, lookup, search_terms
 from app.services.flavors import AXES, aggregate_by_continent, products_with_profile
@@ -1229,6 +1232,26 @@ def list_countries(
     if continent:
         query = query.where(models.Country.continent == continent)
     return session.execute(query).scalars().all()
+
+
+@router.get("/course", response_model=list[CourseModuleItem])
+def course_list(
+    lang: str = Query(default="es", pattern="^(es|en)$"),
+):
+    """Curso de fermentación (4.4): lista de módulos."""
+    return module_list(lang)
+
+
+@router.get("/course/{slug}", response_model=CourseModuleDetail)
+def course_module(
+    slug: str,
+    lang: str = Query(default="es", pattern="^(es|en)$"),
+):
+    """Curso de fermentación (4.4): detalle de un módulo con sus lecciones."""
+    detail = module_detail(slug, lang)
+    if detail is None:
+        raise HTTPException(status_code=404, detail="Módulo no encontrado")
+    return detail
 
 
 @router.get("/etymology/search", response_model=EtymologySearchOut)

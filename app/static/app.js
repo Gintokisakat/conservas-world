@@ -81,6 +81,8 @@ const i18n = {
         ing_placeholder: "Ej: repollo, zanahoria, sal...",
         prod_placeholder: "Ej: miso, kimchi, masa madre...",
         install_btn: "Instalar",
+        course_title: "Curso de Fermentación",
+        course_sub: "Cinco módulos desde la historia hasta recetas prácticas. Marca tu progreso y obtén tu certificado.",
         timeline_title: "🏺 Cronología de la fermentación",
         timeline_desc: "13.000 años de cerveza, queso, pan y conservas.",
         timeline_loading: "Cargando…",
@@ -162,6 +164,8 @@ const i18n = {
         ing_placeholder: "E.g. cabbage, carrot, salt...",
         prod_placeholder: "E.g. miso, kimchi, sourdough...",
         install_btn: "Install",
+        course_title: "Fermentation Course",
+        course_sub: "Five modules from history to practical recipes. Track your progress and earn your certificate.",
         timeline_title: "🏺 A Timeline of Fermentation",
         timeline_desc: "13,000 years of beer, cheese, bread and preserves.",
         timeline_loading: "Loading…",
@@ -1187,6 +1191,172 @@ function closeGuideModal(event) {
     document.getElementById("guide-modal").classList.add("hidden");
 }
 
+// --- Curso de fermentación (4.4) ---
+let courseCache = [];
+let courseState = null;
+
+async function loadCourse() {
+    try {
+        courseCache = await api(`/course?lang=${state.lang}`);
+    } catch (e) {
+        courseCache = [];
+    }
+}
+
+function courseDifficultyLabel(d) {
+    const isEn = state.lang === 'en';
+    return ["", "★", "★★", "★★★"][d] || "★";
+}
+
+function renderCourseList() {
+    const body = document.getElementById("course-body");
+    const isEn = state.lang === 'en';
+    const progress = JSON.parse(localStorage.getItem("pantry_course_progress") || "{}");
+    body.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; margin-bottom:1rem">
+            <div>
+                <h2 style="margin:0">🎓 ${isEn ? 'Fermentation Course' : 'Curso de Fermentación'}</h2>
+                <p style="color:var(--text-secondary); margin:0.2rem 0 0">${isEn ? 'Five modules from history to practical recipes. Track your progress.' : 'Cinco módulos desde la historia hasta recetas prácticas. Sigue tu progreso.'}</p>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline" id="course-cert-btn">📜 ${isEn ? 'My certificate' : 'Mi certificado'}</button>
+        </div>
+        <div id="course-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem">
+            ${courseCache.map((m) => {
+                const done = (progress[m.slug] || []).length;
+                const total = m.lesson_count;
+                return `<div class="guide-card" style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem">
+                    <div style="display:flex; justify-content:space-between; align-items:center">
+                        <span class="tag" style="background:rgba(45,90,63,0.12); color:var(--color-primary); border:1px solid rgba(45,90,63,0.25)">${courseDifficultyLabel(m.difficulty)} · ${m.estimated_hours}${isEn ? 'h' : 'h'}</span>
+                        <span style="font-size:0.8rem; color:var(--text-muted)">${done}/${total}</span>
+                    </div>
+                    <h3 style="margin:0.5rem 0 0.3rem; color:var(--color-primary)">${esc(m.title)}</h3>
+                    <p style="font-size:0.88rem; color:var(--text-secondary); margin:0 0 0.6rem">${esc(m.subtitle)}</p>
+                    <div style="height:6px; background:var(--border-color); border-radius:3px; overflow:hidden">
+                        <div style="height:100%; width:${total ? Math.round(done / total * 100) : 0}%; background:var(--color-accent)"></div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-outline" data-course-slug="${escAttr(m.slug)}" style="margin-top:0.7rem; width:100%">${isEn ? 'Open module →' : 'Abrir módulo →'}</button>
+                </div>`;
+            }).join("") || `<p style="color:var(--text-muted)">${isEn ? 'Course unavailable.' : 'Curso no disponible.'}</p>`}
+        </div>`;
+    body.querySelectorAll("[data-course-slug]").forEach((btn) => {
+        btn.addEventListener("click", () => openCourseModule(btn.dataset.courseSlug));
+    });
+    const certBtn = document.getElementById("course-cert-btn");
+    if (certBtn) certBtn.addEventListener("click", showCourseCertificate);
+}
+
+async function openCourseModule(slug) {
+    const body = document.getElementById("course-body");
+    const isEn = state.lang === 'en';
+    body.innerHTML = `<p style="color:var(--text-muted)">${isEn ? 'Loading module...' : 'Cargando módulo...'}</p>`;
+    let m;
+    try {
+        m = await api(`/course/${slug}?lang=${state.lang}`);
+    } catch (e) {
+        body.innerHTML = `<p style="color:var(--text-muted)">${isEn ? 'Could not load module.' : 'No se pudo cargar el módulo.'}</p>`;
+        return;
+    }
+    courseState = { module: m, index: 0 };
+    renderCourseLesson();
+}
+
+function renderCourseLesson() {
+    if (!courseState) return;
+    const body = document.getElementById("course-body");
+    const isEn = state.lang === 'en';
+    const m = courseState.module;
+    const lesson = m.lessons[courseState.index];
+    const progress = JSON.parse(localStorage.getItem("pantry_course_progress") || "{}");
+    const doneSet = new Set(progress[m.slug] || []);
+
+    body.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.6rem">
+            <button type="button" class="btn btn-sm btn-outline" id="course-back-btn">← ${isEn ? 'All modules' : 'Todos los módulos'}</button>
+            <span class="tag" style="background:rgba(45,90,63,0.12); color:var(--color-primary); border:1px solid rgba(45,90,63,0.25)">${courseDifficultyLabel(m.difficulty)} · ${m.estimated_hours}${isEn ? 'h' : 'h'}</span>
+        </div>
+        <h2 style="margin:0 0 0.2rem">${esc(m.title)}</h2>
+        <p style="color:var(--text-secondary); margin:0 0 0.8rem; font-size:0.9rem">${esc(m.subtitle)}</p>
+        <div style="height:8px; background:var(--border-color); border-radius:4px; margin:0.8rem 0">
+            <div style="height:100%; width:${Math.round(((courseState.index + 1) / m.lessons.length) * 100)}%; background:var(--color-accent); border-radius:4px; transition:width 0.3s ease"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:var(--text-muted); margin-bottom:1rem">
+            <span>${isEn ? 'Lesson' : 'Lección'} ${courseState.index + 1} ${isEn ? 'of' : 'de'} ${m.lessons.length} · ⏱️ ${lesson.duration_min} min</span>
+        </div>
+        <h3 style="color:var(--color-primary); margin:0 0 0.8rem">${esc(lesson.title)}</h3>
+        ${lesson.sections.map((s) => `
+            <div style="margin-bottom:1rem">
+                <h4 style="margin:0 0 0.3rem">${esc(s.heading)}</h4>
+                <p style="line-height:1.6; margin:0 0 0.4rem">${esc(s.body)}</p>
+                ${s.bullets.length ? `<ul style="margin:0.3rem 0 0; padding-left:1.2rem; line-height:1.6; color:var(--text-secondary); font-size:0.9rem">${s.bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>` : ""}
+            </div>`).join("")}
+        <div style="display:flex; gap:0.6rem; margin-top:1.2rem; flex-wrap:wrap; align-items:center">
+            <label style="display:flex; align-items:center; gap:0.4rem; font-size:0.9rem; cursor:pointer">
+                <input type="checkbox" id="course-done-check" ${doneSet.has(lesson.slug) ? "checked" : ""}> ${isEn ? 'Mark as complete' : 'Marcar como completada'}
+            </label>
+            <button type="button" class="btn btn-outline" id="course-prev-btn" ${courseState.index === 0 ? "disabled" : ""}>← ${isEn ? 'Prev' : 'Anterior'}</button>
+            <button type="button" class="btn btn-primary" id="course-next-btn" style="margin-left:auto">${courseState.index < m.lessons.length - 1 ? (isEn ? 'Next lesson →' : 'Siguiente lección →') : (isEn ? 'Finish module ✓' : 'Terminar módulo ✓')}</button>
+        </div>`;
+
+    document.getElementById("course-back-btn").addEventListener("click", renderCourseList);
+    document.getElementById("course-done-check").addEventListener("change", (e) => {
+        const slug = lesson.slug;
+        const prog = JSON.parse(localStorage.getItem("pantry_course_progress") || "{}");
+        const set = new Set(prog[m.slug] || []);
+        if (e.target.checked) set.add(slug); else set.delete(slug);
+        prog[m.slug] = [...set];
+        localStorage.setItem("pantry_course_progress", JSON.stringify(prog));
+    });
+    document.getElementById("course-prev-btn").addEventListener("click", () => {
+        if (courseState.index > 0) { courseState.index--; renderCourseLesson(); }
+    });
+    document.getElementById("course-next-btn").addEventListener("click", () => {
+        if (courseState.index < m.lessons.length - 1) {
+            courseState.index++;
+            renderCourseLesson();
+        } else {
+            renderCourseList();
+        }
+    });
+}
+
+function showCourseCertificate() {
+    const body = document.getElementById("course-body");
+    const isEn = state.lang === 'en';
+    const progress = JSON.parse(localStorage.getItem("pantry_course_progress") || "{}");
+    const total = courseCache.reduce((a, m) => a + m.lesson_count, 0);
+    const done = courseCache.reduce((a, m) => a + (progress[m.slug] || []).length, 0);
+    const pct = total ? Math.round((done / total) * 100) : 0;
+    const completed = pct === 100;
+    body.innerHTML = `
+        <div style="text-align:center; padding:1.5rem">
+            <button type="button" class="btn btn-sm btn-outline" id="cert-back-btn" style="float:left">← ${isEn ? 'All modules' : 'Todos los módulos'}</button>
+            <div style="margin-top:1rem; max-width:520px; margin-left:auto; margin-right:auto; border:2px solid var(--color-primary); border-radius:var(--radius-md); padding:2rem; background:var(--bg-page)">
+                <div style="font-size:2rem">🏅</div>
+                <h2 style="margin:0.5rem 0 0.2rem">${isEn ? 'Fermentation Course' : 'Curso de Fermentación'}</h2>
+                <p style="color:var(--text-secondary)">${isEn ? 'Certificate of completion' : 'Certificado de finalización'}</p>
+                <p style="margin:1rem 0">${done} / ${total} ${isEn ? 'lessons completed' : 'lecciones completadas'} (${pct}%)</p>
+                <div style="height:10px; background:var(--border-color); border-radius:5px; overflow:hidden; margin-bottom:1rem">
+                    <div style="height:100%; width:${pct}%; background:${completed ? "var(--color-accent)" : "var(--color-primary)"}"></div>
+                </div>
+                ${completed
+                    ? `<p style="color:var(--color-primary); font-weight:600">✓ ${isEn ? 'Congratulations! You completed the course.' : '¡Enhorabuena! Has completado el curso.'}</p>`
+                    : `<p style="color:var(--text-secondary); font-size:0.9rem">${isEn ? 'Complete all lessons to earn your certificate.' : 'Completa todas las lecciones para obtener tu certificado.'}</p>`}
+                <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ ${isEn ? 'Print certificate' : 'Imprimir certificado'}</button>
+            </div>
+        </div>`;
+    document.getElementById("cert-back-btn").addEventListener("click", renderCourseList);
+}
+
+function openCourseModal() {
+    document.getElementById("course-modal").classList.remove("hidden");
+    renderCourseList();
+}
+
+function closeCourseModal(event) {
+    if (event && event.target.id !== "course-modal" && !event.target.classList.contains("modal-close")) return;
+    document.getElementById("course-modal").classList.add("hidden");
+}
+
 let glossaryTimer = null;
 let glossaryOpenedTerm = "";
 
@@ -1375,6 +1545,8 @@ document.addEventListener("keydown", (e) => {
 
 const guideBtn = document.getElementById("guide-btn");
 if (guideBtn) guideBtn.addEventListener("click", openGuideModal);
+const courseBtn = document.getElementById("course-btn");
+if (courseBtn) courseBtn.addEventListener("click", openCourseModal);
 
 const glossaryBtn = document.getElementById("glossary-btn");
 if (glossaryBtn) glossaryBtn.addEventListener("click", () => openGlossaryModal({}));
@@ -2236,6 +2408,7 @@ function updateLanguageUI() {
     loadTimeline();
     loadFlavorMap();
     loadGuides();
+    loadCourse();
     renderTimers();
     search(1);
 }
@@ -2284,4 +2457,5 @@ loadTimeline();
 loadIngredientDatalist();
 loadFlavorMap();
 loadGuides();
+loadCourse();
 search(1);

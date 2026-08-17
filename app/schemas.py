@@ -305,6 +305,28 @@ class CourseModuleDetail(CourseModuleItem):
     lessons: list[CourseLesson]
 
 
+class PodcastEpisodeOut(BaseModel):
+    id: str
+    show: str
+    number: int
+    title: str
+    topic: str
+    ferments: list[str]
+    duration_min: int | None
+    summary: str
+    url: str
+
+
+class PodcastTopicOut(BaseModel):
+    key: str
+    label: str
+
+
+class PodcastTopicsOut(BaseModel):
+    topics: list[PodcastTopicOut]
+    ferments: list[str]
+
+
 class GlossaryOut(BaseModel):
     id: int
     term: str

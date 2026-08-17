@@ -1357,6 +1357,104 @@ function closeCourseModal(event) {
     document.getElementById("course-modal").classList.add("hidden");
 }
 
+// --- Podcast (4.5) ---
+let podcastTopics = { topics: [], ferments: [] };
+let podcastFilter = { topic: "", ferment: "" };
+
+async function loadPodcastTopics() {
+    try {
+        podcastTopics = await api(`/podcast/topics?lang=${state.lang}`);
+    } catch (e) {
+        podcastTopics = { topics: [], ferments: [] };
+    }
+}
+
+function renderPodcastList() {
+    const body = document.getElementById("podcast-body");
+    const isEn = state.lang === 'en';
+    body.innerHTML = `
+        <h2>🎙️ ${isEn ? 'Fermentation Podcasts' : 'Podcasts de fermentación'}</h2>
+        <p style="color:var(--text-secondary); margin-bottom:1rem">${isEn ? 'Curated episodes from FermUp and Ferment Radio. External links — no audio is embedded.' : 'Episodios seleccionados de FermUp y Ferment Radio. Enlaces externos: no se incrusta audio.'}</p>
+        <div style="display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:1rem">
+            <select id="podcast-topic-filter" class="lang-picker" style="padding:0.45rem 0.7rem; border-radius:var(--radius-sm); border:1px solid var(--border-color)">
+                <option value="">${isEn ? 'All topics' : 'Todos los temas'}</option>
+                ${podcastTopics.topics.map((t) => `<option value="${escAttr(t.key)}">${esc(t.label)}</option>`).join("")}
+            </select>
+            <select id="podcast-ferment-filter" class="lang-picker" style="padding:0.45rem 0.7rem; border-radius:var(--radius-sm); border:1px solid var(--border-color)">
+                <option value="">${isEn ? 'All ferments' : 'Todos los fermentos'}</option>
+                ${podcastTopics.ferments.map((f) => `<option value="${escAttr(f)}">${esc(f)}</option>`).join("")}
+            </select>
+            <button type="button" class="btn btn-sm btn-outline" id="podcast-clear-btn">${isEn ? 'Clear' : 'Limpiar'}</button>
+        </div>
+        <div id="podcast-loading" class="hidden" role="status" aria-live="polite">${isEn ? 'Loading episodes…' : 'Cargando episodios…'}</div>
+        <div id="podcast-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem"></div>`;
+
+    document.getElementById("podcast-topic-filter").addEventListener("change", (e) => {
+        podcastFilter.topic = e.target.value;
+        renderPodcastEpisodes();
+    });
+    document.getElementById("podcast-ferment-filter").addEventListener("change", (e) => {
+        podcastFilter.ferment = e.target.value;
+        renderPodcastEpisodes();
+    });
+    document.getElementById("podcast-clear-btn").addEventListener("click", () => {
+        podcastFilter = { topic: "", ferment: "" };
+        document.getElementById("podcast-topic-filter").value = "";
+        document.getElementById("podcast-ferment-filter").value = "";
+        renderPodcastEpisodes();
+    });
+    renderPodcastEpisodes();
+}
+
+async function renderPodcastEpisodes() {
+    const isEn = state.lang === 'en';
+    const listEl = document.getElementById("podcast-list");
+    const loadingEl = document.getElementById("podcast-loading");
+    if (!listEl) return;
+    loadingEl.classList.remove("hidden");
+    let eps = [];
+    try {
+        const params = new URLSearchParams({ lang: state.lang });
+        if (podcastFilter.topic) params.set("topic", podcastFilter.topic);
+        if (podcastFilter.ferment) params.set("ferment", podcastFilter.ferment);
+        eps = await api(`/podcast?${params.toString()}`);
+    } catch (e) {
+        eps = [];
+    }
+    loadingEl.classList.add("hidden");
+    listEl.innerHTML = eps.map((e) => `
+        <div class="guide-card" style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem; display:flex; flex-direction:column">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem">
+                <span class="tag" style="background:rgba(45,90,63,0.12); color:var(--color-primary); border:1px solid rgba(45,90,63,0.25)">${esc(e.show)} #${e.number}</span>
+                <span style="font-size:0.8rem; color:var(--text-muted)">${e.duration_min ? `⏱️ ${e.duration_min} min` : ""}</span>
+            </div>
+            <h3 style="margin:0 0 0.3rem; color:var(--color-primary)">${esc(e.title)}</h3>
+            <p style="font-size:0.88rem; color:var(--text-secondary); margin:0 0 0.6rem; flex:1">${esc(e.summary)}</p>
+            <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.8rem">
+                ${e.ferments.map((f) => `<button type="button" class="podcast-ferment-tag tag" data-ferment="${escAttr(f)}" style="background:rgba(217,107,67,0.12); color:#d96b43; border:1px solid rgba(217,107,67,0.3); cursor:pointer">#${esc(f)}</button>`).join("")}
+            </div>
+            <a class="btn btn-sm btn-outline" href="${escAttr(e.url)}" target="_blank" rel="noopener noreferrer" style="text-align:center">${isEn ? 'Listen on the source site ↗' : 'Escuchar en el sitio de origen ↗'}</a>
+        </div>`).join("") || `<p style="color:var(--text-muted)">${isEn ? 'No episodes found.' : 'No hay episodios para esos filtros.'}</p>`;
+    listEl.querySelectorAll(".podcast-ferment-tag").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            const q = document.getElementById("search-input");
+            if (q) q.value = btn.dataset.ferment;
+            document.getElementById("podcast-modal").classList.add("hidden");
+            search(1);
+        });
+    });
+}
+
+function openPodcastModal() {
+    document.getElementById("podcast-modal").classList.remove("hidden");
+    renderPodcastList();
+}
+
+function closePodcastModal(event) {
+    if (event && event.target.id !== "podcast-modal" && !event.target.classList.contains("modal-close")) return;
+    document.getElementById("podcast-modal").classList.add("hidden");
+}
+
 let glossaryTimer = null;
 let glossaryOpenedTerm = "";
 
@@ -1547,6 +1645,8 @@ const guideBtn = document.getElementById("guide-btn");
 if (guideBtn) guideBtn.addEventListener("click", openGuideModal);
 const courseBtn = document.getElementById("course-btn");
 if (courseBtn) courseBtn.addEventListener("click", openCourseModal);
+const podcastBtn = document.getElementById("podcast-btn");
+if (podcastBtn) podcastBtn.addEventListener("click", openPodcastModal);
 
 const glossaryBtn = document.getElementById("glossary-btn");
 if (glossaryBtn) glossaryBtn.addEventListener("click", () => openGlossaryModal({}));
@@ -2409,6 +2509,7 @@ function updateLanguageUI() {
     loadFlavorMap();
     loadGuides();
     loadCourse();
+    loadPodcastTopics();
     renderTimers();
     search(1);
 }
@@ -2458,4 +2559,5 @@ loadIngredientDatalist();
 loadFlavorMap();
 loadGuides();
 loadCourse();
+loadPodcastTopics();
 search(1);

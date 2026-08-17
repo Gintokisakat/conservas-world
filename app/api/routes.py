@@ -35,6 +35,8 @@ from app.schemas import (
     PaginatedProducts,
     PairingOut,
     PairingsOut,
+    PodcastEpisodeOut,
+    PodcastTopicsOut,
     ProductListItem,
     ProductOut,
     RecommendationOut,
@@ -57,6 +59,7 @@ from app.services.diet import DIET_TAGS, REQUIRED, VIOLATIONS, product_diet_tags
 from app.services.etymology import etymology_out, lookup, search_terms
 from app.services.flavors import AXES, aggregate_by_continent, products_with_profile
 from app.services.guides import get_guide, list_guides
+from app.services.podcast import ferments_out, list_episodes, topics_out
 from app.services.safety import safety_assessment
 from app.services.semantic import semantic_search
 
@@ -1232,6 +1235,23 @@ def list_countries(
     if continent:
         query = query.where(models.Country.continent == continent)
     return session.execute(query).scalars().all()
+
+
+@router.get("/podcast", response_model=list[PodcastEpisodeOut])
+def podcast_list(
+    topic: str | None = Query(default=None, description="Tema (ciencia, cultura, salud, recetas, arte)"),
+    ferment: str | None = Query(default=None, description="Etiqueta de fermento"),
+    limit: int = Query(default=50, ge=1, le=200),
+    lang: str = Query(default="es", pattern="^(es|en)$"),
+):
+    """Podcast (4.5): episodios indexados de FermUp y Ferment Radio."""
+    return list_episodes(topic=topic, ferment=ferment, limit=limit, lang=lang)
+
+
+@router.get("/podcast/topics", response_model=PodcastTopicsOut)
+def podcast_topics(lang: str = Query(default="es", pattern="^(es|en)$")):
+    """Podcast (4.5): temas disponibles y etiquetas de fermento."""
+    return PodcastTopicsOut(topics=topics_out(lang), ferments=ferments_out())
 
 
 @router.get("/course", response_model=list[CourseModuleItem])

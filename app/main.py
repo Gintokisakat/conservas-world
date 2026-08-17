@@ -5,6 +5,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
+from app.api.public import RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW, check_rate_limit
+from app.api.public import router as public_router
 from app.api.routes import router
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
@@ -24,7 +26,21 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
     app.include_router(router)
+    app.include_router(router, prefix="/api/v1")
+    app.include_router(public_router)
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+    @app.middleware("http")
+    async def rate_limit_middleware(request, call_next):
+        if request.url.path.startswith("/api"):
+            client_key = request.client.host if request.client else "unknown"
+            remaining = check_rate_limit(client_key)
+            response = await call_next(request)
+            response.headers["X-RateLimit-Limit"] = str(RATE_LIMIT_REQUESTS)
+            response.headers["X-RateLimit-Remaining"] = str(remaining)
+            response.headers["X-RateLimit-Reset"] = str(int(RATE_LIMIT_WINDOW))
+            return response
+        return await call_next(request)
 
     @app.get("/", include_in_schema=False)
     def index():

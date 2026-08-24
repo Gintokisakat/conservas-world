@@ -1,6 +1,6 @@
 # Conservas del Mundo
 
-Base de datos mundial de conservas, fermentos y encurtidos tradicionales: **6.182 productos** de 147 países con API pública, app web instalable (PWA), búsqueda semántica y servidor MCP para asistentes de IA.
+Base de datos mundial de conservas, fermentos y encurtidos **tradicionales**: **2.553 productos** de 147 países con API pública, app web instalable (PWA), búsqueda semántica y servidor MCP para asistentes de IA.
 
 [![CI Pipeline](https://github.com/Gintokisakat/conservas-world/actions/workflows/ci.yml/badge.svg)](https://github.com/Gintokisakat/conservas-world/actions/workflows/ci.yml)
 
@@ -10,7 +10,7 @@ Base de datos mundial de conservas, fermentos y encurtidos tradicionales: **6.18
 
 - **Backend**: Python 3.11 + FastAPI + SQLAlchemy 2.0
 - **BD**: SQLite (FTS5 para búsqueda full-text), migrable a PostgreSQL
-- **Ingesta**: pipeline automático desde fuentes abiertas (FermDB, Wikipedia, Open Food Facts, Wikidata, Ark of Taste, FDF-DB)
+- **Ingesta**: pipeline automático desde fuentes abiertas (FermDB, Wikipedia, Wikidata, Ark of Taste, FDF-DB/MetaCheeseDB)
 - **Frontend**: HTML/CSS/JS vanilla con i18n (ES/EN), Chart.js, Leaflet
 - **IA**: servidor MCP (Model Context Protocol) con herramientas para asistentes
 
@@ -126,19 +126,20 @@ curl "http://localhost:8000/api/v1/products?q=kimchi&page_size=3"
 |---|---|---|
 | FermDB (ETH Zurich) | Fermentos tradicionales del mundo | CC BY 4.0 |
 | Wikipedia (7 listas: fermentados, encurtidos, lácteos, leche fermentada, quesos, soja) | Entradas adicionales e imágenes | CC BY-SA 4.0 |
-| Open Food Facts (35+ categorías) | Productos comerciales, con tope por categoría | ODbL |
 | Wikidata | Enriquecimiento (label, descripción, país) | CC0 |
 | Slow Food Ark of Taste | Productos patrimoniales | CC BY-SA 4.0 |
 | FDF-DB / MetaCheeseDB | Lácteos fermentados y metagenomas de quesos | Académico |
 | USDA FoodKeeper | Guías de vida útil (adaptadas) | Dominio público |
 
+> **Nota sobre Open Food Facts**: se evaluó su ingesta (3.382 productos comerciales con tope por categoría) y se **excluyó por calidad**: traía SKUs de supermercado ultraprocesados o conservas industriales sin valor tradicional ("Beyond Sausage", atún enlatado de marca). Sus productos fueron marcados como descartados y la fuente quedó fuera de la ingesta por defecto.
+
 ### Estado del catálogo
 
-**6.182 productos** (5.935 activos + 247 descartados por curaduría), **147 países**, 203 ingredientes canónicos, 41 microbios, 3.269 referencias, ~4.900 vínculos de uso entre productos, 1.264 lácteos fermentados y 267 metagenomas de quesos.
+**2.553 productos activos** (de 6.182 evaluados; el resto descartado por curaduría), **147 países**, 203 ingredientes canónicos, 41 microbios, 3.269 referencias, 2.334 vínculos de uso entre productos, 1.264 lácteos fermentados y 267 metagenomas de quesos.
 
-Cobertura: 99,98% de productos con ≥1 ingrediente, ~99% con sustrato principal identificado, imágenes para ~57% del catálogo (pipeline Wikimedia en curso).
+Cobertura: ~100% de productos con ≥1 ingrediente, imágenes para la mayoría del catálogo (Wikimedia Commons, con atribución).
 
-Distribución por categoría (16/16 activas): fermento_láctico 1.387, encurtido_fermentado 960, conserva_esterilizada 866, fermento_alcohólico 542, fermento_koji 519, conserva_azúcar 449, encurtido_vinagre 372, fermento_acético 221, encurtido_salmuera 155, ahumado 141, conserva_aceite 138, secado 117, curado_sal 68, fermento_mixto 44, fermento_alcalino 5.
+Distribución por categoría: fermento_láctico 2.235, fermento_alcohólico 143, encurtido_fermentado 122, fermento_koji 57, otro 33, encurtido_vinagre 12, conserva_azúcar 10, fermento_acético 6, fermento_mixto 4, fermento_alcalino 1.
 
 ### Curaduría
 
@@ -166,4 +167,4 @@ La ruta de la BD se configura con la variable `CONSERVAS_DB` (por defecto `data/
 
 ## Licencia
 
-Código bajo MIT (ver `LICENSE`). Los datos agregados provienen de fuentes abiertas que requieren atribución: FermDB (CC BY 4.0), Wikipedia (CC BY-SA 4.0), Open Food Facts (ODbL), Wikidata (CC0), Ark of Taste (CC BY-SA 4.0). La base compilada (`data/build.db`) no se distribuye; se genera con `uv run python -m ingest.ingest`.
+Código bajo MIT (ver `LICENSE`). Los datos agregados provienen de fuentes abiertas que requieren atribución: FermDB (CC BY 4.0), Wikipedia (CC BY-SA 4.0), Wikidata (CC0), Ark of Taste (CC BY-SA 4.0). La base compilada (`data/build.db`) no se distribuye; se genera con `uv run python -m ingest.ingest` o se restaura desde el release con `uv run python -m ingest.restore`.

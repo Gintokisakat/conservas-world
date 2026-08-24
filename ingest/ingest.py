@@ -5,7 +5,11 @@ from app.db.database import SessionLocal, init_db
 
 from ingest.normalize import normalize_name
 
-SOURCES = ["fermdb", "wikipedia", "openfoodfacts", "wikidata", "regional", "fdfdb", "metacheese"]
+# Open Food Facts quedó excluida por calidad: traía SKUs comerciales de
+# supermercado (ultraprocesados, conservas industriales sin valor
+# tradicional). Ver README "Curaduría". El módulo sigue disponible para
+# ingesta manual con --sources openfoodfacts.
+SOURCES = ["fermdb", "wikipedia", "wikidata", "regional", "fdfdb", "metacheese"]
 
 
 def run(sources: list[str], reset: bool = False):

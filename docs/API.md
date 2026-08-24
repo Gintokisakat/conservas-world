@@ -25,7 +25,7 @@ Lista paginada con filtros.
 | `country` | str | Nombre o código ISO del país |
 | `continent` | str | Continente |
 | `ingredient` | str | Ingrediente canónico |
-| `source` | str | Fuente (`fermdb`, `wikipedia`, `openfoodfacts`, `wikidata`, `ark_of_taste`, `fdfdb`) |
+| `source` | str | Fuente (`fermdb`, `wikipedia`, `wikidata`, `ark_of_taste`, `fdfdb`, `regional`) |
 | `diet` | str | Etiqueta de dieta (`vegetarian`, `vegan`, `gluten_free`, …) |
 | `fermentation_time` | str | Rango de tiempo de fermentación |
 | `gi` | bool | Solo con indicación geográfica |

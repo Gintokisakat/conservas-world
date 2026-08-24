@@ -116,6 +116,9 @@ def run(sources: list[str], reset: bool = False):
             print(f"Metagenomas MetaCheeseDB vinculados: {metagenomes}", flush=True)
         added, updated = loader.enrich_ingredients(session)
         uses = loader.build_product_uses(session)
+        from ingest.microbiota_profiles import link_typical_microbiota
+
+        micro_enriched, micro_links = link_typical_microbiota(session)
         loader.seed_country_coords(session)
         loader.create_full_text_table()
     finally:
@@ -123,6 +126,7 @@ def run(sources: list[str], reset: bool = False):
 
     print(f"\nFilas por fuente: {by_source}")
     print(f"Duplicados saltados: {skipped}")
+    print(f"Microbiota típica vinculada: {micro_enriched} productos (+{micro_links} vínculos)")
     print(f"Productos insertados: {total}")
     print(f"Ingredientes enriquecidos: {added} (+{updated} sustratos)")
     print(f"Vinculos de uso entre productos: {uses}")

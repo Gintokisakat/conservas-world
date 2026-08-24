@@ -1,0 +1,13 @@
+include,name,country,substrate,category,description_es,microbiota,source_ref
+yes,Qymyz (koumiss),"Kazajistán, Kirguistán, Mongolia",leche de yegua,fermento_lactico,"Lácteo fermentado tradicional de la estepa/cordillera (Kazajistán, Kirguistán, Mongolia).",,Int Dairy J (2021/2022) Central Asia dairy reviews
+yes,Shubat,Kazajistán,leche de camella,fermento_lactico,Lácteo fermentado tradicional de la estepa/cordillera (Kazajistán).,,Int Dairy J (2021/2022) Central Asia dairy reviews
+yes,Chal,Turkmenistán,leche de camella,fermento_lactico,Lácteo fermentado tradicional de la estepa/cordillera (Turkmenistán).,,Int Dairy J (2021/2022) Central Asia dairy reviews
+yes,Khoormog,Mongolia,leche de yegua/vaca,fermento_lactico,Lácteo fermentado tradicional de la estepa/cordillera (Mongolia).,,Int Dairy J (2021/2022) Central Asia dairy reviews
+yes,Qurt (kurt),"Kazajistán, Kirguistán",yogur seco salado,fermento_lactico,"Lácteo fermentado tradicional de la estepa/cordillera (Kazajistán, Kirguistán).",,Int Dairy J (2021/2022) Central Asia dairy reviews
+yes,Irimshik,Kazajistán,leche de oveja/cabra (queso seco),fermento_lactico,Lácteo fermentado tradicional de la estepa/cordillera (Kazajistán).,,Int Dairy J (2021/2022) Central Asia dairy reviews
+yes,Souzma,Kazajistán,yogur escurrido,fermento_lactico,Lácteo fermentado tradicional de la estepa/cordillera (Kazajistán).,,Int Dairy J (2021/2022) Central Asia dairy reviews
+yes,Ayran,"Turquía, Cáucaso, Asia Central",leche (bebida),fermento_lactico,"Lácteo fermentado tradicional de la estepa/cordillera (Turquía, Cáucaso, Asia Central).",,Int Dairy J (2021/2022) Central Asia dairy reviews
+yes,Tan,"Armenia, Azerbaiyán",leche (bebida de yogur),fermento_lactico,"Lácteo fermentado tradicional de la estepa/cordillera (Armenia, Azerbaiyán).",,Int Dairy J (2021/2022) Central Asia dairy reviews
+yes,Ryazhenka,"Rusia, Kazajistán",leche horneada fermentada,fermento_lactico,"Lácteo fermentado tradicional de la estepa/cordillera (Rusia, Kazajistán).",,Int Dairy J (2021/2022) Central Asia dairy reviews
+yes,Prostokvasha,Rusia,leche acidificada,fermento_lactico,Lácteo fermentado tradicional de la estepa/cordillera (Rusia).,,Int Dairy J (2021/2022) Central Asia dairy reviews
+yes,Kefir,Cáucaso,leche con granos de kéfir,fermento_lactico,Lácteo fermentado tradicional de la estepa/cordillera (Cáucaso).,,Int Dairy J (2021/2022) Central Asia dairy reviews

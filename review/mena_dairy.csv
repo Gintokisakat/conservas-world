@@ -1,0 +1,19 @@
+include,name,country,substrate,category,description_es,microbiota,source_ref
+yes,Laban,"Egipto, Irak, Líbano",leche,fermento_lactico,"Lácteo fermentado tradicional de Egipto, Irak, Líbano.",,Int Dairy J (2023) MENA fermented dairy review
+yes,Leben,"Egipto, Irak, Líbano, Túnez",leche,fermento_lactico,"Lácteo fermentado tradicional de Egipto, Irak, Líbano, Túnez.",,Int Dairy J (2023) MENA fermented dairy review
+yes,Labneh,Levante,yogur escurrido,fermento_lactico,Lácteo fermentado tradicional de Levante.,,Int Dairy J (2023) MENA fermented dairy review
+yes,Laben raib,Arabia Saudí,leche,fermento_lactico,Lácteo fermentado tradicional de Arabia Saudí.,,Int Dairy J (2023) MENA fermented dairy review
+yes,Mast,Irán,leche,fermento_lactico,Lácteo fermentado tradicional de Irán.,,Int Dairy J (2023) MENA fermented dairy review
+yes,Zabady,"Egipto, Sudán",leche,fermento_lactico,"Lácteo fermentado tradicional de Egipto, Sudán.",,Int Dairy J (2023) MENA fermented dairy review
+yes,Kishk,"Egipto, Siria, Líbano, Jordania",trigo + yogur,fermento_lactico,"Lácteo fermentado tradicional de Egipto, Siria, Líbano, Jordania.",,Int Dairy J (2023) MENA fermented dairy review
+yes,Kushuk,Irak,trigo + yogur,fermento_lactico,Lácteo fermentado tradicional de Irak.,,Int Dairy J (2023) MENA fermented dairy review
+yes,Kashk,Irán,trigo + yogur / suero,fermento_lactico,Lácteo fermentado tradicional de Irán.,,Int Dairy J (2023) MENA fermented dairy review
+yes,Tarhana,Turquía,trigo + yogur + verduras,fermento_lactico,Lácteo fermentado tradicional de Turquía.,,Int Dairy J (2023) MENA fermented dairy review
+yes,Trahanas,"Grecia, Chipre",trigo + leche de oveja/cabra,fermento_lactico,"Lácteo fermentado tradicional de Grecia, Chipre.",,Int Dairy J (2023) MENA fermented dairy review
+yes,Ayran,Turquía,leche (bebida),fermento_lactico,Lácteo fermentado tradicional de Turquía.,,Int Dairy J (2023) MENA fermented dairy review
+yes,Jameed,Jordania,leche de oveja secada,fermento_lactico,Lácteo fermentado tradicional de Jordania.,,Int Dairy J (2023) MENA fermented dairy review
+yes,Oggtt,Arabia Saudí,leche deshidratada,fermento_lactico,Lácteo fermentado tradicional de Arabia Saudí.,,Int Dairy J (2023) MENA fermented dairy review
+yes,Tulum,Turquía,leche (madurado en piel),fermento_lactico,Lácteo fermentado tradicional de Turquía.,,Int Dairy J (2023) MENA fermented dairy review
+yes,Kurut,"Turquía, Asia Central",yogur seco,fermento_lactico,"Lácteo fermentado tradicional de Turquía, Asia Central.",,Int Dairy J (2023) MENA fermented dairy review
+yes,Shanklish,"Siria, Líbano",queso fresco especiado,fermento_lactico,"Lácteo fermentado tradicional de Siria, Líbano.",,Int Dairy J (2023) MENA fermented dairy review
+yes,Lben,Magreb,leche (bebida),fermento_lactico,Lácteo fermentado tradicional de Magreb.,,Int Dairy J (2023) MENA fermented dairy review

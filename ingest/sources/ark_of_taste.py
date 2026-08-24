@@ -231,7 +231,7 @@ def ingest_ark_of_taste():
     total_ark_count = cursor.fetchone()[0]
 
     conn.close()
-    print(f"\n🎉 Ingesta y etiquetado del Arca del Gusto completado:")
+    print("\n🎉 Ingesta y etiquetado del Arca del Gusto completado:")
     print(f"   • Productos específicos agregados: {added_count}")
     print(f"   • Total de conservas patrimoniales etiquetadas como Arca del Gusto: {total_ark_count}")
 

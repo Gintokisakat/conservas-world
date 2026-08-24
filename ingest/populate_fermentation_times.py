@@ -60,7 +60,7 @@ def populate_times():
     conn.commit()
     conn.close()
 
-    print(f"✅ Enriquecimiento completado:")
+    print("✅ Enriquecimiento completado:")
     print(f"   • Tiempos de fermentación actualizados: {updated_time}")
     print(f"   • Tiempos de conservación actualizados: {updated_storage}")
 

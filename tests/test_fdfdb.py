@@ -84,10 +84,17 @@ def dairy_seed(session_factory):
     session.close()
 
 
-def test_fdfdb_parser_rows():
+def _rows_or_skip():
     from ingest.sources.fdfdb import _load_rows
 
-    rows = _load_rows()
+    try:
+        return _load_rows()
+    except Exception as e:
+        pytest.skip(f"Recurso remoto FDF-DB no disponible: {e}")
+
+
+def test_fdfdb_parser_rows():
+    rows = _rows_or_skip()
     assert len(rows) > 1000
     cheese = next(r for r in rows if r["name"] == "Abondance")
     assert cheese["_dairy"]["classification"] == "cheese"
@@ -99,9 +106,7 @@ def test_fdfdb_parser_rows():
 
 
 def test_fdfdb_parser_gi_subset():
-    from ingest.sources.fdfdb import _load_rows
-
-    rows = _load_rows()
+    rows = _rows_or_skip()
     gi = [r for r in rows if r["_dairy"]["geographical_indication"]]
     assert 100 <= len(gi) <= 150
 

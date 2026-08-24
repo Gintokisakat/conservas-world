@@ -25,6 +25,11 @@ CATEGORIES = [
         "description": "Fermentación con hongos filamentosos como Aspergillus.",
     },
     {
+        "code": "fermento_cereal",
+        "name": "Fermento de cereal y tubérculo",
+        "description": "Fermentación de cereales, raíces y tubérculos (gari, ogi, kenkey, tarhana...).",
+    },
+    {
         "code": "encurtido_fermentado",
         "name": "Encurtido fermentado",
         "description": "Verduras/frutas conservadas por fermentación láctica en salmuera.",

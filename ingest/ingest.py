@@ -9,7 +9,7 @@ from ingest.normalize import normalize_name
 # supermercado (ultraprocesados, conservas industriales sin valor
 # tradicional). Ver README "Curaduría". El módulo sigue disponible para
 # ingesta manual con --sources openfoodfacts.
-SOURCES = ["fermdb", "wikipedia", "wikidata", "wikidata_deep", "regional", "fdfdb", "metacheese", "eambrosia", "fao1998"]
+SOURCES = ["fermdb", "wikipedia", "wikidata", "wikidata_deep", "regional", "fdfdb", "metacheese", "eambrosia", "fao1998", "review"]
 
 
 def run(sources: list[str], reset: bool = False):
@@ -59,6 +59,8 @@ def run(sources: list[str], reset: bool = False):
                 from ingest.sources import wikidata_deep
             elif source == "fao1998":
                 from ingest.sources import fao1998
+            elif source == "review":
+                from ingest.sources import review_csv
             else:
                 raise ValueError(f"Fuente desconocida: {source}")
             print(f"Ingiriendo fuente: {source} ...", flush=True)
@@ -81,6 +83,8 @@ def run(sources: list[str], reset: bool = False):
                     records = wikidata_deep.load_source()
                 elif source == "fao1998":
                     records = fao1998.load_source()
+                elif source == "review":
+                    records = review_csv.load_source()
                 else:
                     records = regional.load_source()
             except Exception as exc:

@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.auth import router as auth_router
 from app.api.public import RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW, check_rate_limit
 from app.api.public import router as public_router
+from app.api.reviews import router as reviews_router
 from app.api.routes import router
 from app.api.seo import router as seo_router
 from app.db.database import engine as _engine
@@ -31,6 +32,8 @@ def create_app() -> FastAPI:
     app.include_router(router)
     app.include_router(router, prefix="/api/v1")
     app.include_router(auth_router)
+    app.include_router(reviews_router)
+    app.include_router(reviews_router, prefix="/api/v1")
     app.include_router(public_router)
     app.include_router(seo_router)
 

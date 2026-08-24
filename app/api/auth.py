@@ -105,15 +105,23 @@ def get_current_user(
     session: Session = Depends(get_session),
 ) -> models.User:
     """Resuelve el usuario desde el header `Authorization: Bearer <token>`."""
+    user = get_optional_user(authorization=authorization, session=session)
+    if user is None:
+        raise HTTPException(status_code=401, detail="Falta el token de acceso o es inválido")
+    return user
+
+
+def get_optional_user(
+    authorization: str | None = Header(default=None),
+    session: Session = Depends(get_session),
+) -> models.User | None:
+    """Como get_current_user pero devuelve None si no hay token válido."""
     if not authorization or not authorization.startswith("Bearer "):
-        raise HTTPException(status_code=401, detail="Falta el token de acceso")
+        return None
     user_id = decode_token(authorization[7:].strip())
     if user_id is None:
-        raise HTTPException(status_code=401, detail="Token inválido o expirado")
-    user = session.get(models.User, user_id)
-    if user is None:
-        raise HTTPException(status_code=401, detail="Usuario no encontrado")
-    return user
+        return None
+    return session.get(models.User, user_id)
 
 
 @router.get("/me", response_model=UserOut)

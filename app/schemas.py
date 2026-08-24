@@ -370,6 +370,38 @@ class PreferencesUpdate(BaseModel):
     preferences: dict
 
 
+class ReviewCreate(BaseModel):
+    rating: int = Field(ge=1, le=5)
+    text: str | None = Field(default=None, max_length=4000)
+
+
+class ReviewUpdate(BaseModel):
+    rating: int = Field(ge=1, le=5)
+    text: str | None = Field(default=None, max_length=4000)
+
+
+class ReviewAuthor(BaseModel):
+    id: int
+    username: str
+
+
+class ReviewOut(BaseModel):
+    id: int
+    product_id: int
+    rating: int
+    text: str | None
+    flagged: bool
+    created_at: datetime
+    updated_at: datetime | None
+    mine: bool = False
+
+
+class ReviewsOut(BaseModel):
+    total: int
+    average: float | None
+    items: list[ReviewOut]
+
+
 class GlossaryOut(BaseModel):
     id: int
     term: str

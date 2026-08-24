@@ -1042,6 +1042,9 @@ async function openDetail(id) {
             ${p.image_url ? `<img class="detail-img" src="${escAttr(p.image_url)}" alt="${escAttr(p.name)}" onerror="this.style.display='none'">` : ""}
             ${safetyHtml}
             ${etymologyHtml}
+            <div id="reviews-section" class="detail-section" data-pid="${p.id}">
+                <p style="color:var(--text-muted); font-size:0.85rem">${state.lang === 'en' ? 'Loading reviews…' : 'Cargando reseñas…'}</p>
+            </div>
             <div class="card-header-row" style="align-items:center">
                 <h2>${esc(p.name)}</h2>
                 <div style="display:flex; gap:0.4rem; flex-wrap:wrap">
@@ -1104,6 +1107,7 @@ async function openDetail(id) {
                 );
             }
         }
+        loadProductReviews(p.id);
     } catch (e) {
         body.innerHTML = `<p>${state.lang === 'en' ? 'Error loading product detail.' : 'Error al cargar el detalle del producto.'}</p>`;
     }
@@ -1616,6 +1620,174 @@ function openPodcastModal() {
 function closePodcastModal(event) {
     if (event && event.target.id !== "podcast-modal" && !event.target.classList.contains("modal-close")) return;
     document.getElementById("podcast-modal").classList.add("hidden");
+}
+
+// --- Reseñas (4.2) ---
+function starsText(rating) {
+    return "★".repeat(rating) + "☆".repeat(5 - rating);
+}
+
+async function apiSend(method, path, body) {
+    const headers = {};
+    if (body !== undefined) headers["Content-Type"] = "application/json";
+    const token = localStorage.getItem("pantry_auth_token");
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const resp = await fetch(path, {
+        method,
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    if (!resp.ok) {
+        let detail = `HTTP ${resp.status}`;
+        try {
+            const data = await resp.json();
+            if (data.detail) detail = data.detail;
+        } catch (e) { /* sin cuerpo JSON */ }
+        throw new Error(detail);
+    }
+    return resp.status;
+}
+
+function reviewsI18n() {
+    const isEn = state.lang === 'en';
+    return {
+        title: isEn ? 'Reviews' : 'Reseñas',
+        none: isEn ? 'No reviews yet. Be the first!' : 'Aún no hay reseñas. ¡Sé el primero!',
+        loginFirst: isEn ? 'Sign in to review' : 'Entrar para reseñar',
+        yourRating: isEn ? 'Your rating' : 'Tu valoración',
+        placeholder: isEn ? 'Optional comment…' : 'Comentario opcional…',
+        submit: isEn ? 'Publish review' : 'Publicar reseña',
+        update: isEn ? 'Update review' : 'Actualizar reseña',
+        edit: isEn ? 'Edit' : 'Editar',
+        del: isEn ? 'Delete' : 'Eliminar',
+        cancel: isEn ? 'Cancel' : 'Cancelar',
+        you: isEn ? 'You' : 'Tú',
+    };
+}
+
+async function loadProductReviews(pid, editingId) {
+    const sectionEl = document.getElementById("reviews-section");
+    if (!sectionEl || Number(sectionEl.dataset.pid) !== pid) return;
+    const T = reviewsI18n();
+    const isEn = state.lang === 'en';
+    let data = { total: 0, average: null, items: [] };
+    try {
+        data = await api(`/products/${pid}/reviews`);
+    } catch (e) { /* la sección queda vacía */ }
+
+    const mine = currentUser ? data.items.find((r) => r.mine) : null;
+    const editing = editingId != null && mine && mine.id === editingId ? mine : null;
+
+    const listHtml = data.items.length
+        ? `<div style="display:flex; flex-direction:column; gap:0.6rem; margin-top:0.6rem">
+            ${data.items.map((r) => `
+                <div style="border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.6rem 0.8rem">
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem">
+                        <span style="color:#e8b45a; letter-spacing:1px">${starsText(r.rating)}</span>
+                        <span style="font-size:0.78rem; color:var(--text-muted)">
+                            ${r.mine ? T.you : "👤"} · ${(r.created_at || "").slice(0, 10)}
+                            ${r.mine ? `
+                                <button type="button" class="btn btn-sm btn-outline" data-review-edit="${r.id}" style="margin-left:0.4rem; padding:0.1rem 0.5rem">${T.edit}</button>
+                                <button type="button" class="btn btn-sm btn-outline" data-review-del="${r.id}" style="padding:0.1rem 0.5rem">${T.del}</button>` : ""}
+                        </span>
+                    </div>
+                    ${r.text ? `<p style="font-size:0.88rem; margin:0.3rem 0 0; line-height:1.5">${esc(r.text)}</p>` : ""}
+                </div>`).join("")}
+        </div>`
+        : `<p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.4rem">${T.none}</p>`;
+
+    const avgHtml = data.average != null
+        ? `<span style="color:#e8b45a; font-weight:600">★ ${data.average}</span><span style="color:var(--text-muted); font-size:0.82rem"> · ${data.total} ${isEn ? (data.total === 1 ? 'review' : 'reviews') : (data.total === 1 ? 'reseña' : 'reseñas')}</span>`
+        : "";
+
+    const formHtml = !currentUser
+        ? `<button type="button" id="review-login-btn" class="btn btn-sm btn-outline" style="margin-top:0.6rem">🔐 ${T.loginFirst}</button>`
+        : (!mine || editing)
+            ? `<div style="margin-top:0.7rem">
+                <div id="review-stars" style="display:flex; gap:0.15rem; font-size:1.3rem; cursor:pointer; color:#e8b45a" data-value="${editing ? editing.rating : 0}">
+                    ${[1, 2, 3, 4, 5].map((v) => `<span data-star="${v}">☆</span>`).join("")}
+                </div>
+                <textarea id="review-text" maxlength="4000" rows="2" placeholder="${T.placeholder}"
+                    style="width:100%; margin-top:0.4rem; border:1px solid var(--border-color); border-radius:var(--radius-sm); background:var(--bg-page); color:var(--text-color); padding:0.5rem; font-family:inherit"></textarea>
+                <p id="review-error" style="color:#d96b43; font-size:0.8rem; min-height:1rem; margin:0.2rem 0"></p>
+                <div style="display:flex; gap:0.5rem">
+                    <button type="button" id="review-submit-btn" class="btn btn-sm btn-primary" data-editing="${editing ? editing.id : ""}">${editing ? T.update : T.submit}</button>
+                    ${editing ? `<button type="button" id="review-cancel-btn" class="btn btn-sm btn-outline">${T.cancel}</button>` : ""}
+                </div>
+            </div>`
+            : "";
+
+    sectionEl.innerHTML = `
+        <h4>⭐ ${T.title} ${avgHtml}</h4>
+        ${listHtml}
+        ${formHtml}`;
+
+    bindReviewEvents(pid);
+}
+
+function paintStars(value) {
+    document.querySelectorAll("#review-stars [data-star]").forEach((el) => {
+        el.textContent = Number(el.dataset.star) <= value ? "★" : "☆";
+    });
+}
+
+function bindReviewEvents(pid) {
+    const sectionEl = document.getElementById("reviews-section");
+    if (!sectionEl) return;
+
+    const loginBtn = document.getElementById("review-login-btn");
+    if (loginBtn) loginBtn.addEventListener("click", openAuthModal);
+
+    const stars = document.getElementById("review-stars");
+    if (stars) {
+        stars.querySelectorAll("[data-star]").forEach((el) => {
+            el.addEventListener("click", () => {
+                stars.dataset.value = el.dataset.star;
+                paintStars(Number(el.dataset.star));
+            });
+        });
+        if (Number(stars.dataset.value)) paintStars(Number(stars.dataset.value));
+    }
+
+    const submitBtn = document.getElementById("review-submit-btn");
+    if (submitBtn) submitBtn.addEventListener("click", async () => {
+        const rating = Number(document.getElementById("review-stars").dataset.value);
+        const text = document.getElementById("review-text").value.trim() || null;
+        const errEl = document.getElementById("review-error");
+        errEl.textContent = "";
+        if (!rating) {
+            errEl.textContent = state.lang === 'en' ? 'Pick a star rating.' : 'Elegí una valoración de estrellas.';
+            return;
+        }
+        const editingId = submitBtn.dataset.editing;
+        try {
+            if (editingId) {
+                await apiSend("PUT", `/reviews/${editingId}`, { rating, text });
+                await loadProductReviews(pid, null);
+            } else {
+                await apiSend("POST", `/products/${pid}/reviews`, { rating, text });
+                await loadProductReviews(pid);
+            }
+        } catch (e) {
+            errEl.textContent = e.message;
+        }
+    });
+
+    const cancelBtn = document.getElementById("review-cancel-btn");
+    if (cancelBtn) cancelBtn.addEventListener("click", () => loadProductReviews(pid));
+
+    sectionEl.querySelectorAll("[data-review-edit]").forEach((btn) => {
+        btn.addEventListener("click", () => loadProductReviews(pid, Number(btn.dataset.reviewEdit)));
+    });
+    sectionEl.querySelectorAll("[data-review-del]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            if (!confirm(state.lang === 'en' ? 'Delete your review?' : '¿Eliminar tu reseña?')) return;
+            try {
+                await apiSend("DELETE", `/reviews/${btn.dataset.reviewDel}`);
+                await loadProductReviews(pid);
+            } catch (e) { /* noop */ }
+        });
+    });
 }
 
 let glossaryTimer = null;

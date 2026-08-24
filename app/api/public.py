@@ -62,7 +62,13 @@ def api_health() -> dict:
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
-        db_status = "ok"
+            try:
+                conn.execute(text("SELECT 1 FROM products LIMIT 1"))
+                db_status = "ok"
+            except Exception:
+                db_status = "empty"
+        service = "ok"
     except Exception:
         db_status = "error"
-    return {"status": "ok", "db": db_status}
+        service = "degraded"
+    return {"status": service, "db": db_status}

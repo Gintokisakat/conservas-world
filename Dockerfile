@@ -15,8 +15,8 @@ RUN uv sync --frozen --no-dev
 # Copiar código fuente
 COPY . .
 
+# Si no existe data/build.db, el entrypoint genera la base de datos
+ENTRYPOINT ["./docker-entrypoint.sh"]
+
 # Exponer el puerto 8000
 EXPOSE 8000
-
-# Comando para iniciar la aplicación FastAPI con Uvicorn
-CMD ["uv", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

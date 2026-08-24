@@ -4,8 +4,9 @@ services:
     env: python
     region: frankfurt
     plan: free
-    buildCommand: pip install uv && uv sync
+    buildCommand: pip install uv && uv sync && uv run python -m ingest.ingest
     startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
     envVars:
-      - key: PORT
-        value: 8000
+      - key: PYTHON_VERSION
+        value: "3.11"

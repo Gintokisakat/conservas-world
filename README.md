@@ -4,6 +4,8 @@ Base de datos mundial de conservas, fermentos y encurtidos tradicionales: **6.18
 
 [![CI Pipeline](https://github.com/Gintokisakat/conservas-world/actions/workflows/ci.yml/badge.svg)](https://github.com/Gintokisakat/conservas-world/actions/workflows/ci.yml)
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Gintokisakat/conservas-world)
+
 ## Stack
 
 - **Backend**: Python 3.11 + FastAPI + SQLAlchemy 2.0
@@ -152,12 +154,15 @@ Las descargas remotas se cachean en `data/raw/` respetando rate-limits con reint
 
 ## Despliegue
 
-`render.yaml` incluido para Render (región Frankfurt, plan free):
+Opción 1 — **Render con un clic**: botón *Deploy to Render* arriba; usa `render.yaml` (build: instala dependencias y ejecuta la ingesta para generar `build.db`; healthcheck en `/api/health`).
+
+Opción 2 — **Docker** (la BD se genera sola si falta):
 
 ```bash
-# build: pip install uv && uv sync
-# start: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
+docker compose up --build   # app en http://localhost:8000
 ```
+
+La ruta de la BD se configura con la variable `CONSERVAS_DB` (por defecto `data/build.db`), útil para montar un disco persistente.
 
 ## Licencia
 

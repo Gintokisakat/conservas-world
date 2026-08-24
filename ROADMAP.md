@@ -234,7 +234,7 @@
 
 ### FASE 2 — Data Integrations (2-5 días cada uno)
 
-#### 2.1 Mapa geográfico interactivo
+#### 2.1 Mapa geográfico interactivo [✅ COMPLETADO]
 - **Inspiración**: TasteAtlas, AnyCheese, Open Wine Map, FermDB Dashboard
 - **Qué hacer**:
   - Integrar Leaflet.js + OpenStreetMap (gratis, sin API key)
@@ -258,7 +258,7 @@
 - **Dependencias**: pandas (ya está), posiblemente biopython para parsing de genomas
 - **Riesgo**: Los datos de cFMD están en formato académico (BIOM/TSV), requiere parsing significativo
 
-#### 2.3 pH/seguridad predictiva
+#### 2.3 pH/seguridad predictiva [✅ COMPLETADO]
 - **Fuentes**: ComBase (curvas de crecimiento), BCCDC guidance, pickling pH calculators, preserve-calc
 - **Qué hacer**:
   - Tabla `safety_data` (product_id, ph_min, ph_max, aw_min, aw_max, salt_pct_min, salt_pct_max, storage_temp_min, storage_temp_max, shelf_life_days)
@@ -313,7 +313,7 @@
 - **Dependencias**: Ninguna
 - **Riesgo**: Datos solo de Europa; faltan Americas/Asia/África
 
-#### 2.9 Etimología de alimentos
+#### 2.9 Etimología de alimentos [✅ COMPLETADO]
 - **Fuentes**: GASTEREA (latín), etymology-db (3.8M entradas), whatamieating.com (67,413 términos)
 - **Qué hacer**:
   - Tabla `etymology` (ingredient_id, term, language, origin, period, notes)
@@ -341,7 +341,7 @@
 - **Dependencias**: Ninguna (CSV open)
 - **Riesgo**: Matching ingredientes canónicos ↔ FlavorDB requiere curar ~193 mapeos
 
-#### 2.13 Lácteos fermentados (FDF-DB + MetaCheeseDB) — gap de categoría
+#### 2.13 Lácteos fermentados (FDF-DB + MetaCheeseDB) — gap de categoría [✅ COMPLETADO]
 - **Fuentes**: FDF-DB (1,852 lácteos fermentados, CC BY 4.0), MetaCheeseDB (1,593 metagenomas de queso)
 - **Qué hacer**:
   - Descargar suplemento ZIP de FDF-DB (doi.org/10.3390/nu14214581)
@@ -352,7 +352,7 @@
 - **Dependencias**: Ninguna
 - **Riesgo**: El DB vivo (quintadb.pro) requiere login (FDF-DB/intimic); usar el ZIP del suplemento en su lugar
 
-#### 2.14 Gap regional: África y Medio Oriente
+#### 2.14 Gap regional: África y Medio Oriente [✅ COMPLETADO]
 - **Fuentes**: African foodways data (GitHub, open), INFOODS Middle East (Irán Fars, Bahrain, Egipto), Nigerian fermented foods (npj, 16 fermentados)
 - **Qué hacer**:
   - Revisar nuestra cobertura actual por continente y listar huecos en África/MO
@@ -362,7 +362,7 @@
 - **Dependencias**: Ninguna
 - **Riesgo**: Bajo; requiere validación manual de nombres locales
 
-#### 2.15 Shelf-life con FSIS FoodKeeper
+#### 2.15 Shelf-life con FSIS FoodKeeper [✅ COMPLETADO]
 - **Fuente**: catalog.data.gov/dataset/fsis-foodkeeper-data (JSON oficial USDA EN/ES/PT, actualizado 2025)
 - **Qué hacer**:
   - Descargar JSON oficial (alternativa: repo jelera/food-shelflife-db ya lo parsea)
@@ -397,7 +397,7 @@
 - **Dependencias**: python-multipart (para uploads), futuro: S3/MinIO
 - **Riesgo**: Requiere auth (ver 4.1)
 
-#### 3.2 Calculadoras avanzadas
+#### 3.2 Calculadoras avanzadas [✅ COMPLETADO]
 - **Inspiración**: preserve-calc, BrineLog, Larder, Curing Calculator
 - **Qué hacer**:
   - **Calculadora de pH de salmuera**: dado el pH de cada ingrediente, calcular pH resultante de la mezcla
@@ -409,7 +409,7 @@
 - **Dependencias**: Ninguna
 - **Riesgo**: Cálculos requieren validación científica
 
-#### 3.3 Pairing de sabores
+#### 3.3 Pairing de sabores [✅ COMPLETADO]
 - **Inspiración**: Flavor Genome Project (1B+ puntos de datos)
 - **Qué hacer**:
   - Modelo de similitud basado en ingredientes canónicos compartidos
@@ -421,7 +421,7 @@
 - **Dependencias**: scikit-learn (opcional, para similitud de coseno) o cálculo manual
 - **Riesgo**: Similitud basada solo en ingredientes es simplista; mejora con datos de FlavorDB
 
-#### 3.4 Guías paso a paso interactivas
+#### 3.4 Guías paso a paso interactivas [✅ COMPLETADO]
 - **Inspiración**: Ferment (30 recetas), Fermenta, FermentBuddy
 - **Qué hacer**:
   - Tabla `guides` (product_id, title, steps_json, tips_json, equipment_json, difficulty, total_time_hours)
@@ -433,7 +433,7 @@
 - **Dependencias**: Ninguna
 - **Riesgo**: Requiere crear contenido para los 4,736 productos (empezar por los 50 más populares)
 
-#### 3.5 Búsqueda semántica
+#### 3.5 Búsqueda semántica [✅ COMPLETADO]
 - **Inspiración**: Fermentor.org
 - **Qué hacer**:
   - Generar embeddings de texto para nombre + descripción de cada producto
@@ -444,7 +444,7 @@
 - **Dependencias**: sentence-transformers, faiss-cpu (o numpy)
 - **Riesgo**: Modelo de 80MB agrega peso al deploy; alternativa: usar API externa
 
-#### 3.6 Mapa de sabores del mundo
+#### 3.6 Mapa de sabores del mundo [✅ COMPLETADO]
 - **Inspiración**: TasteAtlas, Flavor Genome Project
 - **Qué hacer**:
   - Clasificar productos por perfil de sabor: picante, ácido, umami, dulce, salado, amargo, fermentado
@@ -463,7 +463,7 @@
 - **Dependencias**: Verificar licencia de datos de Fermentor
 - **Riesgo**: Fermentor puede no tener API pública aún
 
-#### 3.8 Temporizadores ajustados por temperatura
+#### 3.8 Temporizadores ajustados por temperatura [✅ COMPLETADO]
 - **Inspiración**: FermentBuddy (timers por temperatura), TEMPURA (T min/ópt/max por cepa)
 - **Qué hacer**:
   - Los temporizadores F1/F2 actuales son fijos; añadir ajuste por temperatura ambiente
@@ -473,7 +473,7 @@
 - **Dependencias**: Ninguna
 - **Riesgo**: Modelo Q10 simplificado (cada +10°C duplica la velocidad); validar con literatura
 
-#### 3.9 Public API abierta + API keys
+#### 3.9 Public API abierta + API keys [✅ COMPLETADO]
 - **Inspiración**: Open Brewery DB (sin key), USDA FDC
 - **Qué hacer**:
   - Endpoint raíz `GET /api` con documentación de uso
@@ -484,7 +484,7 @@
 - **Dependencias**: slowapi (opcional)
 - **Riesgo**: Ninguno; expone trabajo ya hecho y permite que otros proyectos nos consuman (ecosistema 2-way)
 
-#### 3.10 Integración MCP (Model Context Protocol)
+#### 3.10 Integración MCP (Model Context Protocol) [✅ COMPLETADO]
 - **Inspiración**: Fermentr (MCP/Claude), mcp-opennutrition (199★, servidor MCP sobre OpenNutrition con barcode lookup), Brewing MCP, tendencia 2025-2026
 - **Qué hacer**:
   - Servidor MCP Python que exponga búsqueda de productos, detalle, ingredientes, temporizadores
@@ -500,7 +500,7 @@
 
 ### FASE 4 — Comunidad y Platform (1-3 meses)
 
-#### 4.1 Auth + usuarios
+#### 4.1 Auth + usuarios [✅ COMPLETADO]
 - **Qué hacer**:
   - Tabla `users` (id, email, username, password_hash, created_at, preferences_json)
   - JWT auth con refresh tokens
@@ -510,7 +510,7 @@
 - **Dependencias**: python-jose, passlib, bcrypt (ya disponibles en el ecosistema)
 - **Riesgo**: Seguridad: rate limiting en registro, validación de email
 
-#### 4.2 Reviews/reseñas
+#### 4.2 Reviews/reseñas [✅ COMPLETADO]
 - **Qué hacer**:
   - Tabla `reviews` (id, user_id, product_id, rating 1-5, text, photos_json, created_at, updated_at)
   - Endpoints: `GET/POST/PUT/DELETE /products/{id}/reviews`
@@ -520,7 +520,7 @@
 - **Dependencias**: Auth (4.1)
 - **Riesgo**: Moderación de contenido, spam
 
-#### 4.3 Recetas comunitarias
+#### 4.3 Recetas comunitarias [✅ COMPLETADO]
 - **Qué hacer**:
   - Tabla `recipes` (id, user_id, product_id, title, description, steps_json, ingredients_json, difficulty, prep_time, photos_json, votes, created_at)
   - Endpoints: `GET/POST/PUT/DELETE /recipes`, `POST /recipes/{id}/vote`
@@ -530,7 +530,7 @@
 - **Dependencias**: Auth (4.1), Reviews (4.2)
 - **Riesgo**: Calidad del contenido, spam
 
-#### 4.4 Course/educación
+#### 4.4 Course/educación [✅ COMPLETADO]
 - **Inspiración**: Harvard Food Fermentation, Startercultures.eu
 - **Qué hacer**:
   - Tabla `courses` (id, title, description, modules_json, difficulty, estimated_hours)
@@ -541,7 +541,7 @@
 - **Dependencias**: Auth (4.1), markdown parser
 - **Riesgo**: Creación de contenido educativo de calidad
 
-#### 4.5 Podcast/audio integration
+#### 4.5 Podcast/audio integration [✅ COMPLETADO]
 - **Fuentes**: FermUp, Ferment Radio (40+ episodios)
 - **Qué hacer**:
   - Indexar episodios de FermUp y Ferment Radio

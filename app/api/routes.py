@@ -24,7 +24,6 @@ from app.schemas import (
     EtymologyOut,
     EtymologySearchOut,
     FlavorMapOut,
-    FlavorProductOut,
     GeoPointOut,
     GlossaryOut,
     GuideListItem,
@@ -58,13 +57,14 @@ from app.schemas import (
 from app.services.course import module_detail, module_list
 from app.services.diet import DIET_TAGS, REQUIRED, VIOLATIONS, product_diet_tags
 from app.services.etymology import etymology_out, lookup, search_terms
-from app.services.flavors import AXES, aggregate_by_continent, products_with_profile
+from app.services.flavors import flavor_map_payload
 from app.services.guides import get_guide, list_guides
 from app.services.podcast import ferments_out, list_episodes, topics_out
 from app.services.safety import safety_assessment
 from app.services.semantic import semantic_search
 from app.services.shelf_life import lookup as shelf_life_lookup
 from app.services.shelf_life import shelf_life_out
+from app.services.stats_service import compute_stats
 
 router = APIRouter()
 
@@ -1509,78 +1509,9 @@ def flavor_map(
     session: Session = Depends(get_session),
 ):
     """Mapa de sabores: perfil de sabor promedio por continente (clasificación heurística)."""
-    rows = products_with_profile(session, continent=continent, category=category)
-    return {
-        "axes": AXES,
-        "continents": aggregate_by_continent(rows),
-        "detail": [FlavorProductOut(**r) for r in rows] if detail else [],
-    }
+    return flavor_map_payload(session, continent=continent, category=category, detail=detail)
 
 
 @router.get("/stats", response_model=Stats)
 def stats(session: Session = Depends(get_session)):
-    def count(model):
-        return session.execute(select(func.count()).select_from(model)).scalar_one()
-
-    def active_count(model, *criteria):
-        return session.execute(
-            select(func.count())
-            .select_from(model)
-            .where(model.status != "discarded", *criteria)
-        ).scalar_one()
-
-    by_category: dict[str, int] = {
-        code: count
-        for code, count in session.execute(
-            select(models.Category.code, func.count(models.product_category.c.product_id))
-            .join(models.product_category, models.product_category.c.category_id == models.Category.id)
-            .join(models.Product, models.Product.id == models.product_category.c.product_id)
-            .where(models.Product.status != "discarded")
-            .group_by(models.Category.code)
-        ).all()
-    }
-    by_continent = {
-        k: v
-        for k, v in session.execute(
-            select(models.Country.continent, func.count(models.product_country.c.product_id))
-            .join(models.product_country, models.product_country.c.country_id == models.Country.id)
-            .join(models.Product, models.Product.id == models.product_country.c.product_id)
-            .where(models.Product.status != "discarded")
-            .group_by(models.Country.continent)
-        ).all()
-        if k
-    }
-    by_source: dict[str, int] = {
-        source: count
-        for source, count in session.execute(
-            select(models.Product.source_tag, func.count())
-            .where(models.Product.status != "discarded")
-            .group_by(models.Product.source_tag)
-        ).all()
-        if source
-    }
-    return Stats(
-        products=active_count(models.Product),
-        countries=count(models.Country),
-        ingredients=count(models.Ingredient),
-        categories=count(models.Category),
-        references=count(models.Reference),
-        microbes=count(models.Microbe),
-        products_with_ingredients=session.execute(
-            select(func.count(func.distinct(models.product_ingredient.c.product_id)))
-            .join(models.Product, models.Product.id == models.product_ingredient.c.product_id)
-            .where(models.Product.status != "discarded")
-        ).scalar_one(),
-        products_with_substrate=active_count(
-            models.Product, models.Product.substrate.isnot(None)
-        ),
-        uses=session.execute(
-            select(func.count())
-            .select_from(models.ProductUse)
-            .join(models.Product, models.Product.id == models.ProductUse.product_id)
-            .where(models.Product.status != "discarded")
-        ).scalar_one(),
-        by_category=by_category,
-        by_continent=by_continent,
-        by_source=by_source,
-    )
+    return compute_stats(session)

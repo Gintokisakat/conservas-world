@@ -5,7 +5,7 @@ el método y los ingredientes del producto. Sin ML: lo suficientemente preciso
 para una visualización agregada por continente/categoría.
 """
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.db import models
@@ -136,3 +136,40 @@ def aggregate_by_continent(rows: list[dict]) -> list[dict]:
             }
         )
     return out
+
+
+_payload_cache: dict[tuple, dict] = {}
+
+
+def flavor_map_payload(
+    session: Session,
+    *,
+    continent: str | None = None,
+    category: str | None = None,
+    detail: bool = False,
+) -> dict:
+    """Payload del mapa de sabores con caché por fingerprint y filtros.
+
+    El escaneo de ~6.000 productos es la operación más cara de la API;
+    como la base es estática en producción, se memoiza por fingerprint.
+    """
+    from app.services.semantic import _dataset_fingerprint
+
+    ing_count = session.execute(
+        select(func.count()).select_from(models.Ingredient)
+    ).scalar_one()
+    key = (_dataset_fingerprint(session), ing_count, continent, category, detail)
+    cached = _payload_cache.get(key)
+    if cached is not None:
+        return cached
+
+    rows = products_with_profile(session, continent=continent, category=category)
+    payload = {
+        "axes": AXES,
+        "continents": aggregate_by_continent(rows),
+        "detail": rows if detail else [],
+    }
+    if len(_payload_cache) > 32:
+        _payload_cache.clear()
+    _payload_cache[key] = payload
+    return payload

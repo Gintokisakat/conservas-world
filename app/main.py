@@ -52,3 +52,15 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+def _start_warmup() -> None:
+    try:
+        from app.services.warmup import start_background_warmup
+
+        start_background_warmup()
+    except Exception:
+        pass
+
+
+_start_warmup()

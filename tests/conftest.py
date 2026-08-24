@@ -1,10 +1,14 @@
+import os
+
+os.environ["CONSERVAS_WARMUP"] = "0"
+
 import pytest
-from app.db import models  # noqa: F401
-from app.db.database import Base, get_session
-from app.main import app
-from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, event
-from sqlalchemy.orm import sessionmaker
+from app.db import models  # noqa: F401, E402
+from app.db.database import Base, get_session  # noqa: E402
+from app.main import app  # noqa: E402
+from fastapi.testclient import TestClient  # noqa: E402
+from sqlalchemy import create_engine, event  # noqa: E402
+from sqlalchemy.orm import sessionmaker  # noqa: E402
 
 TEST_DB_URL = "sqlite://"
 

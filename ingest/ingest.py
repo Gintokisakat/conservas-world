@@ -52,20 +52,27 @@ def run(sources: list[str], reset: bool = False):
             else:
                 raise ValueError(f"Fuente desconocida: {source}")
             print(f"Ingiriendo fuente: {source} ...", flush=True)
-            if source == "fermdb":
-                records = fermdb.load_source()
-            elif source == "wikipedia":
-                records = wikipedia.load_source()
-            elif source == "openfoodfacts":
-                records = openfoodfacts.load_source()
-            elif source == "wikidata":
-                records = wikidata.load_source()
-            elif source == "fdfdb":
-                records = fdfdb.load_source()
-            elif source == "metacheese":
-                records = metacheese.load_source()
-            else:
-                records = regional.load_source()
+            try:
+                if source == "fermdb":
+                    records = fermdb.load_source()
+                elif source == "wikipedia":
+                    records = wikipedia.load_source()
+                elif source == "openfoodfacts":
+                    records = openfoodfacts.load_source()
+                elif source == "wikidata":
+                    records = wikidata.load_source()
+                elif source == "fdfdb":
+                    records = fdfdb.load_source()
+                elif source == "metacheese":
+                    records = metacheese.load_source()
+                else:
+                    records = regional.load_source()
+            except Exception as exc:
+                # Una fuente caída (rate-limit, 5xx, red) no debe tumbar el
+                # build completo: se registra y se continúa con el resto.
+                print(f"[{source}] FUENTE FALLIDA: {exc}", flush=True)
+                by_source[source] = 0
+                continue
             by_source[source] = len(records)
             for record in records:
                 key = normalize_name(record["name"])

@@ -4,7 +4,9 @@ services:
     env: python
     region: frankfurt
     plan: free
-    buildCommand: pip install uv && uv sync && uv run python -m ingest.ingest
+    # Restaurar la BD preconstruida del release es rápido y no depende de
+    # rate-limits; si el artefacto no está disponible se cae a la ingesta.
+    buildCommand: pip install uv && uv sync && (uv run python -m ingest.restore || uv run python -m ingest.ingest)
     startCommand: uv run uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     envVars:

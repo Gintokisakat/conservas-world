@@ -327,6 +327,14 @@ class PodcastTopicsOut(BaseModel):
     ferments: list[str]
 
 
+class ShelfLifeOut(BaseModel):
+    category: str
+    fridge_days: int
+    freezer_days: int | None
+    pantry_days: int | None
+    notes: str
+
+
 class GlossaryOut(BaseModel):
     id: int
     term: str

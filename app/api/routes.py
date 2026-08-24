@@ -48,6 +48,7 @@ from app.schemas import (
     SeasonalOut,
     SemanticHit,
     SemanticSearchOut,
+    ShelfLifeOut,
     Stats,
     SuggestItem,
     TimelineOut,
@@ -62,6 +63,8 @@ from app.services.guides import get_guide, list_guides
 from app.services.podcast import ferments_out, list_episodes, topics_out
 from app.services.safety import safety_assessment
 from app.services.semantic import semantic_search
+from app.services.shelf_life import lookup as shelf_life_lookup
+from app.services.shelf_life import shelf_life_out
 
 router = APIRouter()
 
@@ -1307,6 +1310,22 @@ def list_ingredients(response: Response, session: Session = Depends(get_session)
     return session.execute(
         select(models.Ingredient).order_by(models.Ingredient.name)
     ).scalars().all()
+
+
+@router.get("/ingredients/{ingredient_id}/shelf-life", response_model=ShelfLifeOut | None)
+def ingredient_shelf_life(
+    ingredient_id: int,
+    lang: str = Query(default="es", pattern="^(es|en)$"),
+    session: Session = Depends(get_session),
+):
+    """Shelf-life (2.15): guía de vida útil en nevera/congelador/despensa por ingrediente."""
+    ingredient = session.get(models.Ingredient, ingredient_id)
+    if ingredient is None:
+        raise HTTPException(status_code=404, detail="Ingrediente no encontrado")
+    profile = shelf_life_lookup(ingredient.name)
+    if profile is None:
+        return None
+    return shelf_life_out(profile, lang)
 
 
 @router.get("/ingredients/{ingredient_id}/nutrition", response_model=NutritionOut | None)

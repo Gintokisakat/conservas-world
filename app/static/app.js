@@ -994,7 +994,30 @@ async function openIngredient(id, name) {
     document.getElementById("ingredient-modal").classList.remove("hidden");
     body.innerHTML = `<h2>🥕 ${esc(name)}</h2><p>${state.lang === 'en' ? 'Loading nutrition data...' : 'Cargando información nutricional...'}</p>`;
     try {
-        const nutrition = await api(`/ingredients/${id}/nutrition`);
+        const [nutrition, shelfLife] = await Promise.all([
+            api(`/ingredients/${id}/nutrition`),
+            api(`/ingredients/${id}/shelf-life?lang=${state.lang}`).catch(() => null),
+        ]);
+        const isEn = state.lang === 'en';
+        let shelfHtml = "";
+        if (shelfLife) {
+            const fmt = (days) => {
+                if (days == null) return "—";
+                if (days >= 360) return `${Math.round(days / 360)} ${isEn ? 'year(s)' : 'año(s)'}`;
+                if (days >= 30) return `${Math.round(days / 30)} ${isEn ? 'month(s)' : 'mes(es)'}`;
+                return `${days} ${isEn ? 'days' : 'días'}`;
+            };
+            shelfHtml = `
+                <h3 style="margin-top:0.4rem">🧊 ${isEn ? 'How long does it keep?' : '¿Cuánto dura?'}</h3>
+                <table class="nutrition-table">
+                    <tbody>
+                        <tr><td>🧊 ${isEn ? 'Fridge' : 'Nevera'}</td><td>${fmt(shelfLife.fridge_days)}</td></tr>
+                        <tr><td>❄️ ${isEn ? 'Freezer' : 'Congelador'}</td><td>${fmt(shelfLife.freezer_days)}</td></tr>
+                        <tr><td>🏺 ${isEn ? 'Pantry' : 'Despensa'}</td><td>${fmt(shelfLife.pantry_days)}</td></tr>
+                    </tbody>
+                </table>
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.4rem">${esc(shelfLife.category)} — ${esc(shelfLife.notes)}</p>`;
+        }
         let nutritionHtml = `<p style="color:var(--text-secondary); margin-bottom:0.6rem">${t.nutrition_none}</p>`;
         if (nutrition) {
             const rows = NUTRITION_FIELDS
@@ -1030,7 +1053,7 @@ async function openIngredient(id, name) {
                        </li>`).join("")}
                </ul>`
             : "";
-        body.innerHTML = `<h2>🥕 ${esc(name)}</h2>${nutritionHtml}${productsHtml}`;
+        body.innerHTML = `<h2>🥕 ${esc(name)}</h2>${shelfHtml}${nutritionHtml}${productsHtml}`;
     } catch (e) {
         body.innerHTML = `<h2>🥕 ${esc(name)}</h2><p>${state.lang === 'en' ? 'Error loading ingredient info.' : 'Error al cargar la información del ingrediente.'}</p>`;
     }

@@ -1942,3 +1942,14 @@ select:focus-visible,
     background: var(--bg-page);
     margin-top: 0.8rem;
 }
+
+/* Auth (4.1) */
+.auth-user {
+    font-size: 0.85rem;
+    color: #fff;
+    opacity: 0.9;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

@@ -49,6 +49,7 @@
                     <option value="en">🇬🇧 English</option>
                 </select>
                 <button type="button" id="install-btn" class="btn btn-sm btn-outline" hidden style="border-color:rgba(255,255,255,0.4); color:#fff">⬇️ <span data-i18n="install_btn">Instalar</span></button>
+                <div id="auth-area" style="display:flex; align-items:center; gap:0.5rem"></div>
                 <button type="button" id="theme-toggle" class="theme-toggle" title="Cambiar tema" aria-label="Cambiar tema">🌙</button>
             </div>
         </div>
@@ -564,6 +565,28 @@
         <div class="modal-card modal-lg">
             <button class="modal-close" onclick="closePodcastModal()" aria-label="Cerrar modal">&times;</button>
             <div id="podcast-body"></div>
+        </div>
+    </div>
+
+    <!-- Modal de autenticación -->
+    <div id="auth-modal" class="modal-overlay hidden" onclick="closeAuthModal(event)" role="dialog" aria-modal="true" aria-label="Autenticación">
+        <div class="modal-card" style="max-width:400px">
+            <button class="modal-close" onclick="closeAuthModal()" aria-label="Cerrar modal">&times;</button>
+            <h2 id="auth-title">Iniciar sesión</h2>
+            <form id="auth-form">
+                <div class="filter-group" style="margin-bottom:0.8rem">
+                    <input type="email" id="auth-email" class="search-input" placeholder="email@ejemplo.com" required autocomplete="email" style="width:100%">
+                </div>
+                <div class="filter-group" style="margin-bottom:0.8rem">
+                    <input type="text" id="auth-username" class="search-input" placeholder="usuario" minlength="3" maxlength="80" pattern="[a-zA-Z0-9_.\-]+" autocomplete="username" style="width:100%">
+                </div>
+                <div class="filter-group" style="margin-bottom:0.8rem">
+                    <input type="password" id="auth-password" class="search-input" placeholder="contraseña (mín. 8)" minlength="8" maxlength="128" autocomplete="current-password" style="width:100%">
+                </div>
+                <p id="auth-error" style="color:#d96b43; font-size:0.85rem; min-height:1.2rem; margin:0 0 0.5rem"></p>
+                <button type="submit" id="auth-submit-btn" class="btn btn-primary" style="width:100%">Entrar</button>
+            </form>
+            <button type="button" id="auth-switch-btn" class="btn btn-sm btn-outline" style="width:100%; margin-top:0.6rem; border-color:var(--border-color)">¿Sin cuenta? Crear una</button>
         </div>
     </div>
 

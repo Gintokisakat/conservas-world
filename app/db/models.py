@@ -124,6 +124,9 @@ class Product(Base):
     metagenome: Mapped["CheeseMetagenome | None"] = relationship(
         back_populates="product", cascade="all, delete-orphan"
     )
+    reviews: Mapped[list["Review"]] = relationship(
+        back_populates="product", cascade="all, delete-orphan"
+    )
 
 
 class ProductAlias(Base):
@@ -296,3 +299,67 @@ class CheeseMetagenome(Base):
     url: Mapped[str | None] = mapped_column(String(500))
 
     product: Mapped["Product"] = relationship(back_populates="metagenome")
+
+
+class User(Base):
+    """Usuario registrado (roadmap 4.1)."""
+
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    username: Mapped[str] = mapped_column(String(80), unique=True, index=True)
+    password_hash: Mapped[str] = mapped_column(String(300))
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    preferences_json: Mapped[str | None] = mapped_column(Text)
+
+    reviews: Mapped[list["Review"]] = relationship(back_populates="user")
+    recipes: Mapped[list["Recipe"]] = relationship(back_populates="user")
+
+
+class Review(Base):
+    """Reseña de un producto por un usuario (roadmap 4.2)."""
+
+    __tablename__ = "reviews"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    product_id: Mapped[int] = mapped_column(
+        ForeignKey("products.id", ondelete="CASCADE"), index=True
+    )
+    rating: Mapped[int] = mapped_column()
+    text: Mapped[str | None] = mapped_column(Text)
+    flagged: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime, onupdate=func.now())
+
+    __table_args__ = (UniqueConstraint("user_id", "product_id", name="uq_review_user_product"),)
+
+    user: Mapped["User"] = relationship(back_populates="reviews")
+    product: Mapped["Product"] = relationship(back_populates="reviews")
+
+
+class Recipe(Base):
+    """Receta comunitaria vinculada a un producto (roadmap 4.3)."""
+
+    __tablename__ = "recipes"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    product_id: Mapped[int | None] = mapped_column(
+        ForeignKey("products.id", ondelete="SET NULL"), index=True
+    )
+    title: Mapped[str] = mapped_column(String(200))
+    description: Mapped[str | None] = mapped_column(Text)
+    steps_json: Mapped[str | None] = mapped_column(Text)
+    ingredients_json: Mapped[str | None] = mapped_column(Text)
+    difficulty: Mapped[str] = mapped_column(String(20), default="media")
+    prep_time_min: Mapped[int | None] = mapped_column()
+    votes: Mapped[int] = mapped_column(default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    user: Mapped["User"] = relationship(back_populates="recipes")

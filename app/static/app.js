@@ -457,8 +457,11 @@ document.addEventListener("click", (e) => {
     }
 });
 
-async function api(path) {
-    const resp = await fetch(path);
+async function api(path, opts) {
+    const headers = { ...(opts && opts.headers ? opts.headers : {}) };
+    const token = localStorage.getItem("pantry_auth_token");
+    if (token && !headers.Authorization) headers.Authorization = `Bearer ${token}`;
+    const resp = await fetch(path, { ...opts, headers });
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
     return resp.json();
 }
@@ -467,6 +470,143 @@ function esc(text) {
     const div = document.createElement("div");
     div.textContent = text ?? "";
     return div.innerHTML;
+}
+
+// --- Autenticación (4.1) ---
+let currentUser = null;
+
+async function authRequest(path, body, isEn) {
+    let resp;
+    try {
+        resp = await fetch(path, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        });
+    } catch (e) {
+        throw new Error(isEn ? "Network error" : "Error de red");
+    }
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) {
+        if (resp.status === 429) throw new Error(isEn ? "Too many attempts; wait a minute" : "Demasiados intentos; espera un minuto");
+        throw new Error(data.detail || `HTTP ${resp.status}`);
+    }
+    return data;
+}
+
+async function doLogin(event) {
+    event.preventDefault();
+    const isEn = state.lang === 'en';
+    const errEl = document.getElementById("auth-error");
+    errEl.textContent = "";
+    try {
+        const data = await authRequest("/auth/login", {
+            email: document.getElementById("auth-email").value.trim(),
+            password: document.getElementById("auth-password").value,
+        }, isEn);
+        localStorage.setItem("pantry_auth_token", data.access_token);
+        localStorage.setItem("pantry_auth_refresh", data.refresh_token);
+        await loadSession();
+        closeAuthModal();
+    } catch (e) {
+        errEl.textContent = e.message;
+    }
+}
+
+async function doRegister(event) {
+    event.preventDefault();
+    const isEn = state.lang === 'en';
+    const errEl = document.getElementById("auth-error");
+    errEl.textContent = "";
+    try {
+        const data = await authRequest("/auth/register", {
+            email: document.getElementById("auth-email").value.trim(),
+            username: document.getElementById("auth-username").value.trim(),
+            password: document.getElementById("auth-password").value,
+        }, isEn);
+        localStorage.setItem("pantry_auth_token", data.access_token);
+        localStorage.setItem("pantry_auth_refresh", data.refresh_token);
+        await loadSession();
+        closeAuthModal();
+    } catch (e) {
+        errEl.textContent = e.message;
+    }
+}
+
+function logout() {
+    localStorage.removeItem("pantry_auth_token");
+    localStorage.removeItem("pantry_auth_refresh");
+    currentUser = null;
+    renderAuthArea();
+}
+
+async function loadSession() {
+    const token = localStorage.getItem("pantry_auth_token");
+    if (!token) { currentUser = null; renderAuthArea(); return; }
+    try {
+        currentUser = await api("/auth/me");
+    } catch (e) {
+        // Intentar refrescar con el refresh token antes de rendirse.
+        const refresh = localStorage.getItem("pantry_auth_refresh");
+        if (refresh) {
+            try {
+                const resp = await fetch("/auth/refresh", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ refresh_token: refresh }),
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    localStorage.setItem("pantry_auth_token", data.access_token);
+                    localStorage.setItem("pantry_auth_refresh", data.refresh_token);
+                    currentUser = await api("/auth/me");
+                } else { logout(); }
+            } catch (e2) { logout(); }
+        } else { logout(); }
+    }
+    renderAuthArea();
+}
+
+function renderAuthArea() {
+    const area = document.getElementById("auth-area");
+    const isEn = state.lang === 'en';
+    if (currentUser) {
+        area.innerHTML = `
+            <span class="auth-user" title="${escAttr(currentUser.email)}">👤 ${esc(currentUser.username)}</span>
+            <button type="button" id="logout-btn" class="theme-toggle" title="${isEn ? 'Log out' : 'Cerrar sesión'}" aria-label="${isEn ? 'Log out' : 'Cerrar sesión'}">⎋</button>`;
+        document.getElementById("logout-btn").addEventListener("click", logout);
+    } else {
+        area.innerHTML = `
+            <button type="button" id="login-open-btn" class="btn btn-sm btn-outline" style="border-color:rgba(255,255,255,0.4); color:#fff">${isEn ? 'Sign in' : 'Entrar'}</button>`;
+        document.getElementById("login-open-btn").addEventListener("click", openAuthModal);
+    }
+}
+
+function openAuthModal() {
+    document.getElementById("auth-modal").classList.remove("hidden");
+    setAuthMode("login");
+}
+
+function closeAuthModal(event) {
+    if (event && event.target.id !== "auth-modal" && !event.target.classList.contains("modal-close")) return;
+    document.getElementById("auth-modal").classList.add("hidden");
+}
+
+function setAuthMode(mode) {
+    const isEn = state.lang === 'en';
+    const isLogin = mode === "login";
+    document.getElementById("auth-title").textContent = isLogin
+        ? (isEn ? 'Sign in' : 'Iniciar sesión')
+        : (isEn ? 'Create account' : 'Crear cuenta');
+    document.getElementById("auth-username").parentElement.classList.toggle("hidden", isLogin);
+    document.getElementById("auth-submit-btn").textContent = isLogin
+        ? (isEn ? 'Sign in' : 'Entrar')
+        : (isEn ? 'Create account' : 'Crear cuenta');
+    document.getElementById("auth-switch-btn").textContent = isLogin
+        ? (isEn ? 'No account? Create one' : '¿Sin cuenta? Crear una')
+        : (isEn ? 'Already registered? Sign in' : '¿Ya registrado? Iniciar sesión');
+    document.getElementById("auth-switch-btn").dataset.mode = isLogin ? "register" : "login";
+    document.getElementById("auth-error").textContent = "";
 }
 
 function escAttr(text) {
@@ -1671,6 +1811,15 @@ if (courseBtn) courseBtn.addEventListener("click", openCourseModal);
 const podcastBtn = document.getElementById("podcast-btn");
 if (podcastBtn) podcastBtn.addEventListener("click", openPodcastModal);
 
+// --- Eventos del formulario de autenticación (4.1) ---
+document.getElementById("auth-form").addEventListener("submit", (e) => {
+    const mode = document.getElementById("auth-switch-btn").dataset.mode;
+    if (mode === "register") doRegister(e); else doLogin(e);
+});
+document.getElementById("auth-switch-btn").addEventListener("click", () => {
+    setAuthMode(document.getElementById("auth-switch-btn").dataset.mode);
+});
+
 const glossaryBtn = document.getElementById("glossary-btn");
 if (glossaryBtn) glossaryBtn.addEventListener("click", () => openGlossaryModal({}));
 const glossarySearchInputEl = document.getElementById("glossary-search");
@@ -2583,4 +2732,5 @@ loadFlavorMap();
 loadGuides();
 loadCourse();
 loadPodcastTopics();
+loadSession();
 search(1);

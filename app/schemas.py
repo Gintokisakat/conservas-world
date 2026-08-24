@@ -1,4 +1,6 @@
-from pydantic import BaseModel, ConfigDict
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class CountryOut(BaseModel):
@@ -333,6 +335,39 @@ class ShelfLifeOut(BaseModel):
     freezer_days: int | None
     pantry_days: int | None
     notes: str
+
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    username: str = Field(min_length=3, max_length=80, pattern=r"^[a-zA-Z0-9_.-]+$")
+    password: str = Field(min_length=8, max_length=128)
+
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class TokenPair(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str = "bearer"
+
+
+class RefreshRequest(BaseModel):
+    refresh_token: str
+
+
+class UserOut(BaseModel):
+    id: int
+    email: str
+    username: str
+    created_at: datetime
+    preferences: dict
+
+
+class PreferencesUpdate(BaseModel):
+    preferences: dict
 
 
 class GlossaryOut(BaseModel):

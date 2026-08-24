@@ -1,5 +1,8 @@
 import re
+import time
 from unittest.mock import patch
+
+import pytest
 
 from ingest import images
 
@@ -145,6 +148,14 @@ def test_off_barcode_ignora_sin_refs_off():
 # ---------------------------------------------------------------------------
 
 
+@pytest.fixture(autouse=True)
+def _reset_rate_limit_state():
+    """Evita que el throttle global (_LAST_429) contamin entre tests."""
+    images._LAST_429 = None
+    yield
+    images._LAST_429 = None
+
+
 def test_resolve_image_prioriza_off():
     p = _product_refs(["https://world.openfoodfacts.org/product/1234567890123"])
     with (
@@ -236,7 +247,7 @@ def test_resolve_image_throttled_evita_fallback_wikidata(monkeypatch):
 def test_resolve_image_throttled_cae_a_none_sin_crash(monkeypatch):
     """Un rate-limit persistente devuelve None sin propagar RuntimeError."""
     p = _product_refs([])
-    monkeypatch.setattr(images, "_LAST_429", 0.0)
+    monkeypatch.setattr(images, "_LAST_429", time.monotonic())
     with (
         patch.object(images, "commons_image", side_effect=RuntimeError("agotado")),
     ):

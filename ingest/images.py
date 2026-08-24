@@ -45,12 +45,14 @@ _last_request: dict[str, float] = {}
 
 # Marca temporal del último 429: sirve para saltar fuentes no esenciales
 # (aliases, Wikidata) mientras el host nos está limitando el ritmo.
-_LAST_429: float = 0.0
+# None = nunca hemos recibido un 429 (no usar 0.0: monotonic() arranca en 0
+# en procesos recién iniciados y daría throttled() espurios en CI).
+_LAST_429: float | None = None
 
 
 def _throttled() -> bool:
     """True si el último 429 fue hace menos de 90s."""
-    return time.monotonic() - _LAST_429 < 90.0
+    return _LAST_429 is not None and time.monotonic() - _LAST_429 < 90.0
 
 
 def _pace(url: str):

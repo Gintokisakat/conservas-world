@@ -363,3 +363,16 @@ class Recipe(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
     user: Mapped["User"] = relationship(back_populates="recipes")
+
+
+class RecipeVote(Base):
+    """Voto positivo único por usuario en una receta comunitaria."""
+
+    __tablename__ = "recipe_votes"
+
+    recipe_id: Mapped[int] = mapped_column(
+        ForeignKey("recipes.id", ondelete="CASCADE"), primary_key=True
+    )
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )

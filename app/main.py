@@ -8,6 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from app.api.auth import router as auth_router
 from app.api.public import RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW, check_rate_limit
 from app.api.public import router as public_router
+from app.api.recipes import router as recipes_router
 from app.api.reviews import router as reviews_router
 from app.api.routes import router
 from app.api.seo import router as seo_router
@@ -34,6 +35,8 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(reviews_router)
     app.include_router(reviews_router, prefix="/api/v1")
+    app.include_router(recipes_router)
+    app.include_router(recipes_router, prefix="/api/v1")
     app.include_router(public_router)
     app.include_router(seo_router)
 
@@ -44,7 +47,12 @@ def create_app() -> FastAPI:
 
         from app.db import models as _models
 
-        for table in (_models.User.__table__, _models.Review.__table__, _models.Recipe.__table__):
+        for table in (
+            _models.User.__table__,
+            _models.Review.__table__,
+            _models.Recipe.__table__,
+            _models.RecipeVote.__table__,
+        ):
             assert isinstance(table, _SaTable)
             table.create(bind=_engine, checkfirst=True)
     except Exception:

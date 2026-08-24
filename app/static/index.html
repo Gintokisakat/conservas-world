@@ -376,6 +376,7 @@
                     <button type="button" id="guide-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">📖 Manual del Fermentador</button>
                     <button type="button" id="course-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">🎓 Curso</button>
                     <button type="button" id="podcast-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">🎙️ Podcast</button>
+                    <button type="button" id="recipes-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43">👨‍🍳 Recetas</button>
                     <button type="button" id="glossary-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">📚 Glosario</button>
                     <button type="button" id="trouble-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43">🚨 Diagnóstico de Problemas</button>
                     <button type="button" id="microbes-btn" class="btn btn-outline">🔬 Microbios Fermentadores</button>
@@ -557,6 +558,14 @@
                 <p style="color:var(--text-secondary); margin-bottom:1.2rem" data-i18n="course_sub">Cinco módulos desde la historia hasta recetas prácticas. Marca tu progreso y obtén tu certificado.</p>
                 <div id="course-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem"></div>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal Recetas comunitarias -->
+    <div id="recipes-modal" class="modal-overlay hidden" onclick="closeRecipesModal(event)" role="dialog" aria-modal="true" aria-label="Recetas comunitarias">
+        <div class="modal-card modal-lg">
+            <button class="modal-close" onclick="closeRecipesModal()" aria-label="Cerrar modal">&times;</button>
+            <div id="recipes-body"></div>
         </div>
     </div>
 

@@ -402,6 +402,46 @@ class ReviewsOut(BaseModel):
     items: list[ReviewOut]
 
 
+class RecipeCreate(BaseModel):
+    title: str = Field(min_length=3, max_length=200)
+    description: str | None = Field(default=None, max_length=4000)
+    steps: list[str] = Field(default_factory=list)
+    ingredients: list[str] = Field(default_factory=list)
+    product_id: int | None = None
+    difficulty: str = Field(default="media", pattern="^(facil|media|dificil)$")
+    prep_time_min: int | None = Field(default=None, ge=1, le=10000)
+
+
+class RecipeUpdate(RecipeCreate):
+    pass
+
+
+class RecipeAuthor(BaseModel):
+    id: int
+    username: str
+
+
+class RecipeOut(BaseModel):
+    id: int
+    title: str
+    description: str | None
+    steps: list[str]
+    ingredients: list[str]
+    difficulty: str
+    prep_time_min: int | None
+    votes: int
+    created_at: datetime
+    author: RecipeAuthor
+    product_id: int | None
+    mine: bool = False
+    voted: bool = False
+
+
+class RecipesFeed(BaseModel):
+    total: int
+    items: list[RecipeOut]
+
+
 class GlossaryOut(BaseModel):
     id: int
     term: str

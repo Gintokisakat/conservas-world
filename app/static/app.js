@@ -1790,6 +1790,313 @@ function bindReviewEvents(pid) {
     });
 }
 
+// --- Recetas comunitarias (4.3) ---
+let recipesFilter = { q: "", difficulty: "", sort: "votes", page: 1 };
+
+function recipesI18nT() {
+    const isEn = state.lang === 'en';
+    return {
+        title: isEn ? 'Community Recipes' : 'Recetas comunitarias',
+        sub: isEn ? 'Fermentation recipes shared by the community.' : 'Recetas de fermentación compartidas por la comunidad.',
+        newRecipe: isEn ? 'Publish recipe' : 'Publicar receta',
+        allDiff: isEn ? 'All levels' : 'Todos los niveles',
+        easy: isEn ? 'Easy' : 'Fácil',
+        medium: 'Media',
+        hard: isEn ? 'Hard' : 'Difícil',
+        min: isEn ? 'min' : 'min',
+        votes: isEn ? 'votes' : 'votos',
+        empty: isEn ? 'No recipes yet. Publish the first one!' : 'Aún no hay recetas. ¡Publica la primera!',
+        loginToVote: isEn ? 'Sign in to vote' : 'Entrar para votar',
+        edit: isEn ? 'Edit' : 'Editar',
+        del: isEn ? 'Delete' : 'Eliminar',
+        back: isEn ? 'Back to feed' : 'Volver al feed',
+        fTitle: isEn ? 'Recipe title' : 'Título de la receta',
+        fDesc: isEn ? 'Short description…' : 'Descripción corta…',
+        fIng: isEn ? 'Ingredients (one per line)' : 'Ingredientes (uno por línea)',
+        fSteps: isEn ? 'Steps (one per line)' : 'Pasos (uno por línea)',
+        fProduct: isEn ? 'Related product (optional name)' : 'Producto relacionado (nombre opcional)',
+        fTime: isEn ? 'Prep minutes' : 'Minutos de preparación',
+        publish: isEn ? 'Publish' : 'Publicar',
+        save: isEn ? 'Save changes' : 'Guardar cambios',
+        seeProduct: isEn ? 'See product' : 'Ver producto',
+        by: isEn ? 'by' : 'por',
+    };
+}
+
+async function openRecipesModal() {
+    document.getElementById("recipes-modal").classList.remove("hidden");
+    renderRecipesFeed();
+}
+
+function closeRecipesModal(event) {
+    if (event && event.target.id !== "recipes-modal" && !event.target.classList.contains("modal-close")) return;
+    document.getElementById("recipes-modal").classList.add("hidden");
+}
+
+function difficultyLabel(d) {
+    const T = recipesI18nT();
+    return { facil: T.easy, media: T.medium, dificil: T.hard }[d] || d;
+}
+
+async function renderRecipesFeed() {
+    const body = document.getElementById("recipes-body");
+    const T = recipesI18nT();
+    const isEn = state.lang === 'en';
+    body.innerHTML = `
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.8rem">
+            <h2 style="margin:0">👨‍🍳 ${T.title}</h2>
+            <button type="button" id="recipe-new-btn" class="btn btn-sm btn-primary">＋ ${T.newRecipe}</button>
+        </div>
+        <p style="color:var(--text-secondary); margin-bottom:0.8rem">${T.sub}</p>
+        <div style="display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:1rem">
+            <input type="search" id="recipes-q" class="search-input" placeholder="🔎 ${isEn ? 'Search recipes…' : 'Buscar recetas…'}" value="${escAttr(recipesFilter.q)}" style="max-width:240px">
+            <select id="recipes-difficulty" class="lang-picker">
+                <option value="">${T.allDiff}</option>
+                <option value="facil"${recipesFilter.difficulty === "facil" ? " selected" : ""}>${T.easy}</option>
+                <option value="media"${recipesFilter.difficulty === "media" ? " selected" : ""}>${T.medium}</option>
+                <option value="dificil"${recipesFilter.difficulty === "dificil" ? " selected" : ""}>${T.hard}</option>
+            </select>
+            <select id="recipes-sort" class="lang-picker">
+                <option value="votes"${recipesFilter.sort === "votes" ? " selected" : ""}>🔥 ${isEn ? 'Most voted' : 'Más votadas'}</option>
+                <option value="recent"${recipesFilter.sort === "recent" ? " selected" : ""}>🆕 ${isEn ? 'Recent' : 'Recientes'}</option>
+            </select>
+        </div>
+        <div id="recipes-loading" role="status" aria-live="polite" style="color:var(--text-muted)">${isEn ? 'Loading…' : 'Cargando…'}</div>
+        <div id="recipes-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem"></div>
+        <div id="recipes-pager" style="display:flex; gap:0.5rem; justify-content:center; margin-top:1rem"></div>`;
+
+    document.getElementById("recipe-new-btn").addEventListener("click", () => renderRecipeForm(null));
+    const qInput = document.getElementById("recipes-q");
+    let debounce;
+    qInput.addEventListener("input", () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(() => {
+            recipesFilter.q = qInput.value.trim();
+            recipesFilter.page = 1;
+            loadRecipesIntoList();
+        }, 350);
+    });
+    document.getElementById("recipes-difficulty").addEventListener("change", (e) => {
+        recipesFilter.difficulty = e.target.value;
+        recipesFilter.page = 1;
+        loadRecipesIntoList();
+    });
+    document.getElementById("recipes-sort").addEventListener("change", (e) => {
+        recipesFilter.sort = e.target.value;
+        recipesFilter.page = 1;
+        loadRecipesIntoList();
+    });
+    await loadRecipesIntoList();
+}
+
+async function loadRecipesIntoList() {
+    const listEl = document.getElementById("recipes-list");
+    const loadingEl = document.getElementById("recipes-loading");
+    if (!listEl) return;
+    const T = recipesI18nT();
+    const isEn = state.lang === 'en';
+    loadingEl.classList.remove("hidden");
+    listEl.innerHTML = "";
+    const params = new URLSearchParams({
+        sort: recipesFilter.sort,
+        page: String(recipesFilter.page),
+        page_size: "12",
+    });
+    if (recipesFilter.q) params.set("q", recipesFilter.q);
+    if (recipesFilter.difficulty) params.set("difficulty", recipesFilter.difficulty);
+    let data = { total: 0, items: [] };
+    try {
+        data = await api(`/recipes?${params.toString()}`);
+    } catch (e) { /* vacío */ }
+    loadingEl.classList.add("hidden");
+
+    listEl.innerHTML = data.items.map((r) => `
+        <div class="guide-card" style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem; display:flex; flex-direction:column">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem">
+                <span class="tag" style="background:rgba(217,107,67,0.12); color:#d96b43; border:1px solid rgba(217,107,67,0.3)">${difficultyLabel(r.difficulty)}</span>
+                ${r.prep_time_min ? `<span style="font-size:0.8rem; color:var(--text-muted)">⏱️ ${r.prep_time_min} ${T.min}</span>` : ""}
+            </div>
+            <h3 style="margin:0 0 0.3rem; color:var(--color-primary); cursor:pointer" data-recipe-open="${r.id}">${esc(r.title)}</h3>
+            ${r.description ? `<p style="font-size:0.86rem; color:var(--text-secondary); margin:0 0 0.5rem">${esc(r.description)}</p>` : ""}
+            <div style="font-size:0.78rem; color:var(--text-muted); margin-bottom:0.5rem">${T.by} @${esc(r.author.username)} · ${(r.created_at || "").slice(0, 10)}</div>
+            <div style="margin-top:auto; display:flex; align-items:center; gap:0.5rem">
+                <button type="button" class="btn btn-sm btn-outline" data-recipe-vote="${r.id}" data-voted="${r.voted ? 1 : 0}" title="${currentUser ? "" : T.loginToVote}">
+                    ${r.voted ? "▲" : "△"} ${r.votes}
+                </button>
+                ${r.mine ? `
+                    <button type="button" class="btn btn-sm btn-outline" data-recipe-edit="${r.id}">${T.edit}</button>
+                    <button type="button" class="btn btn-sm btn-outline" data-recipe-del="${r.id}" style="color:#d96b43">${T.del}</button>` : ""}
+            </div>
+        </div>`).join("")
+        || `<p style="color:var(--text-muted)">${T.empty}</p>`;
+
+    const totalPages = Math.max(1, Math.ceil(data.total / 12));
+    const pager = document.getElementById("recipes-pager");
+    pager.innerHTML = totalPages > 1
+        ? `<button type="button" class="btn btn-sm btn-outline" id="recipes-prev" ${recipesFilter.page <= 1 ? "disabled" : ""}>←</button>
+           <span style="align-self:center; font-size:0.85rem; color:var(--text-muted)">${recipesFilter.page}/${totalPages}</span>
+           <button type="button" class="btn btn-sm btn-outline" id="recipes-next" ${recipesFilter.page >= totalPages ? "disabled" : ""}>→</button>`
+        : "";
+    const prev = document.getElementById("recipes-prev");
+    if (prev) prev.addEventListener("click", () => { recipesFilter.page--; loadRecipesIntoList(); });
+    const next = document.getElementById("recipes-next");
+    if (next) next.addEventListener("click", () => { recipesFilter.page++; loadRecipesIntoList(); });
+
+    bindRecipeCardEvents();
+}
+
+function bindRecipeCardEvents() {
+    const body = document.getElementById("recipes-body");
+    if (!body) return;
+    body.querySelectorAll("[data-recipe-open]").forEach((el) => {
+        el.addEventListener("click", async () => {
+            const r = await api(`/recipes/${el.dataset.recipeOpen}`);
+            renderRecipeDetail(r);
+        });
+    });
+    body.querySelectorAll("[data-recipe-vote]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            if (!currentUser) { openAuthModal(); return; }
+            const id = btn.dataset.recipeVote;
+            const voted = btn.dataset.voted === "1";
+            try {
+                await apiSend(voted ? "DELETE" : "POST", `/recipes/${id}/vote`);
+                await loadRecipesIntoList();
+            } catch (e) { /* noop */ }
+        });
+    });
+    body.querySelectorAll("[data-recipe-edit]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            const r = await api(`/recipes/${btn.dataset.recipeEdit}`);
+            renderRecipeForm(r);
+        });
+    });
+    body.querySelectorAll("[data-recipe-del]").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+            if (!confirm(state.lang === 'en' ? 'Delete this recipe?' : '¿Eliminar esta receta?')) return;
+            try {
+                await apiSend("DELETE", `/recipes/${btn.dataset.recipeDel}`);
+                await loadRecipesIntoList();
+            } catch (e) { /* noop */ }
+        });
+    });
+}
+
+function renderRecipeDetail(r) {
+    const body = document.getElementById("recipes-body");
+    const T = recipesI18nT();
+    body.innerHTML = `
+        <button type="button" class="btn btn-sm btn-outline" id="recipe-back-btn">← ${T.back}</button>
+        <h2 style="margin-top:0.8rem">${esc(r.title)}</h2>
+        <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; margin-bottom:0.6rem">
+            <span class="tag" style="background:rgba(217,107,67,0.12); color:#d96b43; border:1px solid rgba(217,107,67,0.3)">${difficultyLabel(r.difficulty)}</span>
+            ${r.prep_time_min ? `<span class="tag">⏱️ ${r.prep_time_min} ${T.min}</span>` : ""}
+            <button type="button" class="btn btn-sm btn-outline" data-recipe-vote="${r.id}" data-voted="${r.voted ? 1 : 0}">${r.voted ? "▲" : "△"} ${r.votes} ${T.votes}</button>
+            <span style="font-size:0.8rem; color:var(--text-muted)">${T.by} @${esc(r.author.username)}</span>
+        </div>
+        ${r.description ? `<p style="line-height:1.55">${esc(r.description)}</p>` : ""}
+        ${r.ingredients.length ? `<h4>🧺 ${state.lang === 'en' ? 'Ingredients' : 'Ingredientes'}</h4><ul style="line-height:1.7">${r.ingredients.map((i) => `<li>${esc(i)}</li>`).join("")}</ul>` : ""}
+        ${r.steps.length ? `<h4>📋 ${state.lang === 'en' ? 'Steps' : 'Pasos'}</h4><ol style="line-height:1.7">${r.steps.map((s) => `<li>${esc(s)}</li>`).join("")}</ol>` : ""}
+        ${r.product_id ? `<button type="button" class="btn btn-sm btn-secondary" data-product-link="${r.product_id}">🫙 ${T.seeProduct}</button>` : ""}`;
+    document.getElementById("recipe-back-btn").addEventListener("click", renderRecipesFeed);
+    const voteBtn = body.querySelector("[data-recipe-vote]");
+    if (voteBtn) voteBtn.addEventListener("click", async () => {
+        if (!currentUser) { openAuthModal(); return; }
+        const voted = voteBtn.dataset.voted === "1";
+        try {
+            const updated = await api(`/recipes/${r.id}`);
+            void updated;
+            if (voted) await apiSend("DELETE", `/recipes/${r.id}/vote`); else await apiSend("POST", `/recipes/${r.id}/vote`);
+            const fresh = await api(`/recipes/${r.id}`);
+            renderRecipeDetail(fresh);
+        } catch (e) { /* noop */ }
+    });
+    const prodBtn = body.querySelector("[data-product-link]");
+    if (prodBtn) prodBtn.addEventListener("click", () => {
+        closeRecipesModal();
+        openDetail(prodBtn.dataset.productLink);
+    });
+}
+
+function renderRecipeForm(existing) {
+    const body = document.getElementById("recipes-body");
+    const T = recipesI18nT();
+    const isEn = state.lang === 'en';
+    body.innerHTML = `
+        <button type="button" class="btn btn-sm btn-outline" id="recipe-back-btn">← ${T.back}</button>
+        <form id="recipe-form" style="margin-top:0.9rem; display:flex; flex-direction:column; gap:0.7rem; max-width:560px">
+            <input type="text" id="rf-title" class="search-input" required minlength="3" maxlength="200" placeholder="${T.fTitle}" value="${existing ? escAttr(existing.title) : ""}" style="width:100%">
+            <textarea id="rf-desc" rows="2" maxlength="4000" placeholder="${T.fDesc}" style="border:1px solid var(--border-color); border-radius:var(--radius-sm); background:var(--bg-page); color:var(--text-color); padding:0.5rem; font-family:inherit">${existing && existing.description ? esc(existing.description) : ""}</textarea>
+            <div style="display:flex; gap:0.7rem; flex-wrap:wrap">
+                <select id="rf-difficulty" class="lang-picker">
+                    <option value="facil"${existing && existing.difficulty === "facil" ? " selected" : ""}>${T.easy}</option>
+                    <option value="media"${!existing || existing.difficulty === "media" ? " selected" : ""}>${T.medium}</option>
+                    <option value="dificil"${existing && existing.difficulty === "dificil" ? " selected" : ""}>${T.hard}</option>
+                </select>
+                <input type="number" id="rf-time" min="1" max="10000" placeholder="${T.fTime}" value="${existing && existing.prep_time_min ? existing.prep_time_min : ""}" class="search-input" style="max-width:160px">
+                <input type="text" id="rf-product" class="search-input" placeholder="${T.fProduct}" value="" style="max-width:260px" list="rf-products-datalist">
+                <datalist id="rf-products-datalist"></datalist>
+            </div>
+            <label style="font-size:0.82rem; color:var(--text-muted)">${T.fIng}</label>
+            <textarea id="rf-ing" rows="4" placeholder="repollo\nsal marina\n...">${existing ? esc(existing.ingredients.join("\n")) : ""}</textarea>
+            <label style="font-size:0.82rem; color:var(--text-muted)">${T.fSteps}</label>
+            <textarea id="rf-steps" rows="5" placeholder="1. ...\n2. ...">${existing ? esc(existing.steps.join("\n")) : ""}</textarea>
+            <p id="rf-error" style="color:#d96b43; font-size:0.83rem; min-height:1rem; margin:0"></p>
+            <button type="submit" class="btn btn-primary">${existing ? T.save : T.publish}</button>
+        </form>`;
+    document.getElementById("recipe-back-btn").addEventListener("click", renderRecipesFeed);
+
+    // Autocompletado de productos con la API de sugerencias.
+    const productInput = document.getElementById("rf-product");
+    const datalist = document.getElementById("rf-products-datalist");
+    productInput.addEventListener("input", async () => {
+        const q = productInput.value.trim();
+        if (q.length < 2) return;
+        try {
+            const sug = await api(`/products?q=${encodeURIComponent(q)}&page_size=5&fields=name`);
+            datalist.innerHTML = (sug.items || []).map((p) => `<option value="${escAttr(p.name)}">`).join("");
+        } catch (e) { /* noop */ }
+    });
+
+    document.getElementById("recipe-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const errEl = document.getElementById("rf-error");
+        errEl.textContent = "";
+        if (!currentUser) { openAuthModal(); return; }
+        let productId = existing ? existing.product_id : null;
+        const productName = document.getElementById("rf-product").value.trim();
+        if (productName) {
+            try {
+                const found = await api(`/products?q=${encodeURIComponent(productName)}&page_size=1`);
+                productId = found.items.length ? found.items[0].id : null;
+            } catch (err) { productId = null; }
+        }
+        const payload = {
+            title: document.getElementById("rf-title").value.trim(),
+            description: document.getElementById("rf-desc").value.trim() || null,
+            ingredients: document.getElementById("rf-ing").value.split("\n").map((s) => s.trim()).filter(Boolean),
+            steps: document.getElementById("rf-steps").value.split("\n").map((s) => {
+                const parts = s.trim().split(/\s+/);
+                if (parts.length > 1 && /^\d+[.:]$/.test(parts[0])) parts.shift();
+                return parts.join(" ");
+            }).filter(Boolean),
+            difficulty: document.getElementById("rf-difficulty").value,
+            prep_time_min: Number(document.getElementById("rf-time").value) || null,
+            product_id: productId,
+        };
+        try {
+            if (existing) {
+                await apiSend("PUT", `/recipes/${existing.id}`, payload);
+            } else {
+                await apiSend("POST", `/recipes`, payload);
+            }
+            renderRecipesFeed();
+        } catch (err2) {
+            errEl.textContent = err2.message;
+        }
+    });
+}
+
 let glossaryTimer = null;
 let glossaryOpenedTerm = "";
 
@@ -1982,6 +2289,8 @@ const courseBtn = document.getElementById("course-btn");
 if (courseBtn) courseBtn.addEventListener("click", openCourseModal);
 const podcastBtn = document.getElementById("podcast-btn");
 if (podcastBtn) podcastBtn.addEventListener("click", openPodcastModal);
+const recipesBtn = document.getElementById("recipes-btn");
+if (recipesBtn) recipesBtn.addEventListener("click", openRecipesModal);
 
 // --- Eventos del formulario de autenticación (4.1) ---
 document.getElementById("auth-form").addEventListener("submit", (e) => {

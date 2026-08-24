@@ -109,14 +109,22 @@ def _get_or_create_reference(session: Session, info: dict) -> models.Reference:
     return reference
 
 
+def _lookup_by_name(session: Session, name: str) -> models.Product | None:
+    # Índice ligado a la sesión (session.info): evita recargar toda la tabla
+    # por registro y no contamina entre bases distintas en los tests.
+    idx = session.info.setdefault("_name_index", {})
+    key = normalize_name(name)
+    if not idx:
+        idx.update(
+            {normalize_name(n): pid for pid, n in session.query(models.Product.id, models.Product.name).all()}
+        )
+    pid = idx.get(key)
+    return session.get(models.Product, pid) if pid else None
+
+
 def upsert_product(session: Session, record: dict) -> models.Product | None:
     normalized = normalize_name(record["name"])
-    product = session.query(models.Product).filter(
-        models.Product.name == record["name"]
-    ).first()
-    if product is None:
-        product = session.query(models.Product).all()
-        product = next((p for p in product if normalize_name(p.name) == normalized), None)
+    product = _lookup_by_name(session, record["name"])
     if product is not None:
         return None
     product = models.Product(
@@ -127,6 +135,7 @@ def upsert_product(session: Session, record: dict) -> models.Product | None:
         status="imported",
         source_tag=record.get("source_tag"),
         substrate=pick_substrate(record.get("ingredients", [])),
+        image_url=record.get("image_url"),
     )
     session.add(product)
     session.flush()
@@ -159,6 +168,7 @@ def upsert_product(session: Session, record: dict) -> models.Product | None:
     for info in record.get("references", []):
         product.references.append(_get_or_create_reference(session, info))
 
+    session.info["_name_index"][normalized] = product.id
     return product
 
 
@@ -175,7 +185,7 @@ _USE_STOPWORDS = {
 }
 
 
-def enrich_ingredients(session: Session) -> int:
+def enrich_ingredients(session: Session) -> tuple[int, int]:
     """Re-extrae ingredientes sobre los productos ya persistidos (nombre +
     descripcion + metodo) y agrega los que falten, sin duplicar."""
     from ingest.ingredients import match_ingredients, match_ingredients_by_name

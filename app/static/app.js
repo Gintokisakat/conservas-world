@@ -1138,9 +1138,10 @@ async function openIngredient(id, name) {
     document.getElementById("ingredient-modal").classList.remove("hidden");
     body.innerHTML = `<h2>🥕 ${esc(name)}</h2><p>${state.lang === 'en' ? 'Loading nutrition data...' : 'Cargando información nutricional...'}</p>`;
     try {
-        const [nutrition, shelfLife] = await Promise.all([
+        const [nutrition, shelfLife, molecules] = await Promise.all([
             api(`/ingredients/${id}/nutrition`),
             api(`/ingredients/${id}/shelf-life?lang=${state.lang}`).catch(() => null),
+            api(`/ingredients/${id}/molecules?limit=14`).catch(() => null),
         ]);
         const isEn = state.lang === 'en';
         let shelfHtml = "";
@@ -1161,6 +1162,16 @@ async function openIngredient(id, name) {
                     </tbody>
                 </table>
                 <p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.4rem">${esc(shelfLife.category)} — ${esc(shelfLife.notes)}</p>`;
+        }
+        let moleculesHtml = "";
+        if (molecules && molecules.total) {
+            const isEnM = state.lang === 'en';
+            moleculesHtml = `
+                <h3 style="margin-top:0.4rem">🧪 ${isEnM ? 'Flavor molecules' : 'Moléculas de sabor'}</h3>
+                <div style="display:flex; gap:0.35rem; flex-wrap:wrap; margin-top:0.4rem">
+                    ${molecules.items.map((m) => `<span class="tag" title="${escAttr(m.pubchem_id ? 'PubChem ' + m.pubchem_id : '')}" style="background:rgba(59,130,246,0.1); color:#3b82f6; border:1px solid rgba(59,130,246,0.25); font-size:0.75rem">${esc(m.name)}</span>`).join("")}
+                    ${molecules.total > molecules.items.length ? `<span style="font-size:0.75rem; color:var(--text-muted); align-self:center">+${molecules.total - molecules.items.length}</span>` : ""}
+                </div>`;
         }
         let nutritionHtml = `<p style="color:var(--text-secondary); margin-bottom:0.6rem">${t.nutrition_none}</p>`;
         if (nutrition) {
@@ -1197,7 +1208,7 @@ async function openIngredient(id, name) {
                        </li>`).join("")}
                </ul>`
             : "";
-        body.innerHTML = `<h2>🥕 ${esc(name)}</h2>${shelfHtml}${nutritionHtml}${productsHtml}`;
+        body.innerHTML = `<h2>🥕 ${esc(name)}</h2>${moleculesHtml}${shelfHtml}${nutritionHtml}${productsHtml}`;
     } catch (e) {
         body.innerHTML = `<h2>🥕 ${esc(name)}</h2><p>${state.lang === 'en' ? 'Error loading ingredient info.' : 'Error al cargar la información del ingrediente.'}</p>`;
     }

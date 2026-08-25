@@ -28,8 +28,10 @@ from app.schemas import (
     GlossaryOut,
     GuideListItem,
     GuideOut,
+    IngredientMoleculesOut,
     IngredientOut,
     MicrobeOut,
+    MoleculeOut,
     NutritionOut,
     PaginatedProducts,
     PairingOut,
@@ -1326,6 +1328,41 @@ def ingredient_shelf_life(
     if profile is None:
         return None
     return shelf_life_out(profile, lang)
+
+
+@router.get("/ingredients/{ingredient_id}/molecules", response_model=IngredientMoleculesOut)
+def ingredient_molecules(
+    ingredient_id: int,
+    limit: int = Query(default=40, ge=1, le=200),
+    session: Session = Depends(get_session),
+):
+    """Moléculas de sabor (FlavorDB, 2.12) asociadas al ingrediente."""
+    from sqlalchemy import func as sa_func
+
+    ingredient = session.get(models.Ingredient, ingredient_id)
+    if ingredient is None:
+        raise HTTPException(status_code=404, detail="Ingrediente no encontrado")
+    total = session.execute(
+        select(sa_func.count())
+        .select_from(models.IngredientFlavorMolecule)
+        .where(models.IngredientFlavorMolecule.ingredient_id == ingredient_id)
+    ).scalar_one()
+    rows = session.execute(
+        select(models.FlavorMolecule)
+        .join(
+            models.IngredientFlavorMolecule,
+            models.IngredientFlavorMolecule.molecule_id == models.FlavorMolecule.id,
+        )
+        .where(models.IngredientFlavorMolecule.ingredient_id == ingredient_id)
+        .order_by(models.FlavorMolecule.name)
+        .limit(limit)
+    ).scalars().all()
+    return IngredientMoleculesOut(
+        ingredient_id=ingredient.id,
+        ingredient_name=ingredient.name,
+        total=total,
+        items=[MoleculeOut(name=m.name, pubchem_id=m.pubchem_id) for m in rows],
+    )
 
 
 @router.get("/ingredients/{ingredient_id}/nutrition", response_model=NutritionOut | None)

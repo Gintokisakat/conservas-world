@@ -119,6 +119,13 @@ def run(sources: list[str], reset: bool = False):
         from ingest.microbiota_profiles import link_typical_microbiota
 
         micro_enriched, micro_links = link_typical_microbiota(session)
+
+        import os
+
+        if os.environ.get("CONSERVAS_FETCH_FLAVORDB", "1") == "1":
+            from ingest.sources.flavordb import enrich_ingredient_molecules
+
+            flav_enriched, flav_links = enrich_ingredient_molecules(session)
         loader.seed_country_coords(session)
         loader.create_full_text_table()
     finally:
@@ -127,6 +134,8 @@ def run(sources: list[str], reset: bool = False):
     print(f"\nFilas por fuente: {by_source}")
     print(f"Duplicados saltados: {skipped}")
     print(f"Microbiota típica vinculada: {micro_enriched} productos (+{micro_links} vínculos)")
+    if os.environ.get("CONSERVAS_FETCH_FLAVORDB", "1") == "1":
+        print(f"Moléculas FlavorDB: {flav_enriched} ingredientes (+{flav_links} vínculos)")
     print(f"Productos insertados: {total}")
     print(f"Ingredientes enriquecidos: {added} (+{updated} sustratos)")
     print(f"Vinculos de uso entre productos: {uses}")

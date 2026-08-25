@@ -442,6 +442,18 @@ class RecipesFeed(BaseModel):
     items: list[RecipeOut]
 
 
+class MoleculeOut(BaseModel):
+    name: str
+    pubchem_id: int | None
+
+
+class IngredientMoleculesOut(BaseModel):
+    ingredient_id: int
+    ingredient_name: str
+    total: int
+    items: list[MoleculeOut]
+
+
 class GlossaryOut(BaseModel):
     id: int
     term: str

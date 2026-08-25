@@ -52,6 +52,8 @@ def create_app() -> FastAPI:
             _models.Review.__table__,
             _models.Recipe.__table__,
             _models.RecipeVote.__table__,
+            _models.FlavorMolecule.__table__,
+            _models.IngredientFlavorMolecule.__table__,
         ):
             assert isinstance(table, _SaTable)
             table.create(bind=_engine, checkfirst=True)

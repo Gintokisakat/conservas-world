@@ -376,3 +376,26 @@ class RecipeVote(Base):
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
     )
+
+
+class FlavorMolecule(Base):
+    """Molécula de sabor de FlavorDB asociada a ingredientes."""
+
+    __tablename__ = "flavor_molecules"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(String(255), index=True)
+    pubchem_id: Mapped[int | None] = mapped_column(index=True)
+
+
+class IngredientFlavorMolecule(Base):
+    """Asociación ingrediente <-> molécula de sabor (FlavorDB)."""
+
+    __tablename__ = "ingredient_flavor_molecules"
+
+    ingredient_id: Mapped[int] = mapped_column(
+        ForeignKey("ingredients.id", ondelete="CASCADE"), primary_key=True
+    )
+    molecule_id: Mapped[int] = mapped_column(
+        ForeignKey("flavor_molecules.id", ondelete="CASCADE"), primary_key=True
+    )

@@ -1953,3 +1953,92 @@ select:focus-visible,
     text-overflow: ellipsis;
     white-space: nowrap;
 }
+
+/* ===== UX: toasts ===== */
+#toast-container {
+    position: fixed;
+    bottom: 1.2rem;
+    right: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 10000;
+    max-width: min(92vw, 360px);
+}
+.toast {
+    padding: 0.7rem 1rem;
+    border-radius: var(--radius-md);
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.88rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+    animation: toast-in 0.25s ease;
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+.toast.err { background: #b91c1c; }
+.toast.out { opacity: 0; transform: translateY(6px); transition: all .3s ease; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* ===== UX: skeletons ===== */
+.skeleton {
+    position: relative;
+    overflow: hidden;
+    background: var(--border-color);
+    border-radius: var(--radius-sm);
+}
+.skeleton::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+    animation: shimmer 1.2s infinite;
+}
+@keyframes shimmer { from { transform: translateX(-100%);} to { transform: translateX(100%);} }
+.product-card.is-skeleton { pointer-events: none; }
+.product-card.is-skeleton .sk-img { height: 140px; }
+.sk-line { height: 12px; margin: 0.4rem 0; }
+
+/* ===== UX: paleta de comandos ===== */
+#palette-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(2px);
+    z-index: 9000;
+    display: flex; justify-content: center; align-items: flex-start;
+    padding-top: 12vh;
+}
+#palette-overlay.hidden { display: none; }
+#palette-card {
+    width: min(94vw, 620px);
+    background: var(--bg-card, #fff);
+    border-radius: var(--radius-md);
+    box-shadow: 0 20px 60px rgba(0,0,0,.35);
+    overflow: hidden;
+}
+#palette-input {
+    width: 100%;
+    padding: 0.9rem 1rem;
+    border: none; outline: none;
+    font-size: 1rem;
+    background: transparent;
+    color: var(--text-color);
+    border-bottom: 1px solid var(--border-color);
+}
+#palette-results { max-height: 50vh; overflow-y: auto; }
+.palette-item {
+    display: flex; gap: 0.6rem; align-items: center;
+    padding: 0.55rem 0.9rem; cursor: pointer; font-size: 0.9rem;
+}
+.palette-item.active { background: rgba(45,90,63,0.12); }
+.palette-item .badge {
+    font-size: 0.68rem; text-transform: uppercase; letter-spacing: .04em;
+    color: var(--text-muted); border: 1px solid var(--border-color);
+    padding: 0.05rem 0.35rem; border-radius: 4px;
+}
+.palette-hint {
+    padding: 0.45rem 0.9rem; font-size: 0.72rem; color: var(--text-muted);
+    border-top: 1px solid var(--border-color); display:flex; gap:.8rem;
+}
+kbd { border:1px solid var(--border-color); border-bottom-width:2px; border-radius:4px; padding:0 4px; font-size:.85em; }

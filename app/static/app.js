@@ -347,8 +347,10 @@ function toggleFavorite(id, event) {
     if (event) event.stopPropagation();
     if (favorites.has(id)) {
         favorites.delete(id);
+        showToast(state.lang === 'en' ? 'Removed from favorites' : 'Quitado de favoritos');
     } else {
         favorites.add(id);
+        showToast(state.lang === 'en' ? 'Added to favorites ❤️' : 'Añadido a favoritos ❤️');
     }
     saveFavorites();
     if (state.onlyFavs) {
@@ -410,6 +412,21 @@ document.addEventListener("click", (e) => {
             `/products/${exportPdfBtn.dataset.id}/export?format=pdf&lang=${state.lang}`,
             "_blank"
         );
+        return;
+    }
+    const shareBtn = e.target.closest("[data-action='share']");
+    if (shareBtn) {
+        const url = `${location.origin}/p/${shareBtn.dataset.id}`;
+        const name = shareBtn.dataset.name || "Conservas del Mundo";
+        if (navigator.share) {
+            navigator.share({ title: name, text: `${name} — Conservas del Mundo`, url })
+                .catch(() => {});
+        } else {
+            navigator.clipboard.writeText(url).then(
+                () => showToast(state.lang === 'en' ? 'Link copied ✓' : 'Enlace copiado ✓'),
+                () => showToast(state.lang === 'en' ? 'Could not copy' : 'No se pudo copiar', "err")
+            );
+        }
         return;
     }
     const glossaryDetailBtn = e.target.closest("[data-action='glossary-detail']");
@@ -613,6 +630,43 @@ function escAttr(text) {
     return (text ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+// ===== UX: toasts =====
+function showToast(message, type = "ok", ms = 3200) {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+    const el = document.createElement("div");
+    el.className = `toast ${type === "err" ? "err" : ""}`;
+    el.textContent = message;
+    container.appendChild(el);
+    setTimeout(() => {
+        el.classList.add("out");
+        setTimeout(() => el.remove(), 350);
+    }, ms);
+}
+
+// ===== UX: skeletons =====
+function showSkeletons(count = 8) {
+    const list = document.getElementById("product-list");
+    if (!list) return;
+    list.innerHTML = Array.from({ length: count }).map(() => `
+        <li class="product-card is-skeleton">
+            <div class="skeleton sk-img"></div>
+            <div style="flex:1">
+                <div class="skeleton sk-line" style="width:60%"></div>
+                <div class="skeleton sk-line" style="width:90%"></div>
+                <div class="skeleton sk-line" style="width:40%"></div>
+            </div>
+        </li>`).join("");
+}
+
+function debounce(fn, wait) {
+    let t;
+    return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), wait);
+    };
+}
+
 function tag(text, cls = "") {
     return `<span class="tag ${cls}">${esc(text)}</span>`;
 }
@@ -787,6 +841,43 @@ function buildQuery(page) {
     return params.toString();
 }
 
+// ===== UX: estado en URL (links compartibles) =====
+function syncUrl(page) {
+    const params = new URLSearchParams();
+    if (state.q) params.set("q", state.q);
+    for (const key of ["category", "continent", "country", "source", "diet"]) {
+        if (state[key]) params.set(key, state[key]);
+    }
+    if (state.gi) params.set("gi", "1");
+    if (state.semantic) params.set("semantic", "1");
+    if (state.view === "map") params.set("view", "map");
+    if (page && page > 1) params.set("page", String(page));
+    const qs = params.toString();
+    const url = qs ? `${location.pathname}?${qs}` : location.pathname;
+    history.replaceState({ appState: true }, "", url);
+}
+
+function applyFromUrl() {
+    const p = new URLSearchParams(location.search);
+    if (!p.toString()) return false;
+    const get = (k) => (p.get(k) || "").trim();
+    document.getElementById("q").value = get("q");
+    state.q = get("q");
+    for (const key of ["category", "continent", "country", "source", "diet"]) {
+        const el = document.getElementById(key);
+        if (el) el.value = get(key);
+        state[key] = get(key);
+    }
+    state.gi = p.get("gi") === "1";
+    document.getElementById("gi").checked = state.gi;
+    if (p.get("semantic") === "1" || p.get("view") === "map") {
+        // se aplican tras la carga inicial de controles
+        window.__initialSemantic = p.get("semantic") === "1";
+        window.__initialView = p.get("view") === "map" ? "map" : null;
+    }
+    return true;
+}
+
 async function search(page = 1) {
     state.onlyFavs = false;
     document.getElementById("fav-filter-btn").classList.remove("active");
@@ -798,11 +889,13 @@ async function search(page = 1) {
         return;
     }
     list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'Searching ferments...' : 'Buscando fermentos y conservas...'}</li>`;
+    showSkeletons();
     try {
         const data = await api(`/products?${buildQuery(page)}`);
         state.total = data.total;
         renderResults(data.items);
         updatePagination();
+        syncUrl(page);
         if (state.view === "map") loadMap();
     } catch (e) {
         list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'Error connecting to API. Check your connection.' : 'Error al conectar con la API. Verifica tu conexión.'}</li>`;
@@ -811,12 +904,13 @@ async function search(page = 1) {
 
 async function searchSemantic(q) {
     const list = document.getElementById("product-list");
-    list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'Analyzing text similarity...' : 'Analizando similitud de texto...'}</li>`;
+    showSkeletons();
     try {
         const data = await api(`/search/semantic?q=${encodeURIComponent(q)}&limit=30`);
         state.total = data.hits.length;
         renderSemanticResults(data.hits);
         updatePagination(1);
+        syncUrl(1);
         if (state.view === "map") loadMap();
     } catch (e) {
         list.innerHTML = `<li class="empty">${state.lang === 'en' ? 'Semantic search failed.' : 'La búsqueda semántica falló.'}</li>`;
@@ -1048,6 +1142,9 @@ async function openDetail(id) {
             <div class="card-header-row" style="align-items:center">
                 <h2>${esc(p.name)}</h2>
                 <div style="display:flex; gap:0.4rem; flex-wrap:wrap">
+                    <button type="button" class="btn btn-outline btn-sm" data-action="share" data-id="${p.id}" data-name="${escAttr(p.name)}">
+                        🔗 ${state.lang === 'en' ? 'Share' : 'Compartir'}
+                    </button>
                     <button type="button" class="btn btn-outline btn-sm" data-action="export-csv" data-id="${p.id}">
                         ${t.export_csv}
                     </button>
@@ -1774,9 +1871,11 @@ function bindReviewEvents(pid) {
         try {
             if (editingId) {
                 await apiSend("PUT", `/reviews/${editingId}`, { rating, text });
+                showToast(state.lang === 'en' ? 'Review updated ✓' : 'Reseña actualizada ✓');
                 await loadProductReviews(pid, null);
             } else {
                 await apiSend("POST", `/products/${pid}/reviews`, { rating, text });
+                showToast(state.lang === 'en' ? 'Review published ✓' : 'Reseña publicada ✓');
                 await loadProductReviews(pid);
             }
         } catch (e) {
@@ -1795,6 +1894,7 @@ function bindReviewEvents(pid) {
             if (!confirm(state.lang === 'en' ? 'Delete your review?' : '¿Eliminar tu reseña?')) return;
             try {
                 await apiSend("DELETE", `/reviews/${btn.dataset.reviewDel}`);
+                showToast(state.lang === 'en' ? 'Review deleted' : 'Reseña eliminada');
                 await loadProductReviews(pid);
             } catch (e) { /* noop */ }
         });
@@ -1972,6 +2072,9 @@ function bindRecipeCardEvents() {
             const voted = btn.dataset.voted === "1";
             try {
                 await apiSend(voted ? "DELETE" : "POST", `/recipes/${id}/vote`);
+                showToast(voted
+                    ? (state.lang === 'en' ? 'Vote removed' : 'Voto retirado')
+                    : (state.lang === 'en' ? 'Thanks for voting ▲' : '¡Gracias por votar ▲!'));
                 await loadRecipesIntoList();
             } catch (e) { /* noop */ }
         });
@@ -2327,6 +2430,38 @@ document.getElementById("search-form").addEventListener("submit", (e) => {
     state.diet = document.getElementById("diet").value;
     state.gi = document.getElementById("gi").checked;
     closeSuggest();
+    search(1);
+});
+
+// ===== UX: búsqueda instantánea + filtros automáticos =====
+const instantSearch = debounce(() => {
+    const value = document.getElementById("q").value.trim();
+    if (value === state.q) return;
+    state.q = value;
+    if (state.semantic || value.length === 0 || value.length >= 2) {
+        search(1);
+    }
+}, 320);
+document.getElementById("q").addEventListener("input", (e) => {
+    if (!e.target.value.trim()) {
+        // con el input vacío, restaurar sugerencias nativas
+        state.q = "";
+    }
+});
+for (const key of ["category", "continent", "country", "source", "diet"]) {
+    const el = document.getElementById(key);
+    if (el) el.addEventListener("change", () => {
+        state[key] = el.value;
+        search(1);
+    });
+}
+const giEl = document.getElementById("gi");
+if (giEl) giEl.addEventListener("change", () => {
+    state.gi = giEl.checked;
+    search(1);
+});
+window.addEventListener("popstate", () => {
+    applyFromUrl();
     search(1);
 });
 
@@ -3225,4 +3360,136 @@ loadGuides();
 loadCourse();
 loadPodcastTopics();
 loadSession();
+// ===== UX: restaurar estado desde la URL antes de la primera búsqueda =====
+applyFromUrl();
+if (window.__initialSemantic && semanticToggle) {
+    semanticToggle.checked = true;
+    state.semantic = true;
+}
+if (window.__initialView === "map") {
+    setView("map");
+}
 search(1);
+
+// ===== UX: paleta de comandos (Ctrl/Cmd+K) =====
+const paletteState = { open: false, items: [], active: 0 };
+
+function paletteCommands() {
+    const isEn = state.lang === 'en';
+    return [
+        { icon: "🎲", label: isEn ? 'Surprise me (random product)' : 'Sorpréndeme (producto aleatorio)', run: () => { document.getElementById("random-btn").click(); } },
+        { icon: "🗺️", label: isEn ? 'Open world map' : 'Abrir mapa mundial', run: () => setView(state.view === 'map' ? 'list' : 'map') },
+        { icon: "📖", label: isEn ? 'Step-by-step guides' : 'Guías paso a paso', run: openGuideModal },
+        { icon: "🎓", label: isEn ? 'Fermentation course' : 'Curso de fermentación', run: openCourseModal },
+        { icon: "🎙️", label: 'Podcast', run: openPodcastModal },
+        { icon: "👨‍🍳", label: isEn ? 'Community recipes' : 'Recetas comunitarias', run: openRecipesModal },
+        { icon: "📚", label: isEn ? 'Glossary' : 'Glosario', run: () => openGlossaryModal({}) },
+        { icon: "📊", label: isEn ? 'Statistics charts' : 'Gráficos y estadísticas', run: openChartsModal },
+        { icon: "❤️", label: isEn ? 'My favorites' : 'Mis favoritos', run: () => renderFavorites() },
+        { icon: "🌙", label: isEn ? 'Toggle theme' : 'Cambiar tema', run: () => document.getElementById("theme-toggle").click() },
+    ];
+}
+
+async function paletteSearch(q) {
+    const items = [];
+    const commands = paletteCommands().filter((c) => !q || c.label.toLowerCase().includes(q.toLowerCase()));
+    for (const cmd of commands) {
+        items.push({ type: state.lang === 'en' ? 'action' : 'acción', icon: cmd.icon, label: cmd.label, run: cmd.run });
+    }
+    if (q.length >= 2) {
+        try {
+            const sug = await api(`/search/suggest?q=${encodeURIComponent(q)}`);
+            (sug.products || []).slice(0, 6).forEach((p) => {
+                items.push({ type: state.lang === 'en' ? 'product' : 'producto', icon: "🫙", label: p.name, run: () => openDetail(p.id) });
+            });
+            (sug.ingredients || []).slice(0, 5).forEach((i) => {
+                items.push({ type: state.lang === 'en' ? 'ingredient' : 'ingrediente', icon: "🥕", label: i.name, run: () => openIngredient(i.id, i.name) });
+            });
+        } catch (e) { /* sin red */ }
+    }
+    return items.slice(0, 14);
+}
+
+function renderPaletteResults() {
+    const box = document.getElementById("palette-results");
+    box.innerHTML = paletteState.items.map((it, idx) => `
+        <div class="palette-item ${idx === paletteState.active ? 'active' : ''}" data-idx="${idx}">
+            <span>${it.icon}</span><span style="flex:1">${esc(it.label)}</span>
+            <span class="badge">${esc(it.type)}</span>
+        </div>`).join("");
+    box.querySelectorAll(".palette-item").forEach((el) => {
+        el.addEventListener("click", () => paletteRun(Number(el.dataset.idx)));
+        el.addEventListener("mousemove", () => {
+            paletteState.active = Number(el.dataset.idx);
+            renderPaletteResults();
+        });
+    });
+}
+
+function paletteRun(idx) {
+    const item = paletteState.items[idx];
+    closePalette();
+    if (item && item.run) item.run();
+}
+
+function openPalette() {
+    paletteState.open = true;
+    paletteState.items = [];
+    paletteState.active = 0;
+    document.getElementById("palette-overlay").classList.remove("hidden");
+    const input = document.getElementById("palette-input");
+    input.value = "";
+    renderPaletteResults();
+    setTimeout(() => input.focus(), 30);
+    paletteOnInput();
+}
+
+function closePalette() {
+    paletteState.open = false;
+    document.getElementById("palette-overlay").classList.add("hidden");
+}
+
+const paletteOnInput = debounce(async () => {
+    const q = document.getElementById("palette-input").value.trim();
+    paletteState.items = await paletteSearch(q);
+    paletteState.active = 0;
+    renderPaletteResults();
+}, 200);
+
+document.getElementById("palette-input").addEventListener("input", paletteOnInput);
+document.getElementById("palette-input").addEventListener("keydown", (e) => {
+    if (e.key === "ArrowDown") {
+        e.preventDefault();
+        paletteState.active = Math.min(paletteState.active + 1, paletteState.items.length - 1);
+        renderPaletteResults();
+    } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        paletteState.active = Math.max(paletteState.active - 1, 0);
+        renderPaletteResults();
+    } else if (e.key === "Enter") {
+        e.preventDefault();
+        paletteRun(paletteState.active);
+    }
+});
+document.getElementById("palette-overlay").addEventListener("mousedown", (e) => {
+    if (e.target.id === "palette-overlay") closePalette();
+});
+
+window.addEventListener("keydown", (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        paletteState.open ? closePalette() : openPalette();
+        return;
+    }
+    if (e.key === "Escape" && paletteState.open) {
+        closePalette();
+        return;
+    }
+    // ===== UX: Esc cierra el modal abierto más reciente =====
+    if (e.key === "Escape") {
+        const openModals = Array.from(document.querySelectorAll(".modal-overlay:not(.hidden)"));
+        if (openModals.length) {
+            openModals[openModals.length - 1].classList.add("hidden");
+        }
+    }
+});

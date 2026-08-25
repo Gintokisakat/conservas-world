@@ -611,5 +611,16 @@
     </div>
 
     <script src="/static/app.js"></script>
+<!-- Toasts -->
+    <div id="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+    <!-- Paleta de comandos (Ctrl+K) -->
+    <div id="palette-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="Paleta de comandos">
+        <div id="palette-card">
+            <input type="text" id="palette-input" placeholder="Buscar productos, ingredientes o acciones…" autocomplete="off" spellcheck="false">
+            <div id="palette-results"></div>
+            <div class="palette-hint"><kbd>↑↓</kbd> navegar · <kbd>Enter</kbd> abrir · <kbd>Esc</kbd> cerrar</div>
+        </div>
+    </div>
 </body>
 </html>

@@ -122,8 +122,6 @@ def enrich_ingredient_molecules(session, *, max_per_ingredient: int = 80) -> tup
     by_norm: dict[str, models.Ingredient] = {}
     for ing in ingredients:
         by_norm[normalize_name(ing.name)] = ing
-        for alias in getattr(ing, "aliases", []) or []:
-            pass  # Ingredient no modela aliases; solo nombre canónico.
 
     existing_pairs = {
         (row[0], row[1])

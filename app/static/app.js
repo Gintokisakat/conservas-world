@@ -972,13 +972,13 @@ async function renderFavorites() {
     }
 }
 
-function productCardHtml(p, noDesc) {
+function productCardHtml(p, noDesc, index) {
     const isFav = favorites.has(p.id);
     const img = p.image_url
         ? `<img class="card-img" src="${escAttr(p.image_url)}" alt="${escAttr(p.name)}" loading="lazy" onerror="this.style.display='none'">`
         : `<div class="card-img card-img-placeholder">${esc((p.substrate || p.name).charAt(0).toUpperCase())}</div>`;
     return `
-    <li class="product-card" data-product-id="${p.id}">
+    <li class="product-card" data-product-id="${p.id}" style="--i:${index || 0}">
         ${img}
         <div>
             <div class="card-header-row">
@@ -1013,7 +1013,7 @@ function renderResults(items) {
         return;
     }
     const noDesc = state.lang === 'en' ? 'No description available.' : 'Sin descripción disponible.';
-    list.innerHTML = items.map((p) => productCardHtml(p, noDesc)).join("");
+    list.innerHTML = items.map((p, i) => productCardHtml(p, noDesc, i)).join("");
 }
 
 function updatePagination(overridePages) {
@@ -1291,7 +1291,7 @@ async function openIngredient(id, name) {
             ? `<h3 style="margin-top:1.2rem">${t.nutrition_products}</h3>
                <ul class="ingredient-product-list">
                    ${products.items.map((p) => `
-                       <li class="product-card" data-product-id="${p.id}">
+                       <li class="product-card" data-product-id="${p.id}" style="--i:${index || 0}">
                            <div>
                                <h3>${esc(p.name)}</h3>
                                <p class="desc">${esc(p.description || "")}</p>

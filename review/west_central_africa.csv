@@ -1,0 +1,25 @@
+include,name,country,substrate,category,description_es,microbiota,source_ref
+yes,Egusi (pepitas de melón fermentadas),Nigeria,semillas de melón (cola),fermento_lactico,Semillas de melón (egusi) fermentadas usadas como espesante y condimento.,"Bacillus, Lactobacillus",Tamang & Joshua 2020
+yes,Iru / Irú (fermentación de melón),Nigeria,semillas de melón,fermento_alcalino,Condimento de semillas de melón fermentadas alcalinamente (similar al ogiri).,Bacillus,Tamang 2020 Africa
+yes,Ukwa (breadfruit),Nigeria,breadfruit (treculia africana),fermento_lactico,Semillas/harina de breadfruit fermentadas para espesar sopas.,Lactobacillus,Foods 2021 W Africa
+yes,Mawé (masa de maíz fermentada),Benín,masa de maíz,fermento_lactico,Masa de maíz fermentada base de akassa (ogidê).,"Lactobacillus, Streptococcus",Food Chem 2018 mawé; Nago
+yes,Donkwa (merienda de maíz),Nigeria,maíz y maní,fermento_mixto,Merienda de maíz y maní fermentados azucarados.,Lactobacillus,Foods 2021 W Africa
+yes,Koekoé / Brabie (cáscara de cacao),Côte d'Ivoire,cáscara de cacao,fermento_lactico,Fermentación de cáscara de cacao para pienso y alimento.,Lactobacillus,Foods 2021 W Africa
+yes,Kpaakpa (alkaline cassava),Nigeria,yuca (cassava),fermento_alcalino,Yuca fermentada alcalinamente (estilo ninada).,Bacillus,Foods 2021 W Africa
+yes,Efuru (semillas de Egusi),Nigeria,pepitas de melón,fermento_alcalino,Semillas de melón fermentadas alcalinamente (tipo ogiri/iru).,Bacillus,Foods 2021 W Africa
+yes,Ikewu (nisan maíz),Nigeria,maíz,fermento_lactico,Maíz fermentado espesante de sopas tradicionales.,Lactobacillus,Foods 2021 W Africa
+yes,Akamu / Ogi ni kjel (pap),Nigeria y Ghana,maíz o sorgum,fermento_lactico,Pap de maíz fermentado (ogi) para desayuno y beber.,"Lactobacillus, Streptococcus",Tamang 2020 Africa
+yes,Tuwo (harina fermentada espesante),Nigeria (norte),cereales (maíz/mijo),fermento_lactico,Harina de cereal fermentada para espesar salsas.,Lactobacillus,Foods 2021 W Africa
+yes,Tchapalo (cerveza de sorgo),Côte d'Ivoire,sorgo,fermento_alcoholico,Cerveza tradicional de sorgo fermentada.,"Saccharomyces, Lactobacillus",Journal Brewing; Foods 2021
+yes,Bobolo / Bollo,Camerún,yuca,fermento_lactico,Pan tradicional de yuca fermentada envuelto en hojas.,"Lactobacillus, yeast",Foods 2021 Central Africa
+yes,Miondo / Mingao,Camerún,yuca,fermento_lactico,Pan de yuca fermentada (batons de manioc).,"Lactobacillus, yeast",Foods 2021 Central Africa
+yes,Waters / Fumbwa (hoja de gnetum),Camerún,hojas de gnetum,fermento_lactico,Hoja de gnetum (fumbwa) fermentada guisada.,Lactobacillus,Foods 2021 Central Africa
+yes,Ndolè / N'dolè,Camerún,hojas de vernonia y maní,fermento_lactico,Hojas de vernonia (bitterleaf) fermentadas con maní.,Lactobacillus,Foods 2021 Central Africa
+yes,Kwete (cerveza de mijo),República Democrática del Congo,mijo,fermento_alcoholico,Cerveza tradicional de mijo fermentada.,"Saccharomyces, Lactobacillus",Fung & Dabo 2020
+yes,Mahewu (bebida de maíz),República Democrática del Congo y Sudáfrica,harina de maíz,fermento_lactico,Bebida de maíz fermentada al estilo africano.,Lactobacillus,Fung & Dabo 2020
+yes,Libga (lienzo de sorgo),República Democrática del Congo,sorgo,fermento_alcoholico,Cerveza de sorgo fermentada congoleña.,"Saccharomyces, Lactobacillus",Fung & Dabo 2020
+yes,Nkui / Nkondo,Camerún,corteza de maní,fermento_lactico,Corteza de maní fermentada usada en salsas.,Lactobacillus,Foods 2021 Central Africa
+yes,Banda / Bandji,Senegal,savory (hojas de baobab),fermento_lactico,Requesón fermentado (banda) senegalés.,"Lactococcus, Lactobacillus",Foods 2021 West Africa
+yes,Mfinda / Mfumba,República Democrática del Congo,hojas de casso,fermento_lactico,Hojas de casse fermentadas (mfinda).,Lactobacillus,Fung & Dabo 2020
+yes,Marozi / Marugha (Sudáfrica),Sudáfrica,varios vegetales,fermento_lactico,Fermentados de vegetales sudafricanos tradicionales.,Lactobacillus,Fung & Dabo 2020
+yes,Amasi viejo,República Democrática del Congo y Sudáfrica,leche cruda,fermento_lactico,Leche agria fermentada.,"Lactococcus, Lactobacillus",Fung & Dabo 2020

@@ -17,6 +17,7 @@ CSVs generados por `build_csvs.py` a partir de literatura académica verificada.
 | `latam.csv` | 11 | Foods 2022 review Ecuador + clásicos andinos |
 | `caribbean.csv` | 34 | Fermentos y conservas de LatAm + Caribe (Foods 2022, Colegio de Postgraduados, Tamang & Samuel, ICBF) |
 | `east_southeast_asia.csv` | 34 | Fermentos del este y sudeste asiático + NE India (Foods 2021 review, Thai cuisine, Katsuyama) |
+| `west_central_africa.csv` | 24 | Fermentos de África Oeste/Central y del Congo (Tamang 2020 Africa, Foods 2021 W/C Africa, Fung & Dabo 2020) |
 | `mexico_quesos.csv` | 38 | Atlas Quesos Artesanales Mexicanos (Colegio de Postgraduados) |
 
 ## Columnas

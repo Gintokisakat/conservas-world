@@ -58,6 +58,7 @@ def create_app() -> FastAPI:
             _models.FlavorMolecule.__table__,
             _models.IngredientFlavorMolecule.__table__,
             _models.Batch.__table__,
+            _models.BatchCheckpoint.__table__,
         ):
             assert isinstance(table, _SaTable)
             table.create(bind=_engine, checkfirst=True)

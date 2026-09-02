@@ -89,3 +89,33 @@ def test_validation(client):
     assert client.post("/api/v1/me/batches", headers=h, json={"name": "x", "target_days": 0}).status_code == 422
     assert client.post("/api/v1/me/batches", headers=h, json={"name": "x", "ph": 15}).status_code == 422
     assert client.post("/api/v1/me/batches", headers=h, json={"name": "", "target_days": 2}).status_code == 422
+
+
+def test_checkpoints_flow(client):
+    h = _register(client)
+    bid = client.post(
+        "/api/v1/me/batches", headers=h, json={"name": "Sauerkraut", "target_days": 21}
+    ).json()["id"]
+
+    # checkpoint día 0 y día 5 con pH/temp
+    r1 = client.post(
+        f"/api/v1/me/batches/{bid}/checkpoints", headers=h,
+        json={"day": 0, "ph": 6.1, "temp_c": 20, "notes": "Inicio"},
+    )
+    r2 = client.post(
+        f"/api/v1/me/batches/{bid}/checkpoints", headers=h,
+        json={"day": 5, "ph": 4.4, "temp_c": 19},
+    )
+    assert r1.status_code == 201 and r2.status_code == 201
+
+    lst = client.get(f"/api/v1/me/batches/{bid}/checkpoints", headers=h).json()
+    assert lst["total"] == 2
+    days = [c["day"] for c in lst["items"]]
+    assert days == [0, 5]
+
+    # Otro usuario no puede ver checkpoints de un batch ajeno
+    h2 = _register(client)
+    assert client.get(f"/api/v1/me/batches/{bid}/checkpoints", headers=h2).status_code == 404
+
+    # checkpoint en batch inexistente
+    assert client.post("/api/v1/me/batches/9999/checkpoints", headers=h, json={"day": 1}).status_code == 404

@@ -9,7 +9,15 @@ from sqlalchemy.orm import Session
 from app.api.auth import get_current_user
 from app.db import models
 from app.db.database import get_session
-from app.schemas import BatchCreate, BatchesOut, BatchOut, BatchUpdate
+from app.schemas import (
+    BatchCreate,
+    BatchesOut,
+    BatchOut,
+    BatchUpdate,
+    CheckpointCreate,
+    CheckpointOut,
+    CheckpointsOut,
+)
 
 router = APIRouter(tags=["batches"])
 
@@ -119,3 +127,58 @@ def delete_batch(
     batch = _load_mine(session, batch_id, user)
     session.delete(batch)
     session.commit()
+
+# --- Checkpoints (registro por día) ---
+
+def _checkpoint_out(cp: models.BatchCheckpoint) -> CheckpointOut:
+    return CheckpointOut(
+        id=cp.id,
+        batch_id=cp.batch_id,
+        day=cp.day,
+        temp_c=cp.temp_c,
+        ph=cp.ph,
+        notes=cp.notes,
+        created_at=cp.created_at,
+    )
+
+
+@router.get("/me/batches/{batch_id}/checkpoints", response_model=CheckpointsOut)
+def list_checkpoints(
+    batch_id: int,
+    user: models.User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    _load_mine(session, batch_id, user)
+    rows = session.execute(
+        select(models.BatchCheckpoint)
+        .where(models.BatchCheckpoint.batch_id == batch_id)
+        .order_by(models.BatchCheckpoint.day, models.BatchCheckpoint.id)
+    ).scalars().all()
+    return CheckpointsOut(
+        batch_id=batch_id, total=len(rows), items=[_checkpoint_out(c) for c in rows]
+    )
+
+
+@router.post(
+    "/me/batches/{batch_id}/checkpoints",
+    response_model=CheckpointOut,
+    status_code=201,
+)
+def create_checkpoint(
+    batch_id: int,
+    body: CheckpointCreate,
+    user: models.User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    batch = _load_mine(session, batch_id, user)
+    cp = models.BatchCheckpoint(
+        batch_id=batch.id,
+        day=body.day,
+        temp_c=body.temp_c,
+        ph=body.ph,
+        notes=body.notes,
+    )
+    session.add(cp)
+    session.commit()
+    session.refresh(cp)
+    return _checkpoint_out(cp)

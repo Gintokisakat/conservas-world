@@ -474,6 +474,11 @@ document.addEventListener("click", (e) => {
         }
         return;
     }
+    const ckptBtn = e.target.closest("[data-action='checkpoints']");
+    if (ckptBtn) {
+        openCheckpoints(Number(ckptBtn.dataset.index));
+        return;
+    }
     const addToPantryBtn = e.target.closest("[data-action='add-to-pantry']");
     if (addToPantryBtn) {
         addIngredientToPantry(addToPantryBtn.dataset.item);
@@ -2827,6 +2832,7 @@ function renderTimers() {
                 <div class="timer-item-head">
                     <h4>🫙 ${esc(t.name)}</h4>
                     <div style="display:flex; gap:0.3rem; align-items:center">
+                        ${t.batchId ? `<button type="button" class="btn btn-outline btn-sm" data-action="checkpoints" data-index="${idx}" title="${state.lang === 'en' ? 'Daily journal (pH/temp/day)' : 'Registro diario (pH/temp/día)'}" aria-label="${state.lang === 'en' ? 'Daily journal' : 'Registro diario'}">📓</button>` : ""}
                         <button type="button" class="btn btn-outline btn-sm" data-action="label" data-name="${escAttr(t.name)}" data-date="${startDateStr}" data-time="${t.days} días" data-storage="Refrigerado en F1/F2" title="${state.lang === 'en' ? 'Print label' : 'Imprimir etiqueta'}" aria-label="${state.lang === 'en' ? 'Print label' : 'Imprimir etiqueta'}">🏷️</button>
                         <button type="button" class="chip-remove" data-action="remove-timer" data-index="${idx}" title="${state.lang === 'en' ? 'Remove jar' : 'Eliminar frasco'}" aria-label="${state.lang === 'en' ? 'Remove jar' : 'Eliminar frasco'} ${escAttr(t.name)}">&times;</button>
                     </div>
@@ -2902,6 +2908,94 @@ function removeTimer(idx) {
         api(`/api/v1/me/batches/${t.batchId}`, { method: "DELETE" }).catch(() => {});
     }
 }
+
+// ---- Registro diario de un fermento (checkpoints, roadmap 3.1) ----
+let ckptBatchId = null;
+
+async function openCheckpoints(idx) {
+    const t = timers[idx];
+    if (!t || !t.batchId) {
+        showToast(state.lang === 'en' ? 'Log in to keep a daily journal' : 'Inicia sesión para llevar un registro diario', "err");
+        return;
+    }
+    ckptBatchId = t.batchId;
+    const isEn = state.lang === 'en';
+    document.getElementById("checkpoints-title").textContent = `${isEn ? '📓 Daily journal' : '📓 Registro diario'} — ${t.name}`;
+    document.getElementById("checkpoints-subtitle").textContent = isEn
+        ? 'Track pH, temperature and notes per day of fermentation.'
+        : 'Registra pH, temperatura y notas por día de fermentación.';
+    document.getElementById("ckpt-err").textContent = "";
+    document.getElementById("checkpoints-modal").classList.remove("hidden");
+    await renderCheckpoints();
+}
+
+function closeCheckpoints(event) {
+    if (event && event.target.id !== "checkpoints-modal" && !event.target.classList.contains("modal-close")) return;
+    document.getElementById("checkpoints-modal").classList.add("hidden");
+}
+
+async function renderCheckpoints() {
+    const listEl = document.getElementById("ckpt-list");
+    const isEn = state.lang === 'en';
+    listEl.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem">${isEn ? 'Loading…' : 'Cargando…'}</p>`;
+    try {
+        const data = await api(`/api/v1/me/batches/${ckptBatchId}/checkpoints`);
+        if (!data.items.length) {
+            listEl.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem">${isEn ? 'No entries yet. Add your first day above.' : 'Aún no hay registros. Añade el primer día arriba.'}</p>`;
+            return;
+        }
+        listEl.innerHTML = data.items.map((c) => `
+            <div style="display:flex; justify-content:space-between; gap:0.8rem; padding:0.45rem 0; border-bottom:1px solid var(--border-color); font-size:0.9rem">
+                <span style="font-weight:600; white-space:nowrap">${isEn ? 'Day' : 'Día'} ${esc(String(c.day))}</span>
+                <span>${c.ph != null ? `pH ${esc(String(c.ph))}` : ''}${c.temp_c != null ? ` · ${esc(String(c.temp_c))}°C` : ''}</span>
+                <span style="color:var(--text-secondary); flex:1; text-align:right">${c.notes ? esc(c.notes) : ''}</span>
+            </div>`).join("");
+    } catch (e) {
+        listEl.innerHTML = `<p style="color:#b91c1c; font-size:0.9rem">${isEn ? 'Could not load journal.' : 'No se pudo cargar el registro.'}</p>`;
+    }
+}
+
+async function addCheckpoint() {
+    const isEn = state.lang === 'en';
+    const errEl = document.getElementById("ckpt-err");
+    errEl.textContent = "";
+    const day = parseInt(document.getElementById("ckpt-day").value, 10);
+    const phRaw = document.getElementById("ckpt-ph").value;
+    const tempRaw = document.getElementById("ckpt-temp").value;
+    const notes = document.getElementById("ckpt-notes").value.trim();
+    if (isNaN(day) || day < 0) {
+        errEl.textContent = isEn ? 'Enter a valid day.' : 'Ingresa un día válido.';
+        return;
+    }
+    const body = { day };
+    if (phRaw !== "") {
+        const ph = parseFloat(phRaw);
+        if (isNaN(ph) || ph < 0 || ph > 14) { errEl.textContent = isEn ? 'Invalid pH (0–14).' : 'pH inválido (0–14).'; return; }
+        body.ph = ph;
+    }
+    if (tempRaw !== "") {
+        const t = parseFloat(tempRaw);
+        if (isNaN(t)) { errEl.textContent = isEn ? 'Invalid temperature.' : 'Temperatura inválida.'; return; }
+        body.temp_c = t;
+    }
+    if (notes) body.notes = notes;
+    try {
+        await api(`/api/v1/me/batches/${ckptBatchId}/checkpoints`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+        });
+        document.getElementById("ckpt-day").value = "";
+        document.getElementById("ckpt-ph").value = "";
+        document.getElementById("ckpt-temp").value = "";
+        document.getElementById("ckpt-notes").value = "";
+        showToast(isEn ? 'Entry saved ✓' : 'Registro guardado ✓');
+        await renderCheckpoints();
+    } catch (e) {
+        errEl.textContent = e.message || 'Error';
+    }
+}
+document.getElementById("ckpt-add-btn").addEventListener("click", addCheckpoint);
 
 document.getElementById("add-timer-btn").addEventListener("click", addTimer);
 

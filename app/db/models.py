@@ -340,6 +340,27 @@ class Batch(Base):
     updated_at: Mapped[datetime | None] = mapped_column(DateTime, onupdate=func.now())
 
     user: Mapped["User"] = relationship(back_populates="batches")
+    checkpoints: Mapped[list["BatchCheckpoint"]] = relationship(
+        back_populates="batch", cascade="all, delete-orphan"
+    )
+
+
+class BatchCheckpoint(Base):
+    """Registro por día de un fermento (roadmap 3.1): pH, temperatura, notas."""
+
+    __tablename__ = "batch_checkpoints"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    batch_id: Mapped[int] = mapped_column(
+        ForeignKey("batches.id", ondelete="CASCADE"), index=True
+    )
+    day: Mapped[int] = mapped_column(default=0)
+    temp_c: Mapped[float | None] = mapped_column(Float)
+    ph: Mapped[float | None] = mapped_column(Float)
+    notes: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+    batch: Mapped["Batch"] = relationship(back_populates="checkpoints")
 
 
 class Review(Base):

@@ -615,3 +615,26 @@ class BatchOut(BaseModel):
 class BatchesOut(BaseModel):
     total: int
     items: list[BatchOut]
+
+
+class CheckpointCreate(BaseModel):
+    day: int = Field(default=0, ge=0, le=10000)
+    temp_c: float | None = Field(default=None, ge=-20, le=80)
+    ph: float | None = Field(default=None, ge=0, le=14)
+    notes: str | None = Field(default=None, max_length=4000)
+
+
+class CheckpointOut(BaseModel):
+    id: int
+    batch_id: int
+    day: int
+    temp_c: float | None
+    ph: float | None
+    notes: str | None
+    created_at: datetime
+
+
+class CheckpointsOut(BaseModel):
+    batch_id: int
+    total: int
+    items: list[CheckpointOut]

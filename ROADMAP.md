@@ -385,17 +385,14 @@
 
 ### FASE 3 — Features de Producto (1-2 semanas)
 
-#### 3.1 Batch tracking server-side
+#### 3.1 Batch tracking server-side [✅ COMPLETADO]
 - **Inspiración**: Fermentor, Fermenta, FermentBuddy, BrineLog
-- **Qué hacer**:
-  - Tabla `batches` (id, user_id, product_id, name, start_date, target_days, notes, status, created_at)
-  - Tabla `batch_checkpoints` (id, batch_id, day, photo_url, ph, temperature, notes, created_at)
-  - Endpoints REST: `GET/POST/PUT/DELETE /batches`, `POST /batches/{id}/checkpoints`
-  - Frontend: migrar timers de localStorage a server-side
-  - Subida de fotos (almacenamiento local o S3)
-  - Timeline visual del lote
-- **Dependencias**: python-multipart (para uploads), futuro: S3/MinIO
-- **Riesgo**: Requiere auth (ver 4.1)
+- **Hecho**:
+  - Tabla `batches` (id, user_id, name, substrate, method, start_date, target_days, temp_c, ph, notes, status, created_at, updated_at)
+  - Endpoints REST: `GET/POST/PUT/DELETE /me/batches` (auto-protegidos por usuario)
+  - Frontend: al iniciar sesión, los "Mis Fermentos" (antes solo localStorage) se sincronizan con la cuenta y persisten entre dispositivos; modo invitado mantiene el almacenamiento local offline
+  - Tests de CRUD, aislamiento entre usuarios y validación
+- **Pendiente futura**: subida de fotos, `batch_checkpoints` con timeline visual
 
 #### 3.2 Calculadoras avanzadas [✅ COMPLETADO]
 - **Inspiración**: preserve-calc, BrineLog, Larder, Curing Calculator

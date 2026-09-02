@@ -571,3 +571,47 @@ class TimelineEventOut(BaseModel):
 class TimelineOut(BaseModel):
     total: int
     events: list[TimelineEventOut]
+
+
+class BatchCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=200)
+    substrate: str | None = Field(default=None, max_length=120)
+    method: str | None = Field(default=None, max_length=40)
+    start_date: datetime | None = None
+    target_days: int = Field(default=7, ge=1, le=1000)
+    temp_c: float | None = Field(default=None, ge=-20, le=80)
+    ph: float | None = Field(default=None, ge=0, le=14)
+    notes: str | None = Field(default=None, max_length=4000)
+    status: str = Field(default="active", pattern="^(active|done|discarded)$")
+
+
+class BatchUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    substrate: str | None = Field(default=None, max_length=120)
+    method: str | None = Field(default=None, max_length=40)
+    start_date: datetime | None = None
+    target_days: int | None = Field(default=None, ge=1, le=1000)
+    temp_c: float | None = Field(default=None, ge=-20, le=80)
+    ph: float | None = Field(default=None, ge=0, le=14)
+    notes: str | None = Field(default=None, max_length=4000)
+    status: str | None = Field(default=None, pattern="^(active|done|discarded)$")
+
+
+class BatchOut(BaseModel):
+    id: int
+    name: str
+    substrate: str | None
+    method: str | None
+    start_date: datetime
+    target_days: int
+    temp_c: float | None
+    ph: float | None
+    notes: str | None
+    status: str
+    created_at: datetime
+    updated_at: datetime | None
+
+
+class BatchesOut(BaseModel):
+    total: int
+    items: list[BatchOut]

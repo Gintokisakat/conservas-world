@@ -562,6 +562,7 @@ async function loadSession() {
     if (!token) { currentUser = null; renderAuthArea(); return; }
     try {
         currentUser = await api("/auth/me");
+        await loadServerBatches();
     } catch (e) {
         // Intentar refrescar con el refresh token antes de rendirse.
         const refresh = localStorage.getItem("pantry_auth_refresh");
@@ -2740,6 +2741,31 @@ function saveTimers() {
     localStorage.setItem("pantry_timers", JSON.stringify(timers));
 }
 
+// Sincronización con el servidor (roadmap 3.1): cuando hay sesión, la fuente
+// de verdad son los "batches" de la cuenta (persisten entre dispositivos).
+async function loadServerBatches() {
+    if (!currentUser) return;
+    try {
+        const data = await api("/api/v1/me/batches");
+        const now = Date.now();
+        timers = (data.items || [])
+            .filter((b) => b.status === "active")
+            .map((b) => ({
+                batchId: b.id,
+                name: b.name,
+                substrate: b.substrate || "",
+                days: b.target_days,
+                tempC: b.temp_c != null ? b.temp_c : 21,
+                notes: b.notes || "",
+                startDate: Date.parse(b.start_date) || now,
+            }));
+        saveTimers();
+        renderTimers(timers);
+    } catch (e) {
+        // offline o token caducado: seguimos con lo local.
+    }
+}
+
 function renderTimers() {
     const container = document.getElementById("timers-list");
     if (!container) return;
@@ -2816,15 +2842,35 @@ function addTimer() {
     });
     saveTimers();
     renderTimers();
+    if (currentUser) {
+        // Persistir en la cuenta para que no se pierda entre dispositivos.
+        api("/api/v1/me/batches", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                name,
+                substrate: "",
+                method: "",
+                target_days: days,
+                temp_c: isNaN(tempC) || tempC <= 0 ? 21 : tempC,
+                notes,
+                status: "active",
+            }),
+        }).then(loadServerBatches).catch(() => {});
+    }
 
     nameEl.value = "";
     if (notesEl) notesEl.value = "";
 }
 
 function removeTimer(idx) {
+    const t = timers[idx];
     timers.splice(idx, 1);
     saveTimers();
     renderTimers();
+    if (currentUser && t && t.batchId) {
+        api(`/api/v1/me/batches/${t.batchId}`, { method: "DELETE" }).catch(() => {});
+    }
 }
 
 document.getElementById("add-timer-btn").addEventListener("click", addTimer);

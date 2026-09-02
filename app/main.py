@@ -6,6 +6,7 @@ from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.api.auth import router as auth_router
+from app.api.batches import router as batches_router
 from app.api.public import RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW, check_rate_limit
 from app.api.public import router as public_router
 from app.api.recipes import router as recipes_router
@@ -37,6 +38,8 @@ def create_app() -> FastAPI:
     app.include_router(reviews_router, prefix="/api/v1")
     app.include_router(recipes_router)
     app.include_router(recipes_router, prefix="/api/v1")
+    app.include_router(batches_router)
+    app.include_router(batches_router, prefix="/api/v1")
     app.include_router(public_router)
     app.include_router(seo_router)
 
@@ -54,6 +57,7 @@ def create_app() -> FastAPI:
             _models.RecipeVote.__table__,
             _models.FlavorMolecule.__table__,
             _models.IngredientFlavorMolecule.__table__,
+            _models.Batch.__table__,
         ):
             assert isinstance(table, _SaTable)
             table.create(bind=_engine, checkfirst=True)

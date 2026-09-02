@@ -315,6 +315,31 @@ class User(Base):
 
     reviews: Mapped[list["Review"]] = relationship(back_populates="user")
     recipes: Mapped[list["Recipe"]] = relationship(back_populates="user")
+    batches: Mapped[list["Batch"]] = relationship(back_populates="user")
+
+
+class Batch(Base):
+    """Frasco/fermento en seguimiento del usuario (roadmap 3.1)."""
+
+    __tablename__ = "batches"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(200))
+    substrate: Mapped[str | None] = mapped_column(String(120))
+    method: Mapped[str | None] = mapped_column(String(40))
+    start_date: Mapped[datetime] = mapped_column(DateTime, default=func.now())
+    target_days: Mapped[int] = mapped_column(default=7)
+    temp_c: Mapped[float | None] = mapped_column(Float)
+    ph: Mapped[float | None] = mapped_column(Float)
+    notes: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(String(20), default="active")
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime, onupdate=func.now())
+
+    user: Mapped["User"] = relationship(back_populates="batches")
 
 
 class Review(Base):

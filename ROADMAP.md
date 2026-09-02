@@ -391,6 +391,7 @@
   - Tabla `batches` (id, user_id, name, substrate, method, start_date, target_days, temp_c, ph, notes, status, created_at, updated_at)
   - Endpoints REST: `GET/POST/PUT/DELETE /me/batches` (auto-protegidos por usuario)
   - Frontend: al iniciar sesión, los "Mis Fermentos" (antes solo localStorage) se sincronizan con la cuenta y persisten entre dispositivos; modo invitado mantiene el almacenamiento local offline
+  - Botón "✓ Marcar listo" en frascos listos (cambia status → done en la cuenta) + contador de activos y aviso "☁️ sincronizado con tu cuenta"
   - Tests de CRUD, aislamiento entre usuarios y validación
 - **Pendiente futura**: subida de fotos, `batch_checkpoints` con timeline visual
 

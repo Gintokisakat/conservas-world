@@ -2258,3 +2258,12 @@ img.card-img, .detail-img { animation: imgIn 0.4s ease both; }
     flex-wrap: wrap;
     margin-top: 1rem;
 }
+
+/* Badge de conteo en Mis Fermentos (legible en tema claro/oscuro) */
+#timer-count-badge {
+    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 35%, transparent);
+    color: var(--color-primary);
+    font-weight: 600;
+}
+#timer-sync-hint { font-weight: 500; }

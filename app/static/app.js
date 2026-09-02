@@ -457,6 +457,23 @@ document.addEventListener("click", (e) => {
         removeTimer(Number(removeTimerBtn.dataset.index));
         return;
     }
+    const markReadyBtn = e.target.closest("[data-action='mark-ready']");
+    if (markReadyBtn) {
+        const idx = Number(markReadyBtn.dataset.index);
+        const timer = timers[idx];
+        timers.splice(idx, 1);
+        saveTimers();
+        renderTimers();
+        showToast(state.lang === 'en' ? '🎉 Batch marked as ready!' : '🎉 ¡Fermento marcado como listo!');
+        if (currentUser && timer && timer.batchId) {
+            api(`/api/v1/me/batches/${timer.batchId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: "done" }),
+            }).catch(() => {});
+        }
+        return;
+    }
     const addToPantryBtn = e.target.closest("[data-action='add-to-pantry']");
     if (addToPantryBtn) {
         addIngredientToPantry(addToPantryBtn.dataset.item);
@@ -2768,6 +2785,17 @@ async function loadServerBatches() {
 
 function renderTimers() {
     const container = document.getElementById("timers-list");
+    const badge = document.getElementById("timer-count-badge");
+    const hint = document.getElementById("timer-sync-hint");
+    if (badge) {
+        if (timers.length) {
+            badge.style.display = "";
+            badge.textContent = `${timers.length} ${state.lang === 'en' ? 'active' : 'activo'}`;
+        } else {
+            badge.style.display = "none";
+        }
+    }
+    if (hint) hint.style.display = currentUser ? "" : "none";
     if (!container) return;
     if (!timers.length) {
         container.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem; grid-column:1/-1">${state.lang === 'en' ? 'No active jars in fermentation. Add one above to track progress.' : 'No tienes frascos activos en fermentación. Agrega uno arriba para darle seguimiento.'}</p>`;
@@ -2808,9 +2836,11 @@ function renderTimers() {
                 <div class="progress-bar-bg" style="margin-top:0.5rem">
                     <div class="progress-bar-fill" style="width: ${pct}%; background-color: ${isReady ? '#2e7d52' : 'var(--color-primary)'}"></div>
                 </div>
-                <div style="display:flex; justify-content:space-between; font-size:0.82rem; color:var(--text-secondary)">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:0.6rem; font-size:0.82rem; color:var(--text-secondary)">
                     <span>${pct}% ${state.lang === 'en' ? 'completed' : 'completado'}</span>
-                    <span>${isReady ? (state.lang === 'en' ? '🎉 Ready to taste!' : '🎉 ¡Listo para consumir/probar!') : (state.lang === 'en' ? `${remainingDays} day${remainingDays === 1 ? '' : 's'} left` : `Quedan ${remainingDays} día${remainingDays === 1 ? '' : 's'}`)}</span>
+                    <span style="display:flex; align-items:center; gap:0.5rem">${isReady ? (state.lang === 'en' ? '🎉 Ready to taste!' : '🎉 ¡Listo para consumir/probar!') : (state.lang === 'en' ? `${remainingDays} day${remainingDays === 1 ? '' : 's'} left` : `Quedan ${remainingDays} día${remainingDays === 1 ? '' : 's'}`)}
+                        ${isReady ? `<button type="button" class="btn btn-sm btn-primary" data-action="mark-ready" data-index="${idx}" style="margin-left:0.4rem">${state.lang === 'en' ? '✓ Mark ready' : '✓ Marcar listo'}</button>` : ""}
+                    </span>
                 </div>
             </div>
         `;

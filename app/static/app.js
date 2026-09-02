@@ -635,7 +635,7 @@ function showToast(message, type = "ok", ms = 3200) {
     const container = document.getElementById("toast-container");
     if (!container) return;
     const el = document.createElement("div");
-    el.className = `toast ${type === "err" ? "err" : ""}`;
+    el.className = `toast ${type === "err" ? "err" : type === "info" ? "info" : ""}`;
     el.textContent = message;
     container.appendChild(el);
     setTimeout(() => {
@@ -3493,3 +3493,29 @@ window.addEventListener("keydown", (e) => {
         }
     }
 });
+
+// ===== UX: barra de filtros sticky al hacer scroll =====
+(function() {
+    const filtersCard = document.querySelector(".filters-card");
+    const header = document.querySelector(".site-header");
+    if (!filtersCard || !header) return;
+    const obs = new IntersectionObserver(
+        ([entry]) => {
+            filtersCard.classList.toggle("scrolled", !entry.isIntersecting);
+        },
+        { threshold: 0, rootMargin: "-1px 0px 0px 0px" }
+    );
+    obs.observe(header);
+})();
+
+// ===== UX: toast de bienvenida (primera visita) =====
+(function() {
+    if (localStorage.getItem("conservas_welcomed")) return;
+    const isEn = (navigator.language || "").startsWith("en");
+    setTimeout(() => {
+        showToast(isEn
+            ? "Welcome to Conservas del Mundo — press Ctrl+K to explore!"
+            : "Bienvenido a Conservas del Mundo — pulsa Ctrl+K para explorar", "info");
+        localStorage.setItem("conservas_welcomed", "1");
+    }, 1200);
+})();

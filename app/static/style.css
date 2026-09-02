@@ -1978,6 +1978,7 @@ select:focus-visible,
     align-items: center;
 }
 .toast.err { background: #b91c1c; }
+.toast.info { background: linear-gradient(135deg, var(--color-primary), #3d7a5a); }
 .toast.out { opacity: 0; transform: translateY(6px); transition: all .3s ease; }
 @keyframes toast-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
@@ -2062,15 +2063,21 @@ h1, h2, h3 { letter-spacing: -0.015em; }
 *::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
 *::-webkit-scrollbar-track { background: transparent; }
 
-/* --- Header glass sticky --- */
-.site-header {
+/* --- Barra de filtros sticky al hacer scroll --- */
+.filters-card.scrolled {
     position: sticky;
     top: 0;
     z-index: 500;
     backdrop-filter: blur(14px) saturate(1.4);
     -webkit-backdrop-filter: blur(14px) saturate(1.4);
-    background: color-mix(in srgb, var(--bg-page) 78%, transparent);
-    border-bottom: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent);
+    background: color-mix(in srgb, var(--bg-page) 82%, transparent);
+    border-radius: 0;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    border-left: 0;
+    border-right: 0;
+    margin: 0 -1.5rem;
+    padding: 0.9rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
 }
 .brand-icon {
     display: inline-block;
@@ -2177,8 +2184,15 @@ html.dark .btn-primary {
 /* --- Empty states --- */
 .empty, [class*="empty"] {
     text-align: center;
-    padding: 2.5rem 1rem !important;
+    padding: 3rem 1rem !important;
     font-size: 1rem;
+    color: var(--text-secondary);
+}
+.empty::before {
+    display: block;
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    filter: grayscale(0.3);
 }
 
 /* --- Paginación activa --- */
@@ -2201,3 +2215,46 @@ html.dark .btn-primary {
 @keyframes imgIn { from { opacity: 0; } to { opacity: 1; } }
 img.card-img, .detail-img { animation: imgIn 0.4s ease both; }
 .product-card:hover img.card-img { transform: scale(1.06); }
+
+
+/* --- Footer --- */
+.site-footer {
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+    padding: 2.5rem 1.5rem 2rem;
+    margin-top: 3rem;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+    line-height: 1.7;
+}
+.site-footer .footer-cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1.5rem 2.5rem;
+    max-width: 960px;
+    margin: 0 auto 1.5rem;
+    text-align: left;
+}
+.site-footer h4 {
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    margin: 0 0 0.4rem;
+}
+.site-footer a {
+    color: var(--color-primary);
+    text-decoration: none;
+}
+.site-footer a:hover { text-decoration: underline; }
+.site-footer .footer-copy {
+    margin-top: 1rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+.site-footer .footer-links {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 1rem;
+}

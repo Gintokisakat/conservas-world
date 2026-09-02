@@ -1,0 +1,35 @@
+include,name,country,substrate,category,description_es,microbiota,source_ref
+yes,Shio-koji,Japón,arroz koji (Aspergillus oryzae) con sal y agua,fermento_koji,"Pasta de arroz koji fermentado con sal, usada como condimento y salmuera natural para encurtir y marinar.",Aspergillus oryzae,Foods 2021 review koji; Steinkraus
+yes,Kurozu (vinagre negro),Japón,arroz integral,fermento_acetico,Vinagre de arroz integral fermentado en barrica durante años.,Acetobacter,Foods 2021
+yes,Azukinawa (azuki nú-kinawa),Japón,frijol azuki hervido y fermentado,fermento_lactico,"Fermento láctico de azuki, variante del nu-kawa tradicional.",Lactobacillus,Foods 2021
+yes,Namanare,Japón,pescado fresco crudo,fermento_lactico,Pescado fresco fermentado (tipo narezushi arcaico) de la prefectura de Shiga.,Lactobacillus,Foods 2021; Katsuyama
+yes,Oshi-zuke,Japón,vegetales prensados con sal,encurtido_fermentado,Encurtido de vegetales prensados con sal (oshizuke).,Lactobacillus,Foods 2021; Katsuyama
+yes,Kinzansai (kinzai),Japón,vegetales silvestres de montaña (sansai),encurtido_fermentado,Encurtidos fermentados de vegetales silvestres de montaña (sansai).,Lactobacillus,Foods 2021; Katsuyama
+yes,Hama-narazuke,Japón (Omi),vegetales curados en sake lees (kasu),encurtido_fermentado,Encurtido de vegetales en sake lees (kasuzuke) famoso en Omi.,"Lactobacillus, Lactococcus",Foods 2021
+yes,Mam tom,Viet Nam,pequeños camarones y sal,fermento_mixto,Pasta de camarones fermentada (con su salsa mam nuoc).,"Lactobacillus, Yorkshire",Foods 2021 review Asia SE
+yes,Mam ca loc,Viet Nam,pescado serpenthead y sal,fermento_mixto,Pasta de pescado fermentada del delta del Mekong.,Lactobacillus,Foods 2021
+yes,Mam ruoc,Viet Nam,pequeños camarones rojos y sal,fermento_mixto,Pasta de gambas fermentada muy salada.,Lactobacillus,Foods 2021
+yes,Gio lua (chả lụa),Viet Nam,carne de cerdo finamente picada,fermento_mixto,Salchicha de cerdo fresca con fermentación ligera (burbujas).,Lactobacillus,Foods 2021
+yes,Nem chua ran,Viet Nam,cerdo picado con piel y hojas de ajo,fermento_lactico,Rollo de cerdo fermentado al estilo andino.,"Lactobacillus, Pediococcus",Foods 2021
+yes,Teuk trei (salsa de pescado),Camboya,pescado y sal,fermento_mixto,Salsa de pescado camboyana hecha de pescado frescamente salado.,Halophilic bacteria,Foods 2021
+yes,Num banh chok,Camboya,fideos de arroz,fermento_cereal,Fideos de arroz fermentados servidos con curry de pescado verde.,Lactobacillus,Foods 2021
+yes,Kroeung (pasta de curry),Camboya,"jengibre, lemongrass y pasta de pescado",fermento_mixto,Base de pasta de curry camboyana que fermenta sutilmente.,Mixed,Foods 2021
+yes,Somlar korko,Camboya,agua de arroz fermentado y curry,fermento_cereal,Sopa camboyana tradicional con pescado y vegetales fermentados.,Lactobacillus,Foods 2021
+yes,Ngapi gyi,Myanmar,pescado y sal,fermento_mixto,"Pasta de pescado fermentado, condimento nacional birmano.",Halophilic bacteria,Foods 2021
+yes,Hmyin mont (ngapi seik),Myanmar,arroz fermentado,fermento_cereal,Bowl de arroz fermentado birmano con ngapi.,Lactobacillus,Foods 2021
+yes,Le be pet (lahpet en sal),Myanmar,hojas de té verde,fermento_lactico,Té fermentado en sal consumido como ensalada.,Lactobacillus,Foods 2021
+yes,Pichun (pasta de pescado),Taiwán,pescado y sal,fermento_mixto,Pasta de pescado fermentada taiwanesa (yue-gu).,Halophilic bacteria,Foods 2021
+yes,Ya-an tsai (mostaza encurtida),Taiwán,hojas de mostaza,encurtido_fermentado,Mostaza encurtida fermentada de Taiwán.,Lactobacillus,Foods 2021
+yes,Suàn sun (bambú fermentado),Taiwán y China,brotes de bambú,encurtido_fermentado,Brotes de bambú fermentados en salmuera.,Lactobacillus,Foods 2021
+yes,Nam prik (pastas de chile),Tailandia,pasta de chiles con pescado fermentado,fermento_mixto,Salsa y pasta de chiles con elementos fermentados.,Mixed,Thai cuisine
+yes,Om phak,Tailandia (Isan),vegetales y pescado en salmuera,encurtido_fermentado,Encurtido fermentado de vegetales del noreste tailandés (Isan).,Lactobacillus,Thai cuisine
+yes,Jeow bong (salsa de Laos),Laos y Tailandia,"chiles secos, gambas y azúcar",fermento_mixto,Salsa espesa de chiles y gambas fermentadas de Luang Prabang.,Mixed,Foods 2021
+yes,Khao mak,Tailandia y Laos,arroz glutinoso con azúcar,fermento_alcoholico,Bebida de arroz glutinoso fermentada dulce.,"Saccharomyces, Rhizopus, Lactobacillus",Foods 2021
+yes,Cha om (hojas de acacia),Tailandia,hojas de acacia pennata,encurtido_fermentado,Hojas de acacia silvestre fermentadas en salmuera.,Lactobacillus,Thai cuisine
+yes,Houngmarcha (marcha bran),India (Manipur),salvado de arroz y brotes,fermento_alcoholico,Bebida alcohólica de salvado de arroz de Manipur.,"Saccharomyces, Rhizopus",Foods 2021 noreste India
+yes,Iromba,India (Manipur),pescado fermentado (ngari) con chiles y vegetales,fermento_lactico,Guiso de pescado fermentado (ngari) con chiles y vegetales.,"Lactobacillus, Bacillus",Foods 2021 noreste India
+yes,Kangshu (soja fermentada),India (Manipur),soja negra,fermento_alcalino,Preparado de soja fermentada alcalina de Manipur.,Bacillus,Foods 2021 noreste India
+yes,Khuja sikh (sikh),India (Manipur),pasta de semillas de karate,fermento_lactico,Pasta de semillas de karate/Pangi fermentada de Manipur.,Lactobacillus,Foods 2021 noreste India
+yes,Aheng (bambú fermentado),India (Mizoram),brotes de bambú,encurtido_fermentado,Brotes de bambú fermentados de Mizoram.,Lactobacillus,Foods 2021 noreste India
+yes,Pindang (pescado salado ahumado),Indonesia,pescado salado y ahumado,curado_sal,"Pescado crudo salado y ahumado, semi-fermentado.",Halophilic bacteria,Foods 2021 SE Asia
+yes,Sambal beranang (jengibre de colmena),Indonesia,jengibre de colmena (etlingera),encurtido_fermentado,Brote de jengibre de colmena encurtido fermentado.,Lactobacillus,Foods 2021 SE Asia

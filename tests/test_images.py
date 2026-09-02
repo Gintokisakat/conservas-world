@@ -144,6 +144,61 @@ def test_off_barcode_ignora_sin_refs_off():
 
 
 # ---------------------------------------------------------------------------
+# off_name_image: búsqueda por nombre en Open Food Facts
+# ---------------------------------------------------------------------------
+
+
+def test_off_name_image_devuelve_front_url():
+    payload = {
+        "products": [
+            {"product_name": "Tempeh", "image_front_url": "https://off/front.jpg",
+             "image_front_small_url": "https://off/small.jpg"},
+        ]
+    }
+    with patch.object(images, "_fetch_off_by_name", return_value=payload):
+        assert images.off_name_image("Tempeh") == "https://off/front.jpg"
+
+
+def test_off_name_image_cae_a_small():
+    payload = {"products": [{"product_name": "Tempeh",
+                             "image_front_small_url": "https://off/small.jpg"}]}
+    with patch.object(images, "_fetch_off_by_name", return_value=payload):
+        assert images.off_name_image("Tempeh") == "https://off/small.jpg"
+
+
+def test_off_name_image_ignora_productos_sin_foto():
+    payload = {"products": [{"product_name": "Tempeh"}, {"product_name": "Kimchi"}]}
+    with patch.object(images, "_fetch_off_by_name", return_value=payload):
+        assert images.off_name_image("Tempeh") is None
+
+
+def test_off_name_image_devuelve_primera_con_foto():
+    payload = {
+        "products": [
+            {"product_name": "Tempeh"},
+            {"product_name": "Tempeh brand", "image_front_url": "https://off/front2.jpg"},
+        ]
+    }
+    with patch.object(images, "_fetch_off_by_name", return_value=payload):
+        assert images.off_name_image("Tempeh") == "https://off/front2.jpg"
+
+
+def test_resolve_image_prioriza_off_por_nombre():
+    """Sin barcode OFF, la búsqueda por nombre da la foto antes que Commons."""
+    p = _product_refs([])
+    with (
+        patch.object(images, "off_name_image", return_value="https://off/by-name.jpg") as byname,
+        patch.object(images, "commons_image") as commons,
+        patch.object(images, "wikidata_image") as wd,
+    ):
+        url = images.resolve_image(p, off_map={})
+    assert url == "https://off/by-name.jpg"
+    byname.assert_called_once_with(p.name)
+    commons.assert_not_called()
+    wd.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
 # resolve_image: orden OFF -> Commons -> Wikidata
 # ---------------------------------------------------------------------------
 
@@ -160,12 +215,14 @@ def test_resolve_image_prioriza_off():
     p = _product_refs(["https://world.openfoodfacts.org/product/1234567890123"])
     with (
         patch.object(images, "off_image_by_barcode", return_value="https://off/front.jpg") as off,
+        patch.object(images, "off_name_image") as byname,
         patch.object(images, "commons_image") as commons,
         patch.object(images, "wikidata_image") as wd,
     ):
         url = images.resolve_image(p, off_map={})
     assert url == "https://off/front.jpg"
     off.assert_called_once_with("1234567890123")
+    byname.assert_not_called()
     commons.assert_not_called()
     wd.assert_not_called()
 
@@ -174,12 +231,14 @@ def test_resolve_image_usa_mapa_off_sin_consulta():
     p = _product_refs(["https://world.openfoodfacts.org/product/1234567890123"])
     with (
         patch.object(images, "off_image_by_barcode") as off,
+        patch.object(images, "off_name_image") as byname,
         patch.object(images, "commons_image") as commons,
         patch.object(images, "wikidata_image") as wd,
     ):
         url = images.resolve_image(p, off_map={"1234567890123": "https://off/map.jpg"})
     assert url == "https://off/map.jpg"
     off.assert_not_called()
+    byname.assert_not_called()
     commons.assert_not_called()
     wd.assert_not_called()
 
@@ -187,11 +246,13 @@ def test_resolve_image_usa_mapa_off_sin_consulta():
 def test_resolve_image_sin_off_usa_commons():
     p = _product_refs([])
     with (
+        patch.object(images, "off_name_image", return_value=None) as byname,
         patch.object(images, "commons_image", return_value="https://commons/thumb.jpg") as commons,
         patch.object(images, "wikidata_image") as wd,
     ):
         url = images.resolve_image(p, off_map={})
     assert url == "https://commons/thumb.jpg"
+    byname.assert_called_once_with(p.name)
     commons.assert_called_once_with(p.name)
     wd.assert_not_called()
 
@@ -199,11 +260,13 @@ def test_resolve_image_sin_off_usa_commons():
 def test_resolve_image_cae_a_wikidata():
     p = _product_refs(["https://www.wikidata.org/wiki/Q12345"])
     with (
+        patch.object(images, "off_name_image", return_value=None) as byname,
         patch.object(images, "commons_image", return_value=None) as commons,
         patch.object(images, "wikidata_image", return_value="https://commons/from-wd.jpg") as wd,
     ):
         url = images.resolve_image(p, off_map={})
     assert url == "https://commons/from-wd.jpg"
+    byname.assert_called()
     commons.assert_called()
     wd.assert_called_once_with(p)
 
@@ -211,6 +274,7 @@ def test_resolve_image_cae_a_wikidata():
 def test_resolve_image_retorna_none():
     p = _product_refs([])
     with (
+        patch.object(images, "off_name_image", return_value=None),
         patch.object(images, "commons_image", return_value=None),
         patch.object(images, "wikidata_image", return_value=None),
     ):
@@ -218,16 +282,18 @@ def test_resolve_image_retorna_none():
 
 
 def test_resolve_image_skip_off_no_consulta_off():
-    """--skip-off debe evitar también la consulta OFF por barcode."""
+    """--skip-off debe evitar también la consulta OFF por nombre y barcode."""
     p = _product_refs(["https://world.openfoodfacts.org/product/1234567890123"])
     with (
         patch.object(images, "off_image_by_barcode") as off,
+        patch.object(images, "off_name_image") as byname,
         patch.object(images, "commons_image", return_value="https://commons/thumb.jpg") as commons,
         patch.object(images, "wikidata_image") as wd,
     ):
         url = images.resolve_image(p, off_map={}, skip_off=True)
     assert url == "https://commons/thumb.jpg"
     off.assert_not_called()
+    byname.assert_not_called()
     commons.assert_called_with(p.name)
     wd.assert_not_called()
 

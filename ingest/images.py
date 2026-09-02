@@ -2,8 +2,9 @@
 
 Fuentes (en orden de prioridad):
 1. Open Food Facts: foto real del producto por barcode (productos OFF).
-2. Wikimedia Commons: búsqueda por nombre canónico con validación de licencia.
-3. Wikidata: claim de imagen (P18) como último recurso.
+2. Open Food Facts: búsqueda por nombre (fotos de productos comerciales reales).
+3. Wikimedia Commons: búsqueda por nombre canónico con validación de licencia.
+4. Wikidata: claim de imagen (P18) como último recurso.
 
 Uso:
     python -m ingest.images [--dry-run] [--limit N] [--only-missing]
@@ -24,6 +25,7 @@ from sqlalchemy.orm import selectinload
 COMMONS_API = "https://commons.wikimedia.org/w/api.php"
 OFF_SEARCH_API = "https://world.openfoodfacts.org/api/v2/search"
 OFF_PRODUCT_API = "https://world.openfoodfacts.org/api/v2/product"
+OFF_LEGACY_SEARCH = "https://world.openfoodfacts.org/cgi/search.pl"
 WIKIDATA_API = "https://www.wikidata.org/w/api.php"
 HEADERS = {"User-Agent": "conservas-world/0.1 (research database seed)"}
 CACHE_DIR = Path(__file__).resolve().parent.parent / "data" / "raw" / "images"
@@ -311,6 +313,58 @@ def off_barcode(product: models.Product) -> str | None:
     return None
 
 
+def _fetch_off_by_name(name: str) -> dict:
+    """Resultados del search por nombre en OFF (API legacy), con caché por slug.
+
+    La API legacy de OFF puede devolver cuerpo vacío / no-JSON bajo rate-limit;
+    por eso se hace el parse defensivo aquí y no se lanza sobre `_get`.
+    """
+    cache_key = f"off_name_{_slug(name)}"
+    path = CACHE_DIR / f"{cache_key}.json"
+    if path.exists():
+        return json.loads(path.read_text(encoding="utf-8"))
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    params: dict[str, str | int] = {
+        "search_terms": name,
+        "search_simple": 1,
+        "action": "process",
+        "json": 1,
+        "fields": "code,product_name,image_front_url,image_front_small_url",
+    }
+    payload: dict = {"products": []}
+    with httpx.Client(timeout=60, headers=HEADERS) as client:
+        for attempt in range(5):
+            _pace(OFF_LEGACY_SEARCH)
+            try:
+                resp = client.get(OFF_LEGACY_SEARCH, params=params)
+            except (httpx.ConnectError, httpx.TimeoutException):
+                time.sleep(5 * (attempt + 1))
+                continue
+            if resp.status_code != 200:
+                time.sleep(_backoff(resp, attempt))
+                continue
+            try:
+                data = resp.json()
+            except ValueError:
+                # Cuerpo vacío o no-JSON (rate-limit suave de OFF): reintentar.
+                time.sleep(5 * (attempt + 1))
+                continue
+            payload = data
+            break
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return payload
+
+
+def off_name_image(name: str) -> str | None:
+    """Foto de frente del producto por búsqueda de nombre en OFF."""
+    data = _fetch_off_by_name(name)
+    for product in data.get("products") or []:
+        url = product.get("image_front_url") or product.get("image_front_small_url")
+        if url:
+            return url
+    return None
+
+
 # ---------------------------------------------------------------------------
 # Fuente 3: Wikidata claim de imagen (P18)
 # ---------------------------------------------------------------------------
@@ -398,13 +452,19 @@ def resolve_image(
             if not key or key in seen:
                 continue
             seen.add(key)
+            # Fuente 1b: Open Food Facts por nombre (foto real de producto).
+            if not skip_off and not _throttled():
+                url = off_name_image(name)
+                if url:
+                    return url
             url = commons_image(name)
             if url:
                 return url
             if _throttled():
                 return None
-        if not _throttled():
-            return wikidata_image(product)
+            if not _throttled():
+                return wikidata_image(product)
+            return None
         return None
     except RuntimeError:
         # El host se negó de forma persistente (rate-limit agotado): sin imagen,

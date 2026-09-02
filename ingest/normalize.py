@@ -16,6 +16,10 @@ def normalize_name(name: str) -> str:
 
 
 _COUNTRY_ALIASES = {
+    "brasil": "BR",
+    "colombia": "CO",
+    "ecuador": "EC",
+    "perú": "PE",
     "türkiye": "TR",
     "turkey": "TR",
     "iran (islamic republic of)": "IR",

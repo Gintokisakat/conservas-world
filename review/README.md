@@ -15,6 +15,7 @@ CSVs generados por `build_csvs.py` a partir de literatura académica verificada.
 | `central_asia.csv` | 12 | Int Dairy J 2021/2022, reviews de Asia Central |
 | `oceania.csv` | 11 | Pollock 1984 / Atchley & Cox 1985 / Aalbersberg 1988 |
 | `latam.csv` | 11 | Foods 2022 review Ecuador + clásicos andinos |
+| `caribbean.csv` | 34 | Fermentos y conservas de LatAm + Caribe (Foods 2022, Colegio de Postgraduados, Tamang & Samuel, ICBF) |
 | `mexico_quesos.csv` | 38 | Atlas Quesos Artesanales Mexicanos (Colegio de Postgraduados) |
 
 ## Columnas

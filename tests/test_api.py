@@ -350,3 +350,21 @@ def test_seasonal_invalid_month(client):
     assert client.get("/seasonal?month=13").status_code == 422
 
 
+def test_seasonal_data_file_structure():
+    """data/seasonal.json con estructura válida (meses 1-12) y nombres usables."""
+    import json
+    from pathlib import Path
+
+    path = Path(__file__).resolve().parents[1] / "data" / "seasonal.json"
+    data = json.loads(path.read_text(encoding="utf-8"))
+    assert "ingredients" in data and data["ingredients"]
+    for name, months in data["ingredients"].items():
+        assert name.strip()
+        assert months and all(isinstance(m, int) and 1 <= m <= 12 for m in months), name
+    # el contrato del endpoint: los nombres deben existir entre los canónicos
+    known = {"apple", "cabbage", "bean", "carrot", "corn", "rice", "soybean", "cucumber"}
+    assert known & set(data["ingredients"].keys())
+    # curado de prueba: el hueco detectado (nombre no canónico) no debe reaparecer
+    assert "mulberry" not in data["ingredients"]
+
+

@@ -482,6 +482,11 @@ def main():
     parser.add_argument(
         "--skip-off", action="store_true", help="No consultar Open Food Facts"
     )
+    parser.add_argument(
+        "--skip-off-map",
+        action="store_true",
+        help="Omitir el mapa masivo de barcodes OFF (más rápido, mantiene consultas OFF por producto)",
+    )
     args = parser.parse_args()
 
     session = SessionLocal()
@@ -497,7 +502,7 @@ def main():
         if args.only_missing:
             products = [p for p in products if not p.image_url]
 
-        off_map = {} if args.skip_off else build_off_image_map()
+        off_map = None if args.skip_off_map else ({} if args.skip_off else build_off_image_map())
 
         # Los productos con barcode OFF se resuelven por API directa (rápido);
         # procesarlos primero reduce el tiempo total de espera.
@@ -518,8 +523,9 @@ def main():
                 print(f"  [{product.id}] {product.name!r} -> {url}", flush=True)
             else:
                 failed += 1
-            # Commit incremental: no perder el progreso si se interrumpe.
-            if not args.dry_run and index % 20 == 0:
+            # Commit tras cada asignación y de forma incremental: no perder
+            # el progreso si el proceso se interrumpe o OFF nos limita el ritmo.
+            if not args.dry_run and (url or index % 20 == 0):
                 session.commit()
         if not args.dry_run:
             session.commit()

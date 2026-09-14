@@ -20,7 +20,7 @@ def _extract():
 def test_es_en_key_sync():
     es, en = _extract()
     assert es == en
-    assert len(es) >= 75
+    assert len(es) >= 95
 
 
 def test_html_data_i18n_keys_covered():
@@ -35,6 +35,15 @@ def test_new_placeholder_keys():
     es, en = _extract()
     for key in ["search_placeholder", "ing_placeholder", "prod_placeholder", "glossary_search"]:
         assert key in es and key in en
+
+
+def test_static_chrome_keys_traducidas():
+    es, en = _extract()
+    for key in ["stats_loading", "charts_btn", "vin_calc_desc", "alt_calc_desc",
+                "ph_days_label", "filter_technique", "filter_all_categories",
+                "diet_dairy_free", "page_info", "microbes_desc", "trouble_title",
+                "trouble_desc", "label_preview"]:
+        assert key in es and key in en, key
 
 
 def test_html_lang_sync():

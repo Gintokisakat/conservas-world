@@ -1,9 +1,8 @@
 """Tests de SEO y structured data (4.9): sitemap, robots y SSR del detalle."""
 
+from app.api.seo import SITE_URL
 from app.main import app
 from fastapi.testclient import TestClient
-
-from app.api.seo import SITE_URL
 
 client = TestClient(app)
 

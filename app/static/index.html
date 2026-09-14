@@ -65,9 +65,9 @@
             </div>
             <div style="display:flex; align-items:center; gap:0.8rem">
                 <div id="stats" class="stats-grid" onclick="openChartsModal()" style="cursor:pointer" title="Ver gráficos detallados">
-                    <div class="stat-skeleton">Cargando estadísticas…</div>
+                    <div class="stat-skeleton" data-i18n="stats_loading">Cargando estadísticas…</div>
                 </div>
-                <button type="button" class="btn btn-sm btn-outline" onclick="openChartsModal()" style="border-color:rgba(255,255,255,0.4); color:#fff">📊 Gráficos</button>
+                <button type="button" class="btn btn-sm btn-outline" onclick="openChartsModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="charts_btn">📊 Gráficos</button>
                 <select id="lang-select" class="lang-picker" title="Cambiar idioma" aria-label="Cambiar idioma">
                     <option value="es">🇪🇸 Español</option>
                     <option value="en">🇬🇧 English</option>
@@ -84,7 +84,7 @@
         <section class="pantry-card" id="dashboard">
             <div class="pantry-header">
                 <h2>✨ Mi Despensa Interactiva</h2>
-                <p class="pantry-desc">Carga qué ingredientes o fermentados tienes a mano y te mostraremos qué puedes preparar.</p>
+                <p class="pantry-desc" data-i18n="pantry_desc">Carga qué ingredientes o fermentados tienes a mano y te mostraremos qué puedes preparar.</p>
             </div>
 
             <div class="pantry-inputs-grid">
@@ -102,7 +102,7 @@
 
                 <div class="pantry-group">
                     <label for="prod-input">
-                        <span class="label-title">🧪 Fermentados que ya posees (miso, kimchi, kéfir…)</span>
+                        <span class="label-title" data-i18n="prod_label">🧪 Fermentados que ya posees (miso, kimchi, kéfir…)</span>
                     </label>
                     <div class="chips" id="prod-chips"></div>
                     <div class="input-with-button">
@@ -128,7 +128,7 @@
         <section class="timer-card">
             <div class="timer-header">
                 <h2>⏱️ Mis Fermentos en Proceso <span id="timer-count-badge" class="stat-pill" style="font-size:0.78rem; padding:0.2rem 0.6rem; vertical-align:middle; display:none"></span></h2>
-                <p class="timer-desc">Monitorea tus frascos en primera (F1) o segunda fermentación (F2) <span id="timer-sync-hint" style="display:none; color:var(--color-primary); font-size:0.78rem">· ☁️ sincronizado con tu cuenta</span></p>
+                <p class="timer-desc" data-i18n="timer_desc">Monitorea tus frascos en primera (F1) o segunda fermentación (F2) <span id="timer-sync-hint" style="display:none; color:var(--color-primary); font-size:0.78rem">· ☁️ sincronizado con tu cuenta</span></p>
             </div>
             <div class="timer-input-row">
                 <input type="text" id="timer-name" placeholder="Nombre (ej. Kimchi de repollo)" autocomplete="off">
@@ -145,7 +145,7 @@
             <section class="calc-card">
                 <div class="calc-header">
                     <h2>🧮 Calculadora de Salinidad</h2>
-                    <p class="calc-desc">Gramos de sal para fermentación láctica segura.</p>
+                    <p class="calc-desc" data-i18n="brine_calc_desc">Gramos de sal para fermentación láctica segura.</p>
                 </div>
                 <div class="calc-grid">
                     <div class="calc-input-group">
@@ -173,7 +173,7 @@
             <section class="calc-card">
                 <div class="calc-header">
                     <h2>🍺 Calculadora de Alcohol (% ABV)</h2>
-                    <p class="calc-desc">Estimación para hidromiel, sidra, kvas o cerveza.</p>
+                    <p class="calc-desc" data-i18n="abv_calc_desc">Estimación para hidromiel, sidra, kvas o cerveza.</p>
                 </div>
                 <div class="calc-grid">
                     <div class="calc-input-group">
@@ -187,7 +187,7 @@
                     <div class="calc-result-box">
                         <span class="calc-result-label">Alcohol por volumen:</span>
                         <strong id="abv-result-val" class="calc-result-val">5.25 %</strong>
-                        <span class="calc-result-tip">🍺 Fórmula: (OG - FG) × 131.25</span>
+                        <span class="calc-result-tip" data-i18n="formula_tip">🍺 Fórmula: (OG - FG) × 131.25</span>
                     </div>
                 </div>
             </section>
@@ -221,7 +221,7 @@
             <section class="calc-card">
                 <div class="calc-header">
                     <h2>🫙 Calculadora de Vinagre</h2>
-                    <p class="calc-desc">Dilución de ácido acético para salmueras de encurtido.</p>
+                    <p class="calc-desc" data-i18n="vin_calc_desc">Dilución de ácido acético para salmueras de encurtido.</p>
                 </div>
                 <div class="calc-grid">
                     <div class="calc-input-group">
@@ -247,7 +247,7 @@
             <section class="calc-card">
                 <div class="calc-header">
                     <h2>🏔️ Ajuste por Altitud</h2>
-                    <p class="calc-desc">Tiempos de procesamiento en conservas según la altitud (baño maría).</p>
+                    <p class="calc-desc" data-i18n="alt_calc_desc">Tiempos de procesamiento en conservas según la altitud (baño maría).</p>
                 </div>
                 <div class="calc-grid">
                     <div class="calc-input-group">
@@ -269,7 +269,7 @@
             <section class="calc-card">
                 <div class="calc-header">
                     <h2>🧪 pH Estimado de la Salmuera</h2>
-                    <p class="calc-desc">Modelo simplificado de acidificación láctica (Q10).</p>
+                    <p class="calc-desc" data-i18n="ph_calc_desc">Modelo simplificado de acidificación láctica (Q10).</p>
                 </div>
                 <div class="calc-grid">
                     <div class="calc-input-group">
@@ -277,7 +277,7 @@
                         <input type="number" id="ph-initial" min="3" max="8" value="6.5" step="0.1">
                     </div>
                     <div class="calc-input-group">
-                        <label for="ph-days" class="label-title">Días de fermentación:</label>
+                        <label for="ph-days" class="label-title" data-i18n="ph_days_label">Días de fermentación:</label>
                         <input type="number" id="ph-days" min="1" max="90" value="7" step="1">
                     </div>
                     <div class="calc-input-group">
@@ -297,7 +297,7 @@
         <section class="flavormap-card" id="flavormap-card">
             <div class="flavormap-header">
                 <h2 data-i18n="flavormap_title">🗺️ Mapa de sabores del mundo</h2>
-                <p class="flavormap-desc" id="flavormap-desc">Perfil de sabor promedio por continente (clasificación heurística por ingredientes).</p>
+                <p class="flavormap-desc" id="flavormap-desc" data-i18n="flavormap_desc">Perfil de sabor promedio por continente (clasificación heurística por ingredientes).</p>
             </div>
             <div class="flavormap-controls">
                 <select id="flavormap-continent">
@@ -317,7 +317,7 @@
             <div id="seasonal-ingredients" class="seasonal-chips"></div>
             <ul id="seasonal-products" class="products-grid"></ul>
             <div class="seasonal-actions">
-                <button type="button" id="seasonal-more-btn" class="btn btn-sm btn-outline" hidden>Ver más</button>
+                <button type="button" id="seasonal-more-btn" class="btn btn-sm btn-outline" hidden data-i18n="show_more">Ver más</button>
             </div>
         </section>
 
@@ -341,7 +341,7 @@
                     <div id="suggest-box" class="suggest-box hidden" role="listbox"></div>
                 </div>
                 <div class="method-chips-wrapper" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.6rem; margin-bottom:0.6rem; align-items:center">
-                    <span style="font-size:0.85rem; font-weight:600; color:var(--text-secondary)">Técnica:</span>
+                    <span style="font-size:0.85rem; font-weight:600; color:var(--text-secondary)" data-i18n="filter_technique">Técnica:</span>
                     <button type="button" class="btn btn-sm btn-outline method-chip active" data-method="">Todas</button>
                     <button type="button" class="btn btn-sm btn-outline method-chip" data-method="lacto">🥬 Lacto</button>
                     <button type="button" class="btn btn-sm btn-outline method-chip" data-method="acética">🍶 Vinagres</button>
@@ -351,18 +351,18 @@
                 </div>
                 <div class="selects-group">
                     <select id="category">
-                        <option value="">Todas las categorías</option>
+                        <option value="" data-i18n="filter_all_categories">Todas las categorías</option>
                     </select>
                     <select id="continent">
-                        <option value="">Todos los continentes</option>
-                        <option value="Asia">Asia</option>
-                        <option value="Europe">Europa</option>
-                        <option value="Africa">África</option>
-                        <option value="Americas">América</option>
-                        <option value="Oceania">Oceanía</option>
+                        <option value="" data-i18n="region_all">Todos los continentes</option>
+                        <option value="Asia" data-i18n="region_asia">Asia</option>
+                        <option value="Europe" data-i18n="region_europe">Europa</option>
+                        <option value="Africa" data-i18n="region_africa">África</option>
+                        <option value="Americas" data-i18n="region_americas">América</option>
+                        <option value="Oceania" data-i18n="region_oceania">Oceanía</option>
                     </select>
                     <select id="country">
-                        <option value="">Todos los países</option>
+                        <option value="" data-i18n="country_all">Todos los países</option>
                     </select>
                     <select id="source">
                         <option value="">Todas las fuentes</option>
@@ -389,7 +389,7 @@
                         <option value="vegetarian">Vegetariano</option>
                         <option value="pescatarian">Pescatariano</option>
                         <option value="gluten_free">Sin gluten</option>
-                        <option value="dairy_free">Sin lácteos</option>
+                        <option value="dairy_free" data-i18n="diet_dairy_free">Sin lácteos</option>
                         <option value="soy_free">Sin soja</option>
                         <option value="nut_free">Sin frutos secos</option>
                         <option value="egg_free">Sin huevo</option>
@@ -402,11 +402,11 @@
                     <button type="button" id="podcast-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">🎙️ Podcast</button>
                     <button type="button" id="recipes-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43">👨‍🍳 Recetas</button>
                     <button type="button" id="glossary-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">📚 Glosario</button>
-                    <button type="button" id="trouble-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43">🚨 Diagnóstico de Problemas</button>
+                    <button type="button" id="trouble-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43" data-i18n="trouble_btn">🚨 Diagnóstico de Problemas</button>
                     <button type="button" id="microbes-btn" class="btn btn-outline">🔬 Microbios Fermentadores</button>
                     <button type="button" id="fav-filter-btn" class="btn btn-outline">❤️ Mis Favoritos (<span id="fav-count">0</span>)</button>
                     <button type="submit" class="btn btn-primary">Buscar</button>
-                    <button type="button" id="random-btn" class="btn btn-accent">🎲 Sorpréndeme</button>
+                    <button type="button" id="random-btn" class="btn btn-accent" data-i18n="random_btn">🎲 Sorpréndeme</button>
                 </div>
             </form>
         </section>
@@ -421,7 +421,7 @@
                 </div>
                 <div class="pagination">
                     <button id="prev-btn" class="btn btn-sm" disabled>← Anterior</button>
-                    <span id="page-info" class="page-indicator">Página 1</span>
+                    <span id="page-info" class="page-indicator" data-i18n="page_info">Página 1</span>
                     <button id="next-btn" class="btn btn-sm" disabled>Siguiente →</button>
                 </div>
             </div>
@@ -467,7 +467,7 @@
         <div class="modal-card">
             <button class="modal-close" onclick="closeMicrobesModal()" aria-label="Cerrar modal">&times;</button>
             <h2>🔬 Enciclopedia de Microbios Fermentadores</h2>
-            <p style="color:var(--text-secondary)">Bacterias, hongos y levaduras involucrados en la fermentación tradicional:</p>
+            <p style="color:var(--text-secondary)" data-i18n="microbes_desc">Bacterias, hongos y levaduras involucrados en la fermentación tradicional:</p>
             <div id="microbes-list" class="microbes-grid"></div>
         </div>
     </div>
@@ -476,8 +476,8 @@
     <div id="trouble-modal" class="modal-overlay hidden" onclick="closeTroubleModal(event)" role="dialog" aria-modal="true" aria-label="Solución de problemas">
         <div class="modal-card">
             <button class="modal-close" onclick="closeTroubleModal()" aria-label="Cerrar modal">&times;</button>
-            <h2>🚨 Diagnóstico de Problemas en Fermentación</h2>
-            <p style="color:var(--text-secondary)">Selecciona el síntoma visual o de olor que presenta tu frasco:</p>
+            <h2 data-i18n="trouble_title">🚨 Diagnóstico de Problemas en Fermentación</h2>
+            <p style="color:var(--text-secondary)" data-i18n="trouble_desc">Selecciona el síntoma visual o de olor que presenta tu frasco:</p>
             
             <div class="trouble-symptoms-list">
                 <button type="button" class="btn btn-outline trouble-opt" data-action="diagnose" data-type="kahm">
@@ -506,7 +506,7 @@
         <div class="modal-card">
             <button class="modal-close" onclick="closeLabelModal()" aria-label="Cerrar modal">&times;</button>
             <h2>🏷️ Etiqueta de Frasco Imprimible</h2>
-            <p style="color:var(--text-secondary)">Previsualización lista para imprimir o pegar en tu frasco:</p>
+            <p style="color:var(--text-secondary)" data-i18n="label_preview">Previsualización lista para imprimir o pegar en tu frasco:</p>
             
             <div id="printable-jar-label" class="jar-label-badge">
                 <div class="jar-label-header">

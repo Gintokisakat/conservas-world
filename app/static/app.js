@@ -252,6 +252,8 @@ const favorites = new Set(JSON.parse(localStorage.getItem("pantry_favs") || "[]"
 
 function saveFavorites() {
     localStorage.setItem("pantry_favs", JSON.stringify(Array.from(favorites)));
+}
+
 async function loadFlavorMap() {
     const continent = document.getElementById("flavormap-continent").value;
     const detail = document.getElementById("flavormap-detail").checked;
@@ -336,7 +338,6 @@ document.getElementById("flavormap-container").addEventListener("click", (e) => 
 });
 
 updateFavBadge();
-}
 
 function updateFavBadge() {
     const badge = document.getElementById("fav-count");

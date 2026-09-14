@@ -71,3 +71,22 @@ def test_theme_toggle_has_aria_label():
 def test_escape_closes_ingredient_modal():
     js = client.get("/static/app.js").text
     assert 'ingredient-modal").classList.add("hidden"' in js
+
+
+def test_search_form_role_search():
+    assert 'role="search"' in _page()
+    assert 'aria-label="Buscar fermentos y conservas"' in _page()
+
+
+def test_lang_select_aria_label():
+    assert '<select id="lang-select" class="lang-picker" title="Cambiar idioma" aria-label="Cambiar idioma">' in _page()
+
+
+def test_fav_buttons_aria_pressed():
+    js = client.get("/static/app.js").text
+    assert 'aria-pressed="${isFav}"' in js
+
+
+def test_palette_input_aria():
+    assert 'aria-label="Paleta de comandos"' in _page()
+    assert 'id="palette-results"' in _page()

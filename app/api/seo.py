@@ -18,7 +18,7 @@ from app.services.flavors import flavor_profile
 
 router = APIRouter()
 
-SITE_URL = "https://conservas-world.example"
+SITE_URL = "https://conservas-del-mundo.onrender.com"
 SPA_BASE = "/"
 
 

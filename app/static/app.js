@@ -1007,7 +1007,7 @@ function productCardHtml(p, noDesc, index) {
         <div>
             <div class="card-header-row">
                 <h3>${esc(p.name)}</h3>
-                <button type="button" class="fav-toggle" data-id="${p.id}" title="Marcar como favorito">
+                <button type="button" class="fav-toggle" data-id="${p.id}" aria-pressed="${isFav}" title="Marcar como favorito" aria-label="Marcar como favorito">
                     ${isFav ? "❤️" : "🤍"}
                 </button>
             </div>

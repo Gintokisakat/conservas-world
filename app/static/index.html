@@ -8,6 +8,30 @@
     <meta name="theme-color" content="#2d5a3f">
     <meta name="color-scheme" content="light dark">
     <link rel="manifest" href="/static/manifest.json">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Conservas del Mundo">
+    <meta property="og:title" content="Conservas del Mundo — Fermentos y Encurtidos Tradicionales">
+    <meta property="og:description" content="Base de datos mundial de fermentos, encurtidos y conservas tradicionales. Explora por país, ingrediente, método y técnica.">
+    <meta property="og:url" content="https://conservas-del-mundo.onrender.com/">
+    <meta property="og:image" content="https://conservas-del-mundo.onrender.com/static/img/og-default.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Conservas del Mundo — Fermentos y Encurtidos Tradicionales">
+    <meta name="twitter:description" content="Base de datos mundial de fermentos, encurtidos y conservas tradicionales.">
+    <meta name="twitter:image" content="https://conservas-del-mundo.onrender.com/static/img/og-default.png">
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Conservas del Mundo",
+        "url": "https://conservas-del-mundo.onrender.com/",
+        "description": "Base de datos mundial de fermentos, encurtidos y conservas tradicionales.",
+        "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://conservas-del-mundo.onrender.com/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+        }
+    }
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -44,7 +68,7 @@
                     <div class="stat-skeleton">Cargando estadísticas…</div>
                 </div>
                 <button type="button" class="btn btn-sm btn-outline" onclick="openChartsModal()" style="border-color:rgba(255,255,255,0.4); color:#fff">📊 Gráficos</button>
-                <select id="lang-select" class="lang-picker" title="Cambiar idioma">
+                <select id="lang-select" class="lang-picker" title="Cambiar idioma" aria-label="Cambiar idioma">
                     <option value="es">🇪🇸 Español</option>
                     <option value="en">🇬🇧 English</option>
                 </select>
@@ -310,10 +334,10 @@
 
         <!-- Barra de Búsqueda y Filtros -->
         <section class="filters-card">
-            <form id="search-form" class="filters-form">
+            <form id="search-form" class="filters-form" role="search" aria-label="Búsqueda de fermentos">
                 <div class="search-input-wrapper">
                     <span class="search-icon">🔍</span>
-                    <input type="search" id="q" placeholder="Buscar por nombre o descripción (ej. kimchi, sauerkraut, choucroute...)" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest-box" aria-autocomplete="list" data-i18n-placeholder="search_placeholder">
+                    <input type="search" id="q" aria-label="Buscar fermentos y conservas" placeholder="Buscar por nombre o descripción (ej. kimchi, sauerkraut, choucroute...)" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest-box" aria-autocomplete="list" data-i18n-placeholder="search_placeholder">
                     <div id="suggest-box" class="suggest-box hidden" role="listbox"></div>
                 </div>
                 <div class="method-chips-wrapper" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.6rem; margin-bottom:0.6rem; align-items:center">
@@ -617,7 +641,7 @@
     <!-- Paleta de comandos (Ctrl+K) -->
     <div id="palette-overlay" class="hidden" role="dialog" aria-modal="true" aria-label="Paleta de comandos">
         <div id="palette-card">
-            <input type="text" id="palette-input" placeholder="Buscar productos, ingredientes o acciones…" autocomplete="off" spellcheck="false">
+            <input type="text" id="palette-input" placeholder="Buscar productos, ingredientes o acciones…" autocomplete="off" spellcheck="false" aria-label="Paleta de comandos" role="combobox" aria-expanded="true" aria-controls="palette-results">
             <div id="palette-results"></div>
             <div class="palette-hint"><kbd>↑↓</kbd> navegar · <kbd>Enter</kbd> abrir · <kbd>Esc</kbd> cerrar</div>
         </div>

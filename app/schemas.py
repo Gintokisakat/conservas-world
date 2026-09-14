@@ -47,6 +47,25 @@ class CategoryOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class LanguaLTermOut(BaseModel):
+    code: str
+    facet: str
+    label: str
+
+
+class LanguaLCategoryOut(BaseModel):
+    code: str
+    name: str
+    langual: list[str]
+    products: int = 0
+
+
+class LanguaLOut(BaseModel):
+    terms: list[LanguaLTermOut]
+    categories: list[LanguaLCategoryOut]
+    total_products: int = 0
+
+
 class ReferenceOut(BaseModel):
     id: int
     title: str

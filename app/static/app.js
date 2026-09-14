@@ -12,7 +12,10 @@ const state = {
     pageSize: 20,
     total: 0,
     view: "list",
-    lang: localStorage.getItem("pantry_lang") || "es"
+    lang: localStorage.getItem("pantry_lang") || "es",
+    langual: [],
+    langualIndex: {},
+    langualByCat: {}
 };
 
 const dietLabels = {
@@ -1252,6 +1255,7 @@ async function openDetail(id) {
                 ${giBadge(p)}
                 ${dietBadges(p.diet_tags)}
             </div>
+            ${langualBadges(p)}
 
             <div class="ph-safety-banner">
                 <span>${t.ph_banner}</span>
@@ -3239,6 +3243,31 @@ async function loadMap() {
     if (mapInstance) setTimeout(() => mapInstance.invalidateSize(), 60);
 }
 
+async function loadLanguaL() {
+    const data = await api(`/langual?lang=${state.lang}`).catch(() => null);
+    if (!data) return;
+    state.langual = data.terms || [];
+    state.langualIndex = {};
+    (data.terms || []).forEach((tm) => { state.langualIndex[tm.code] = tm.label; });
+    state.langualByCat = {};
+    (data.categories || []).forEach((cat) => { state.langualByCat[cat.code] = cat.langual || []; });
+}
+
+function langualBadges(product) {
+    if (!product || !product.categories) return "";
+    const codes = [];
+    product.categories.forEach((c) => {
+        (state.langualByCat[c.code] || []).forEach((code) => {
+            if (code && !codes.includes(code)) codes.push(code);
+        });
+    });
+    if (!codes.length) return "";
+    const chips = codes
+        .map((code) => `<span title="${esc(state.langualIndex[code] || code)}">[${esc(code)}]</span>`)
+        .join(" ");
+    return `<div style="margin-top:0.6rem; font-size:0.78rem; color:var(--text-muted)" class="langual-codes">🏷️ LanguaL™ ${chips}</div>`;
+}
+
 document.getElementById("view-list-btn").addEventListener("click", () => setView("list"));
 document.getElementById("view-map-btn").addEventListener("click", () => setView("map"));
 
@@ -3526,6 +3555,7 @@ function updateLanguageUI() {
     loadGuides();
     loadCourse();
     loadPodcastTopics();
+    loadLanguaL();
     renderTimers();
     search(1);
 }

@@ -30,6 +30,9 @@ from app.schemas import (
     GuideOut,
     IngredientMoleculesOut,
     IngredientOut,
+    LanguaLCategoryOut,
+    LanguaLOut,
+    LanguaLTermOut,
     MicrobeOut,
     MoleculeOut,
     NutritionOut,
@@ -1227,6 +1230,48 @@ def list_categories(response: Response, session: Session = Depends(get_session))
     return session.execute(
         select(models.Category).order_by(models.Category.name)
     ).scalars().all()
+
+
+@router.get("/langual", response_model=LanguaLOut)
+def langual_index(
+    response: Response,
+    lang: str = Query(default="es", pattern="^(es|en)$"),
+    session: Session = Depends(get_session),
+):
+    """Vocabulario controlado LanguaL (2.16): facetas H/J y mapeo de categorías."""
+    from app.langual import (
+        _LANGUAL_TERMS,
+        CATEGORY_LABEL,
+        CATEGORY_LANGUAL,
+    )
+
+    response.headers["Cache-Control"] = "public, max-age=86400"
+
+    rows = session.execute(
+        select(models.Category.code, func.count(models.product_category.c.product_id))
+        .outerjoin(models.product_category, models.product_category.c.category_id == models.Category.id)
+        .group_by(models.Category.code)
+    ).all()
+    counts = {code: n for code, n in rows}
+
+    order = ["H0101", "H0300", "H0232", "H0256", "H0102", "H0127", "H0128", "H0230",
+             "H0190", "H0200", "H0123", "H0107", "A0783", "J0104", "J0103", "J0139",
+             "J0100", "J0106", "J0145", "J0120", "J0135"]
+    terms = [
+        LanguaLTermOut(code=code, facet=_LANGUAL_TERMS[code].facet, label=_LANGUAL_TERMS[code].label(lang))
+        for code in order
+    ]
+
+    categories = []
+    for cat_code, langual in sorted(CATEGORY_LANGUAL.items()):
+        name = (CATEGORY_LABEL.get(cat_code) or {}).get(lang, cat_code)
+        categories.append(
+            LanguaLCategoryOut(
+                code=cat_code, name=name, langual=langual, products=counts.get(cat_code, 0)
+            )
+        )
+
+    return LanguaLOut(terms=terms, categories=categories, total_products=sum(counts.values()))
 
 
 @router.get("/countries", response_model=list[CountryOut])

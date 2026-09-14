@@ -372,14 +372,15 @@
 - **Dependencias**: Ninguna
 - **Riesgo**: El URL directo de USDA está tras Akamai (403); usar data.gov o el dump del repo de terceros
 
-#### 2.16 LanguaL: faceta de fermentación y multilingüe
+#### 2.16 LanguaL: faceta de fermentación y multilingüe [✅ COMPLETADO]
 - **Fuente**: langual.org (40,000+ alimentos indexados, 9 idiomas, facetas de conservación)
-- **Qué hacer**:
-  - Usar las facetas de LanguaL para "método de conservación: fermentado" como vocabulario controlado
-  - Mapear nuestras 16 categorías internas a códigos LanguaL (además de FoodOn en 2.5)
-  - Extraer términos multilingües de ingredientes para enriquecer aliases (extiende 1.8/4.8)
-- **Dependencias**: Ninguna
-- **Riesgo**: Datasets grandes; descargar solo las facetas de fermentación/conservación
+- **Hecho**:
+  - Módulo `app/langual.py` con vocabulario controlado LanguaL 2017 (facetas H Tratamiento / J Conservación / A Producto) extraído del thesaurus oficial (H0101 láctico, H0300 acético, H0232 alcohólico, H0256 carbohidratos, H0102 proteolítico, H0128 mixto, H0200 acidificado, J0104 conservado por fermentación, J0139 sal seca, J0106 ahumado, etc.)
+  - Mapeo de las 16 categorías internas a códigos LanguaL (además de FoodOn en 2.5)
+  - Endpoint `GET /api/v1/langual?lang=` (y `GET /langual`) con términos bilingües es/en, mapeo por categoría y conteo de productos; Cache-Control 86400
+  - Frontend: badge "🏷️ LanguaL™ [H0101] [J0104]" en el detalle de producto (tooltip con descriptor) y carga del vocabulario al cambiar idioma
+  - Tests: `tests/test_langual.py` (integridad del mapeo, cobertura de todas las categorías, consistencia es/en, descriptores clave)
+- **Pendiente futura**: extraer términos multilingües LanguaL como aliases de ingredientes (extiende 1.8/4.8)
 
 ---
 

@@ -714,3 +714,43 @@ class ProducersOut(BaseModel):
     total: int
     items: list[ProducerOut]
 
+
+class BreweryOut(BaseModel):
+    id: int
+    brewery_id: str
+    name: str
+    brewery_type: str | None
+    country: str
+    state_province: str | None
+    city: str | None
+    address: str | None
+    latitude: float | None
+    longitude: float | None
+    website_url: str | None
+    phone: str | None
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class BreweriesOut(BaseModel):
+    total: int
+    items: list[BreweryOut]
+
+
+class SourceVersionOut(BaseModel):
+    id: int
+    source: str
+    fetched_at: datetime
+    records_count: int
+    checksum: str | None
+    status: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class SourceVersionsOut(BaseModel):
+    total: int
+    items: list[SourceVersionOut]
+
+

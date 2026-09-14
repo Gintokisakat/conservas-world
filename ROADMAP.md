@@ -295,7 +295,7 @@
 - **Fuente**: slowfood.com/ark-of-taste
 - **Implementado**: Ingesta curada de conservas y fermentos patrimoniales tradicionales + insignia distintiva `🏛️ Arca del Gusto` y filtro por fuente en la interfaz.
 
-#### 2.7 Open Brewery DB
+#### 2.7 Open Brewery DB [✅ COMPLETADO]
 - **Fuente**: openbrewerydb.org (11,745+ cervecerías, API gratuita)
 - **Qué hacer**:
   - Endpoint `GET /breweries?country=...&lat=...&lng=...` que consulte la API
@@ -616,7 +616,7 @@
 - **Dependencias**: alembic (~500KB)
 - **Riesgo**: Reestructurar `ingest/loader.py` para separar schema de datos
 
-#### 5.2 Refresh programado de fuentes (pipeline pull)
+#### 5.2 Refresh programado de fuentes (pipeline pull) [✅ COMPLETADO]
 - **Qué hacer**:
   - Hoy el pipeline es push-only (se ejecuta a mano). Añadir scheduler:
     - Open Food Facts: re-fetch mensual de productos existentes (nombres, fotos, barcodes cambian)

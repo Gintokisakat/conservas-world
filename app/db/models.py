@@ -474,3 +474,37 @@ class Producer(Base):
 
     user: Mapped["User | None"] = relationship(back_populates="producers")
 
+
+class Brewery(Base):
+    """Cervecería o sidrería artesanal registrada (roadmap 2.7)."""
+
+    __tablename__ = "breweries"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    brewery_id: Mapped[str] = mapped_column(String(100), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(200), index=True)
+    brewery_type: Mapped[str | None] = mapped_column(String(50), index=True)
+    country: Mapped[str] = mapped_column(String(100), index=True)
+    state_province: Mapped[str | None] = mapped_column(String(100))
+    city: Mapped[str | None] = mapped_column(String(100))
+    address: Mapped[str | None] = mapped_column(String(255))
+    latitude: Mapped[float | None] = mapped_column(Float)
+    longitude: Mapped[float | None] = mapped_column(Float)
+    website_url: Mapped[str | None] = mapped_column(String(255))
+    phone: Mapped[str | None] = mapped_column(String(50))
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+
+
+class SourceVersion(Base):
+    """Historial y control de versión de ingesta por fuente (roadmap 5.2)."""
+
+    __tablename__ = "source_versions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    source: Mapped[str] = mapped_column(String(50), unique=True, index=True)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    records_count: Mapped[int] = mapped_column(default=0)
+    checksum: Mapped[str | None] = mapped_column(String(100))
+    status: Mapped[str] = mapped_column(String(20), default="active")
+
+

@@ -24,8 +24,8 @@ jobs:
       - name: Install Dependencies
         run: uv sync
 
-      - name: Run Pytest Suite
-        run: uv run pytest
+      - name: Run Pytest Suite (con cobertura, umbral 85%)
+        run: uv run pytest --cov=app --cov-report=term-missing --cov-fail-under=85
 
   lint:
     runs-on: ubuntu-latest

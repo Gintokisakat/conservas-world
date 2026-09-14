@@ -644,13 +644,13 @@
 - **Dependencias**: sentry-sdk (opcional)
 - **Riesgo**: Bajo
 
-#### 5.5 Tests y calidad continua
-- **Qué hacer**:
-  - Extender suite (hoy 74 tests) con: tests de Fase 2 (imágenes, safety data), Fase 3 (timers, API v1)
-  - Tests de datos: no perder cobertura de ingredientes (hoy 99.98%), total de productos, integridad de FKs
-  - Mutación básica o coverage report en CI (umbral > 85%)
+#### 5.5 Tests y calidad continua [✅ COMPLETADO]
+- **Hecho**:
+  - Suite en **450 tests** con cobertura de `app` al **95.00%** (umbral CI > 85%)
+  - `pytest-cov` en dependencias dev; gate de cobertura en CI: `uv run pytest --cov=app --cov-fail-under=85`
+  - `tests/test_data_integrity.py`: pisos de cobertura de datos (≥4.000 productos activos, ingredientes ≥90%, categoría ≥95%, país ≥50%, imagen ≥40%), integridad referencial de todas las tablas puente (0 filas huérfanas) y nombres de producto únicos
+  - `tests/test_quality.py`: warmup reentrante sin errores, respeto de `CONSERVAS_WARMUP` y lanzamiento de hilo de fondo
 - **Dependencias**: pytest-cov
-- **Riesgo**: Bajo
 
 ---
 

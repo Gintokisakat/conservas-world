@@ -1,4 +1,6 @@
+import logging
 from pathlib import Path
+from time import monotonic
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -7,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.auth import router as auth_router
 from app.api.batches import router as batches_router
-from app.api.public import RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW, check_rate_limit
+from app.api.public import RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW, check_rate_limit, record_request
 from app.api.public import router as public_router
 from app.api.recipes import router as recipes_router
 from app.api.reviews import router as reviews_router
@@ -15,7 +17,38 @@ from app.api.routes import router
 from app.api.seo import router as seo_router
 from app.db.database import engine as _engine
 
+_access_logger = logging.getLogger("conservas.access")
+
 STATIC_DIR = Path(__file__).resolve().parent / "static"
+
+# Roadmap 5.3 — cabeceras de caché para endpoints de lectura. Las reglas más
+# específicas van primero; el middleware respeta el Cache-Control que los
+# endpoints ya fijen y solo rellena el resto.
+_CACHE_RULES: list[tuple[str, str]] = [
+    ("/products/random", "no-store"),
+    ("/search/", "public, max-age=60"),
+    ("/api/v1/me", "private, no-store"),
+    ("/me", "private, no-store"),
+    ("/auth", "private, no-store"),
+    ("/stats", "public, max-age=300"),
+    ("/seasonal", "public, max-age=86400"),
+    ("/timeline", "public, max-age=86400"),
+    ("/guides", "public, max-age=86400"),
+    ("/glossary", "public, max-age=86400"),
+    ("/course", "public, max-age=86400"),
+    ("/podcast", "public, max-age=86400"),
+    ("/etymology", "public, max-age=86400"),
+    ("/flavor-map", "public, max-age=86400"),
+    ("/categories", "public, max-age=3600"),
+    ("/countries", "public, max-age=3600"),
+    ("/ingredients", "public, max-age=3600"),
+    ("/diets", "public, max-age=3600"),
+    ("/microbes", "public, max-age=3600"),
+    ("/references", "public, max-age=3600"),
+    ("/products", "public, max-age=3600"),
+]
+
+_DEFAULT_CACHE = "public, max-age=300"
 
 
 def create_app() -> FastAPI:
@@ -77,6 +110,48 @@ def create_app() -> FastAPI:
             response.headers["X-RateLimit-Reset"] = str(int(RATE_LIMIT_WINDOW))
             return response
         return await call_next(request)
+
+    @app.middleware("http")
+    async def cache_control_middleware(request, call_next):
+        response = await call_next(request)
+        if request.method in ("GET", "HEAD") and "Cache-Control" not in response.headers:
+            path = request.url.path
+            if path in ("/", ""):
+                # El shell del SPA es pequeño pero cambia con cada deploy;
+                # mejor revalidarlo siempre para no servir un app.js viejo.
+                response.headers["Cache-Control"] = "no-cache"
+                return response
+            # Las reglas viven sin el prefijo de API; las rutas duplicadas
+            # (/products y /api/v1/products) deben recibir el mismo cabecero.
+            base = path.removeprefix("/api/v1")
+            for prefix, directive in _CACHE_RULES:
+                if base.startswith(prefix):
+                    response.headers["Cache-Control"] = directive
+                    break
+            else:
+                response.headers["Cache-Control"] = _DEFAULT_CACHE
+        return response
+
+    @app.middleware("http")
+    async def metrics_middleware(request, call_next):
+        """Roadmap 5.4 — logs de acceso y métricas agregadas para /api/health."""
+        start = monotonic()
+        response = await call_next(request)
+        msec = (monotonic() - start) * 1000.0
+        if request.url.path.startswith("/api"):
+            record_request(
+                request.url.path.removesuffix("/")
+                or "/",
+                msec,
+            )
+        _access_logger.info(
+            "%s %s -> %s (%.1f ms)",
+            request.method,
+            request.url.path,
+            response.status_code,
+            msec,
+        )
+        return response
 
     @app.get("/", include_in_schema=False)
     def index():

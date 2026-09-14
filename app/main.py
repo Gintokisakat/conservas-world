@@ -1,4 +1,5 @@
 import logging
+import uuid
 from pathlib import Path
 from time import monotonic
 
@@ -9,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 
 from app.api.auth import router as auth_router
 from app.api.batches import router as batches_router
+from app.api.producers import router as producers_router
 from app.api.public import RATE_LIMIT_REQUESTS, RATE_LIMIT_WINDOW, check_rate_limit, record_request
 from app.api.public import router as public_router
 from app.api.recipes import router as recipes_router
@@ -73,6 +75,8 @@ def create_app() -> FastAPI:
     app.include_router(recipes_router, prefix="/api/v1")
     app.include_router(batches_router)
     app.include_router(batches_router, prefix="/api/v1")
+    app.include_router(producers_router)
+    app.include_router(producers_router, prefix="/api/v1")
     app.include_router(public_router)
     app.include_router(seo_router)
 
@@ -92,11 +96,13 @@ def create_app() -> FastAPI:
             _models.IngredientFlavorMolecule.__table__,
             _models.Batch.__table__,
             _models.BatchCheckpoint.__table__,
+            _models.Producer.__table__,
         ):
             assert isinstance(table, _SaTable)
             table.create(bind=_engine, checkfirst=True)
     except Exception:
         pass
+
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
     @app.middleware("http")
@@ -134,10 +140,13 @@ def create_app() -> FastAPI:
 
     @app.middleware("http")
     async def metrics_middleware(request, call_next):
-        """Roadmap 5.4 — logs de acceso y métricas agregadas para /api/health."""
+        """Roadmap 5.4 — logs de acceso con Request-ID y métricas para /api/health."""
+        req_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+        request.state.request_id = req_id
         start = monotonic()
         response = await call_next(request)
         msec = (monotonic() - start) * 1000.0
+        response.headers["X-Request-ID"] = req_id
         if request.url.path.startswith("/api"):
             record_request(
                 request.url.path.removesuffix("/")
@@ -145,13 +154,15 @@ def create_app() -> FastAPI:
                 msec,
             )
         _access_logger.info(
-            "%s %s -> %s (%.1f ms)",
+            "[%s] %s %s -> %s (%.1f ms)",
+            req_id,
             request.method,
             request.url.path,
             response.status_code,
             msec,
         )
         return response
+
 
     @app.get("/", include_in_schema=False)
     def index():

@@ -316,6 +316,7 @@ class User(Base):
     reviews: Mapped[list["Review"]] = relationship(back_populates="user")
     recipes: Mapped[list["Recipe"]] = relationship(back_populates="user")
     batches: Mapped[list["Batch"]] = relationship(back_populates="user")
+    producers: Mapped[list["Producer"]] = relationship(back_populates="user")
 
 
 class Batch(Base):
@@ -445,3 +446,31 @@ class IngredientFlavorMolecule(Base):
     molecule_id: Mapped[int] = mapped_column(
         ForeignKey("flavor_molecules.id", ondelete="CASCADE"), primary_key=True
     )
+
+
+class Producer(Base):
+    """Productor artesanal de conservas y fermentos tradicionales (roadmap 4.6)."""
+
+    __tablename__ = "producers"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), index=True
+    )
+    name: Mapped[str] = mapped_column(String(200), index=True)
+    country: Mapped[str] = mapped_column(String(100), index=True)
+    region: Mapped[str | None] = mapped_column(String(100))
+    city: Mapped[str | None] = mapped_column(String(100))
+    address: Mapped[str | None] = mapped_column(String(255))
+    latitude: Mapped[float | None] = mapped_column(Float)
+    longitude: Mapped[float | None] = mapped_column(Float)
+    website: Mapped[str | None] = mapped_column(String(255))
+    contact_email: Mapped[str | None] = mapped_column(String(150))
+    phone: Mapped[str | None] = mapped_column(String(50))
+    products_offered: Mapped[str | None] = mapped_column(Text)
+    verified: Mapped[bool] = mapped_column(Boolean, default=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    updated_at: Mapped[datetime | None] = mapped_column(DateTime, onupdate=func.now())
+
+    user: Mapped["User | None"] = relationship(back_populates="producers")
+

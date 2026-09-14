@@ -657,3 +657,60 @@ class CheckpointsOut(BaseModel):
     batch_id: int
     total: int
     items: list[CheckpointOut]
+
+
+class ProducerCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=200)
+    country: str = Field(..., min_length=1, max_length=100)
+    region: str | None = Field(default=None, max_length=100)
+    city: str | None = Field(default=None, max_length=100)
+    address: str | None = Field(default=None, max_length=255)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
+    website: str | None = Field(default=None, max_length=255)
+    contact_email: str | None = Field(default=None, max_length=150)
+    phone: str | None = Field(default=None, max_length=50)
+    products_offered: str | None = Field(default=None, max_length=4000)
+
+
+class ProducerUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=200)
+    country: str | None = Field(default=None, min_length=1, max_length=100)
+    region: str | None = Field(default=None, max_length=100)
+    city: str | None = Field(default=None, max_length=100)
+    address: str | None = Field(default=None, max_length=255)
+    latitude: float | None = Field(default=None, ge=-90, le=90)
+    longitude: float | None = Field(default=None, ge=-180, le=180)
+    website: str | None = Field(default=None, max_length=255)
+    contact_email: str | None = Field(default=None, max_length=150)
+    phone: str | None = Field(default=None, max_length=50)
+    products_offered: str | None = Field(default=None, max_length=4000)
+    verified: bool | None = None
+
+
+class ProducerOut(BaseModel):
+    id: int
+    user_id: int | None
+    name: str
+    country: str
+    region: str | None
+    city: str | None
+    address: str | None
+    latitude: float | None
+    longitude: float | None
+    website: str | None
+    contact_email: str | None
+    phone: str | None
+    products_offered: str | None
+    verified: bool
+    created_at: datetime
+    updated_at: datetime | None
+    mine: bool = False
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ProducersOut(BaseModel):
+    total: int
+    items: list[ProducerOut]
+

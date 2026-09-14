@@ -552,7 +552,7 @@
 - **Dependencias**: Verificar APIs/RSS de estos podcasts
 - **Riesgo**: Derechos de autor del contenido de audio
 
-#### 4.6 Networking de productores
+#### 4.6 Networking de productores [✅ COMPLETADO]
 - **Inspiración**: Slow Food, Ark of Taste
 - **Qué hacer**:
   - Tabla `producers` (id, name, country, products_json, website, contact_email, lat, lng)
@@ -635,7 +635,7 @@
 - **Dependencias**: Redis opcional; empezar con caché en memoria (dict TTL)
 - **Riesgo**: Invalidadción cuando se refresh las fuentes (limpiar caché por version)
 
-#### 5.4 Monitoreo y logs
+#### 5.4 Monitoreo y logs [✅ COMPLETADO]
 - **Qué hacer**:
   - Logging estructurado (JSON) con request id
   - Métricas: p95 latency, errores 5xx, nº búsquedas, top queries fallidas

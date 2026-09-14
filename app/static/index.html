@@ -68,6 +68,7 @@
                     <div class="stat-skeleton" data-i18n="stats_loading">Cargando estadísticas…</div>
                 </div>
                 <button type="button" class="btn btn-sm btn-outline" onclick="openChartsModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="charts_btn">📊 Gráficos</button>
+                <button type="button" class="btn btn-sm btn-outline" onclick="openProducersModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="producers_btn">🏭 Productores</button>
                 <select id="lang-select" class="lang-picker" title="Cambiar idioma" aria-label="Cambiar idioma">
                     <option value="es">🇪🇸 Español</option>
                     <option value="en">🇬🇧 English</option>
@@ -600,6 +601,23 @@
             <div id="podcast-body"></div>
         </div>
     </div>
+
+    <!-- Modal Productores Artesanales (roadmap 4.6) -->
+    <div id="producers-modal" class="modal-overlay hidden" onclick="closeProducersModal(event)" role="dialog" aria-modal="true" aria-label="Productores artesanales">
+        <div class="modal-card modal-lg">
+            <button class="modal-close" onclick="closeProducersModal()" aria-label="Cerrar modal">&times;</button>
+            <div id="producers-body">
+                <h2>🏭 Productores Artesanales de Fermentos</h2>
+                <p style="color:var(--text-secondary); margin-bottom:1rem">Directorio global de productores, queserías y fermenterías tradicionales.</p>
+                <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap">
+                    <input type="search" id="producers-search" class="search-input" placeholder="🔎 Buscar por nombre, ciudad o producto..." style="flex:1; min-width:200px" oninput="fetchAndRenderProducers()">
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openAddProducerModal()">+ Registrar Productor</button>
+                </div>
+                <div id="producers-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; max-height:55vh; overflow-y:auto"></div>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Modal de autenticación -->
     <div id="auth-modal" class="modal-overlay hidden" onclick="closeAuthModal(event)" role="dialog" aria-modal="true" aria-label="Autenticación">

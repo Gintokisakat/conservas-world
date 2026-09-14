@@ -3766,3 +3766,74 @@ window.addEventListener("keydown", (e) => {
         localStorage.setItem("conservas_welcomed", "1");
     }, 1200);
 })();
+
+// ===== Roadmap 4.6: Productores Artesanales =====
+async function openProducersModal() {
+    const modal = document.getElementById("producers-modal");
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    await fetchAndRenderProducers();
+}
+
+function closeProducersModal(e) {
+    if (e && e.target && !e.target.classList.contains("modal-overlay") && !e.target.classList.contains("modal-close")) return;
+    const modal = document.getElementById("producers-modal");
+    if (modal) modal.classList.add("hidden");
+}
+
+async function fetchAndRenderProducers() {
+    const container = document.getElementById("producers-list");
+    if (!container) return;
+    const q = (document.getElementById("producers-search")?.value || "").trim();
+    container.innerHTML = `<p style="color:var(--text-muted)">Cargando productores...</p>`;
+    try {
+        const url = q ? `/producers?q=${encodeURIComponent(q)}` : "/producers";
+        const res = await fetch(url);
+        if (!res.ok) throw new Error("Error HTTP " + res.status);
+        const data = await res.json();
+        if (!data.items || !data.items.length) {
+            container.innerHTML = `<p style="color:var(--text-secondary)">No se encontraron productores artesanales registrados. ¡Sé el primero en registrar uno!</p>`;
+            return;
+        }
+        container.innerHTML = data.items.map(p => `
+            <div style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem">
+                    <strong style="font-size:1.05rem; color:var(--color-primary)">${esc(p.name)}</strong>
+                    ${p.verified ? '<span class="tag" style="background:#e6f4ea; color:#137333">✓ Verificado</span>' : ''}
+                </div>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin:0 0 0.4rem">📍 ${esc(p.country)}${p.city ? ' · ' + esc(p.city) : ''}</p>
+                ${p.products_offered ? `<p style="font-size:0.88rem; color:var(--text-secondary); margin:0 0 0.5rem">🏺 <em>${esc(p.products_offered)}</em></p>` : ''}
+                <div style="font-size:0.82rem; color:var(--text-muted); display:flex; gap:0.8rem; flex-wrap:wrap">
+                    ${p.website ? `<a href="${escAttr(p.website)}" target="_blank" rel="noopener">🌐 Sitio web</a>` : ''}
+                    ${p.contact_email ? `<span>✉️ ${esc(p.contact_email)}</span>` : ''}
+                    ${p.phone ? `<span>📞 ${esc(p.phone)}</span>` : ''}
+                </div>
+            </div>
+        `).join("");
+    } catch (err) {
+        container.innerHTML = `<p style="color:#d96b43">Error al cargar la lista de productores.</p>`;
+    }
+}
+
+function openAddProducerModal() {
+    const name = prompt("Nombre del productor o proyecto artesanal:");
+    if (!name) return;
+    const country = prompt("País:");
+    if (!country) return;
+    const city = prompt("Ciudad / Localidad:") || "";
+    const products_offered = prompt("Fermentos / Productos que elaboran (ej: kombucha, kimchi, miso):") || "";
+
+    fetch("/producers", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, country, city, products_offered })
+    }).then(r => r.json()).then(data => {
+        if (data.id) {
+            showToast("Productor registrado con éxito", "success");
+            fetchAndRenderProducers();
+        } else {
+            showToast("No se pudo registrar el productor", "error");
+        }
+    }).catch(() => showToast("Error de conexión", "error"));
+}
+

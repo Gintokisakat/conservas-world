@@ -69,7 +69,10 @@
                 </div>
                 <button type="button" class="btn btn-sm btn-outline" onclick="openChartsModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="charts_btn">📊 Gráficos</button>
                 <button type="button" class="btn btn-sm btn-outline" onclick="openProducersModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="producers_btn">🏭 Productores</button>
+                <button type="button" class="btn btn-sm btn-outline" onclick="openBreweriesModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="breweries_btn">🍺 Cervecerías</button>
+                <button type="button" class="btn btn-sm btn-outline" id="compare-btn" onclick="openCompareModal()" style="border-color:rgba(255,255,255,0.4); color:#fff"><span data-i18n="compare_btn">⚖️ Comparar</span> <span id="compare-count" class="tag" style="background:var(--color-accent); color:#fff; font-size:0.75rem; margin-left:0.2rem">0</span></button>
                 <select id="lang-select" class="lang-picker" title="Cambiar idioma" aria-label="Cambiar idioma">
+
                     <option value="es">🇪🇸 Español</option>
                     <option value="en">🇬🇧 English</option>
                 </select>
@@ -335,7 +338,21 @@
 
         <!-- Barra de Búsqueda y Filtros -->
         <section class="filters-card">
+            <!-- Píldoras de Filtrado Rápido -->
+            <div class="filter-pills-bar" id="category-pills-bar">
+                <button type="button" class="filter-pill active" onclick="filterByPill('')">🌐 Todos</button>
+                <button type="button" class="filter-pill" onclick="filterByPill('fermento_lactico')">🧀 Lácteos</button>
+                <button type="button" class="filter-pill" onclick="filterByPill('fermento_alcoholico')">🍺 Alcohólicos</button>
+                <button type="button" class="filter-pill" onclick="filterByPill('fermento_koji')">🍄 Koji</button>
+                <button type="button" class="filter-pill" onclick="filterByPill('encurtido_fermentado')">🥒 Encurtidos</button>
+                <button type="button" class="filter-pill" onclick="filterByPill('fermento_acetico')">🧪 Vinagres</button>
+                <button type="button" class="filter-pill" onclick="filterByPill('ark_of_taste')">🏛️ Arca del Gusto</button>
+                <button type="button" class="filter-pill" onclick="openProducersModal()">🏭 Productores</button>
+                <button type="button" class="filter-pill" onclick="openBreweriesModal()">🍺 Cervecerías</button>
+            </div>
+
             <form id="search-form" class="filters-form" role="search" aria-label="Búsqueda de fermentos">
+
                 <div class="search-input-wrapper">
                     <span class="search-icon">🔍</span>
                     <input type="search" id="q" aria-label="Buscar fermentos y conservas" placeholder="Buscar por nombre o descripción (ej. kimchi, sauerkraut, choucroute...)" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest-box" aria-autocomplete="list" data-i18n-placeholder="search_placeholder">
@@ -617,6 +634,55 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Cervecerías y Sidrerías (roadmap 2.7) -->
+    <div id="breweries-modal" class="modal-overlay hidden" onclick="closeBreweriesModal(event)" role="dialog" aria-modal="true" aria-label="Cervecerías y sidrerías">
+        <div class="modal-card modal-lg">
+            <button class="modal-close" onclick="closeBreweriesModal()" aria-label="Cerrar modal">&times;</button>
+            <div id="breweries-body">
+                <h2>🍺 Cervecerías & Sidrerías Artesanales</h2>
+                <p style="color:var(--text-secondary); margin-bottom:1rem">Directorio de productores de cerveza, sidra e hidromiel.</p>
+                <div style="display:flex; gap:0.5rem; margin-bottom:1rem; flex-wrap:wrap">
+                    <input type="search" id="breweries-search" class="search-input" placeholder="🔎 Buscar cervecería por nombre, ciudad o país..." style="flex:1; min-width:200px" oninput="fetchAndRenderBreweries()">
+                    <select id="breweries-type-filter" class="search-input" style="width:auto" onchange="fetchAndRenderBreweries()">
+                        <option value="">Todos los tipos</option>
+                        <option value="micro">Microcervecería</option>
+                        <option value="cidery">Sidrería</option>
+                        <option value="regional">Cervecería Regional</option>
+                    </select>
+                </div>
+                <div id="breweries-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr)); gap:1rem; max-height:55vh; overflow-y:auto"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Comparador Lado a Lado -->
+    <div id="compare-modal" class="modal-overlay hidden" onclick="closeCompareModal(event)" role="dialog" aria-modal="true" aria-label="Comparador de fermentos">
+        <div class="modal-card modal-lg">
+            <button class="modal-close" onclick="closeCompareModal()" aria-label="Cerrar modal">&times;</button>
+            <h2>⚖️ Comparador Lado a Lado</h2>
+            <p style="color:var(--text-secondary); margin-bottom:1rem">Compara hasta 3 fermentos simultáneamente por técnica, inocuidad, microbiota e ingredientes.</p>
+            <div id="compare-body" style="overflow-x:auto"></div>
+        </div>
+    </div>
+
+    <!-- Modal Modo Cocina en Pantalla Completa -->
+    <div id="cooking-modal" class="modal-overlay hidden" onclick="closeCookingModal(event)" role="dialog" aria-modal="true" aria-label="Modo cocina">
+        <div class="cooking-mode-card">
+            <button class="modal-close" onclick="closeCookingModal()" aria-label="Cerrar modal">&times;</button>
+            <div id="cooking-body"></div>
+        </div>
+    </div>
+
+    <!-- Lightbox de Imagen en Alta Resolución -->
+    <div id="lightbox-modal" class="modal-overlay hidden" onclick="closeLightboxModal(event)" role="dialog" aria-modal="true" aria-label="Visor de imagen">
+        <div class="modal-card" style="max-width:700px; text-align:center">
+            <button class="modal-close" onclick="closeLightboxModal()" aria-label="Cerrar modal">&times;</button>
+            <img id="lightbox-img" src="" alt="Previsualización" style="max-width:100%; max-height:70vh; border-radius:var(--radius-md); object-fit:contain">
+            <p id="lightbox-caption" style="margin-top:0.8rem; color:var(--text-secondary); font-size:0.88rem"></p>
+        </div>
+    </div>
+
 
 
     <!-- Modal de autenticación -->

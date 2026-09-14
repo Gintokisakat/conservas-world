@@ -2267,3 +2267,164 @@ img.card-img, .detail-img { animation: imgIn 0.4s ease both; }
     font-weight: 600;
 }
 #timer-sync-hint { font-weight: 500; }
+
+/* ===== Masterpiece UI Design System & UX Rules ===== */
+
+/* Glassmorphism & Header styling */
+.site-header {
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Category Filter Pills Toolbar */
+.filter-pills-bar {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.6rem 0.2rem;
+    margin: 0.8rem 0 1.2rem;
+    scrollbar-width: thin;
+}
+.filter-pills-bar::-webkit-scrollbar {
+    height: 4px;
+}
+.filter-pills-bar::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+.filter-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: 9999px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-sm);
+}
+.filter-pill:hover {
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--bg-card));
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    transform: translateY(-1px);
+}
+.filter-pill.active {
+    background: var(--color-primary);
+    color: #ffffff;
+    border-color: var(--color-primary);
+    box-shadow: 0 4px 14px color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+
+/* Color-coded category badges */
+.badge-cat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+.badge-lactico { background: #fff8eb; color: #b87b14; border: 1px solid #f3d79b; }
+.badge-alcoholico { background: #fdf2e9; color: #c05621; border: 1px solid #f6c59e; }
+.badge-koji { background: #eafaf1; color: #1e8449; border: 1px solid #a3e4d7; }
+.badge-encurtido { background: #f4f9f4; color: #27ae60; border: 1px solid #abebc6; }
+.badge-acetico { background: #f5eeef; color: #76448a; border: 1px solid #d7bde2; }
+.badge-azucar { background: #fdedec; color: #c0392b; border: 1px solid #f5b7b1; }
+.badge-ark { background: #fef9e7; color: #7d6608; border: 1px solid #f9e79f; }
+
+html.dark .badge-lactico { background: #2a2213; color: #f5c86b; border-color: #54411f; }
+html.dark .badge-alcoholico { background: #2c1b12; color: #f39e6c; border-color: #593520; }
+html.dark .badge-koji { background: #12281d; color: #72d69b; border-color: #1e4d36; }
+html.dark .badge-encurtido { background: #142817; color: #7ee09b; border-color: #214f2e; }
+html.dark .badge-acetico { background: #261729; color: #cc9ce0; border-color: #4a2852; }
+html.dark .badge-azucar { background: #2b1414; color: #f18c83; border-color: #542222; }
+html.dark .badge-ark { background: #2b2512; color: #f7dc6f; border-color: #52471d; }
+
+/* Visual Taste Spectrum Bar Chart */
+.taste-spectrum-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 0.6rem;
+    margin: 0.8rem 0 1.2rem;
+}
+.taste-axis-item {
+    background: var(--bg-page);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.7rem;
+}
+.taste-axis-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.3rem;
+}
+.taste-bar-track {
+    height: 8px;
+    background: var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.taste-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-accent));
+    border-radius: 4px;
+    transition: width 0.4s ease;
+}
+
+/* Visual Safety Gauge */
+.safety-gauge-container {
+    background: var(--bg-page);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    padding: 0.8rem 1rem;
+    margin: 0.8rem 0;
+}
+.safety-gauge-track {
+    position: relative;
+    height: 12px;
+    background: linear-gradient(90deg, #27ae60 0%, #27ae60 45%, #f39c12 55%, #e74c3c 100%);
+    border-radius: 6px;
+    margin: 0.6rem 0 0.3rem;
+}
+.safety-gauge-marker {
+    position: absolute;
+    top: -4px;
+    width: 4px;
+    height: 20px;
+    background: #ffffff;
+    border: 2px solid #1f2721;
+    border-radius: 2px;
+    transform: translateX(-50%);
+    transition: left 0.3s ease;
+}
+
+/* Modals pop-in animation */
+@keyframes modalPopIn {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-card {
+    animation: modalPopIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Cooking Mode Fullscreen Overlay */
+.cooking-mode-card {
+    max-width: 760px;
+    width: 92%;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+}
+

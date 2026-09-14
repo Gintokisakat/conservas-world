@@ -129,6 +129,8 @@ const i18n = {
         stats_loading: "Cargando estadísticas…",
         charts_btn: "📊 Gráficos",
         producers_btn: "🏭 Productores",
+        breweries_btn: "🍺 Cervecerías",
+        compare_btn: "⚖️ Comparar",
         vin_calc_desc: "Dilución de ácido acético para salmueras de encurtido.",
         alt_calc_desc: "Tiempos de procesamiento en conservas según la altitud (baño maría).",
         ph_days_label: "Días de fermentación:",
@@ -236,6 +238,8 @@ const i18n = {
         stats_loading: "Loading stats…",
         charts_btn: "📊 Charts",
         producers_btn: "🏭 Producers",
+        breweries_btn: "🍺 Breweries",
+        compare_btn: "⚖️ Compare",
         vin_calc_desc: "Acetic acid dilution for pickling brines.",
         alt_calc_desc: "Canning process times by altitude (water bath).",
         ph_days_label: "Fermentation days:",
@@ -3838,4 +3842,227 @@ function openAddProducerModal() {
         }
     }).catch(() => showToast("Error de conexión", "error"));
 }
+
+// ===== Masterpiece UX & UI Modules =====
+
+// 1. Category Pill Filter Toolbar Handler
+function filterByPill(catCode) {
+    const bar = document.getElementById("category-pills-bar");
+    if (bar) {
+        bar.querySelectorAll(".filter-pill").forEach(pill => {
+            pill.classList.remove("active");
+        });
+        const activeBtn = Array.from(bar.querySelectorAll(".filter-pill")).find(p => p.getAttribute("onclick")?.includes(`'${catCode}'`));
+        if (activeBtn) activeBtn.classList.add("active");
+    }
+    const catSelect = document.getElementById("category");
+    if (catSelect) {
+        catSelect.value = catCode;
+        state.page = 1;
+        fetchProducts();
+    }
+}
+
+// 2. Open Brewery DB Directory (Roadmap 2.7)
+async function openBreweriesModal() {
+    const modal = document.getElementById("breweries-modal");
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    await fetchAndRenderBreweries();
+}
+
+function closeBreweriesModal(e) {
+    if (e && e.target && !e.target.classList.contains("modal-overlay") && !e.target.classList.contains("modal-close")) return;
+    const modal = document.getElementById("breweries-modal");
+    if (modal) modal.classList.add("hidden");
+}
+
+async function fetchAndRenderBreweries() {
+    const container = document.getElementById("breweries-list");
+    if (!container) return;
+    const q = (document.getElementById("breweries-search")?.value || "").trim();
+    const bType = (document.getElementById("breweries-type-filter")?.value || "").trim();
+    container.innerHTML = `<p style="color:var(--text-muted)">Cargando cervecerías y sidrerías...</p>`;
+    try {
+        let params = new URLSearchParams();
+        if (q) params.set("q", q);
+        if (bType) params.set("by_type", bType);
+        const res = await fetch(`/breweries?${params.toString()}`);
+        if (!res.ok) throw new Error("Error " + res.status);
+        const data = await res.json();
+        if (!data.items || !data.items.length) {
+            container.innerHTML = `<p style="color:var(--text-secondary)">No se encontraron cervecerías artesanales con esos filtros.</p>`;
+            return;
+        }
+        container.innerHTML = data.items.map(b => `
+            <div style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem">
+                    <strong style="font-size:1.05rem; color:var(--color-primary)">${esc(b.name)}</strong>
+                    <span class="badge-cat badge-alcoholico">${esc(b.brewery_type || 'craft')}</span>
+                </div>
+                <p style="font-size:0.85rem; color:var(--text-muted); margin:0 0 0.4rem">📍 ${esc(b.country)}${b.city ? ' · ' + esc(b.city) : ''}</p>
+                <div style="font-size:0.82rem; color:var(--text-muted); display:flex; gap:0.8rem; flex-wrap:wrap">
+                    ${b.website_url ? `<a href="${escAttr(b.website_url)}" target="_blank" rel="noopener">🌐 Sitio web</a>` : ''}
+                    ${b.phone ? `<span>📞 ${esc(b.phone)}</span>` : ''}
+                </div>
+            </div>
+        `).join("");
+    } catch (err) {
+        container.innerHTML = `<p style="color:#d96b43">Error al cargar las cervecerías.</p>`;
+    }
+}
+
+// 3. Ferment Comparator (Side-by-Side Comparison)
+const compareState = { items: [] };
+
+function toggleCompareProduct(product) {
+    const idx = compareState.items.findIndex(i => i.id === product.id);
+    if (idx >= 0) {
+        compareState.items.splice(idx, 1);
+        showToast("Producto quitado del comparador", "info");
+    } else {
+        if (compareState.items.length >= 3) {
+            showToast("Máximo 3 productos en la comparación", "warning");
+            return;
+        }
+        compareState.items.push(product);
+        showToast("Producto agregado al comparador", "success");
+    }
+    updateCompareCounter();
+}
+
+function updateCompareCounter() {
+    const el = document.getElementById("compare-count");
+    if (el) el.textContent = compareState.items.length;
+}
+
+function openCompareModal() {
+    const modal = document.getElementById("compare-modal");
+    if (!modal) return;
+    modal.classList.remove("hidden");
+    renderCompareModal();
+}
+
+function closeCompareModal(e) {
+    if (e && e.target && !e.target.classList.contains("modal-overlay") && !e.target.classList.contains("modal-close")) return;
+    const modal = document.getElementById("compare-modal");
+    if (modal) modal.classList.add("hidden");
+}
+
+function renderCompareModal() {
+    const body = document.getElementById("compare-body");
+    if (!body) return;
+    if (!compareState.items.length) {
+        body.innerHTML = `<p style="color:var(--text-secondary)">No has seleccionado productos para comparar. Haz clic en "⚖️ Comparar" en las tarjetas de productos.</p>`;
+        return;
+    }
+    body.innerHTML = `
+        <table style="width:100%; border-collapse:collapse; text-align:left; font-size:0.9rem">
+            <thead>
+                <tr style="border-bottom:2px solid var(--border-color)">
+                    <th style="padding:0.6rem">Atributo</th>
+                    ${compareState.items.map(item => `
+                        <th style="padding:0.6rem; color:var(--color-primary)">
+                            ${esc(item.name)}
+                            <button type="button" class="btn btn-sm btn-outline" onclick="toggleCompareProduct({id:${item.id}}); renderCompareModal();" style="margin-left:0.4rem; padding:0.1rem 0.4rem">✕</button>
+                        </th>
+                    `).join("")}
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom:1px solid var(--border-color)">
+                    <td style="padding:0.6rem; font-weight:600">Categoría</td>
+                    ${compareState.items.map(item => `<td style="padding:0.6rem">${esc((item.categories || []).map(c => c.name).join(", ") || "-")}</td>`).join("")}
+                </tr>
+                <tr style="border-bottom:1px solid var(--border-color)">
+                    <td style="padding:0.6rem; font-weight:600">Países</td>
+                    ${compareState.items.map(item => `<td style="padding:0.6rem">📍 ${esc((item.countries || []).map(c => c.name).join(", ") || "-")}</td>`).join("")}
+                </tr>
+                <tr style="border-bottom:1px solid var(--border-color)">
+                    <td style="padding:0.6rem; font-weight:600">Ingredientes</td>
+                    ${compareState.items.map(item => `<td style="padding:0.6rem">${esc((item.ingredients || []).map(i => i.name).join(", ") || "-")}</td>`).join("")}
+                </tr>
+                <tr style="border-bottom:1px solid var(--border-color)">
+                    <td style="padding:0.6rem; font-weight:600">Microbiota</td>
+                    ${compareState.items.map(item => `<td style="padding:0.6rem">🔬 ${esc((item.microbes || []).map(m => m.name).join(", ") || "-")}</td>`).join("")}
+                </tr>
+            </tbody>
+        </table>
+    `;
+}
+
+// 4. Audio Pronunciation via Web Speech API
+function speakProductName(name, lang = "es-ES") {
+    if (!('speechSynthesis' in window)) {
+        showToast("Tu navegador no soporta síntesis de voz", "warning");
+        return;
+    }
+    const msg = new SpeechSynthesisUtterance(name);
+    msg.lang = lang;
+    window.speechSynthesis.speak(msg);
+    showToast(`🔊 Pronunciando: "${name}"`, "info");
+}
+
+// 5. Quick Copy Permalinks
+function copyProductLink(productId) {
+    const url = `${window.location.origin}${window.location.pathname}?p=${productId}`;
+    navigator.clipboard.writeText(url).then(() => {
+        showToast("🔗 Enlace copiado al portapapeles", "success");
+    }).catch(() => {
+        showToast("No se pudo copiar el enlace", "error");
+    });
+}
+
+// 6. High-Res Image Lightbox
+function openLightbox(imgUrl, caption) {
+    const modal = document.getElementById("lightbox-modal");
+    const img = document.getElementById("lightbox-img");
+    const cap = document.getElementById("lightbox-caption");
+    if (!modal || !img) return;
+    img.src = imgUrl;
+    if (cap) cap.textContent = caption || "";
+    modal.classList.remove("hidden");
+}
+
+function closeLightboxModal(e) {
+    if (e && e.target && !e.target.classList.contains("modal-overlay") && !e.target.classList.contains("modal-close")) return;
+    const modal = document.getElementById("lightbox-modal");
+    if (modal) modal.classList.add("hidden");
+}
+
+// 7. Ambient Fermentation Bubbling Audio (Web Audio API)
+let ambientAudioCtx = null;
+let ambientInterval = null;
+
+function toggleBubblingAmbiance() {
+    if (ambientInterval) {
+        clearInterval(ambientInterval);
+        ambientInterval = null;
+        showToast("🫧 Sonido ambiental desactivado", "info");
+        return;
+    }
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        ambientAudioCtx = ambientAudioCtx || new AudioContext();
+        ambientInterval = setInterval(() => {
+            if (!ambientAudioCtx) return;
+            const osc = ambientAudioCtx.createOscillator();
+            const gain = ambientAudioCtx.createGain();
+            osc.type = 'sine';
+            const startFreq = 150 + Math.random() * 250;
+            osc.frequency.setValueAtTime(startFreq, ambientAudioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(startFreq * 2.2, ambientAudioCtx.currentTime + 0.08);
+            gain.gain.setValueAtTime(0.04, ambientAudioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ambientAudioCtx.currentTime + 0.08);
+            osc.connect(gain);
+            gain.connect(ambientAudioCtx.destination);
+            osc.start();
+            osc.stop(ambientAudioCtx.currentTime + 0.08);
+        }, 600 + Math.random() * 800);
+        showToast("🫧 Sonido ambiental de burbujeo activado", "success");
+    } catch (e) {
+        showToast("No se pudo reproducir audio ambiental", "warning");
+    }
+}
+
 

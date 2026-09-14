@@ -1,9 +1,35 @@
 from ingest.normalize import (
+    _COUNTRY_ALIASES,
     extract_microbes,
     infer_categories,
     normalize_name,
     resolve_country,
 )
+
+
+def test_country_aliases_pre_normalized():
+    """Toda clave de alias debe estar pre-normalizada (sin acentos, apóstrofes
+    ni paréntesis); si no, `resolve_country` nunca la encuentra (key muerta)."""
+    for key in _COUNTRY_ALIASES:
+        assert normalize_name(key) == key, f"alias muerto por no estar normalizado: {key!r}"
+
+
+def test_resolve_country_dr_congo_es_cd():
+    """'DR Congo' y variantes deben dar República Democrática (CD), no CG."""
+    for name in ("DR Congo", "DRC", "D.R. Congo", "Congo-Kinshasa", "Kinshasa"):
+        info = resolve_country(name)
+        assert info is not None
+        assert info["iso2"] == "CD", f"{name!r} -> {info['iso2']}"
+
+
+def test_resolve_country_exonimos_ingleses():
+    assert resolve_country("Ivory Coast")["iso2"] == "CI"
+    assert resolve_country("Burma")["iso2"] == "MM"
+    assert resolve_country("Swaziland")["iso2"] == "SZ"
+    assert resolve_country("Cape Verde")["iso2"] == "CV"
+    assert resolve_country("Holland")["iso2"] == "NL"
+    assert resolve_country("Macedonia")["iso2"] == "MK"
+    assert resolve_country("East Timor")["iso2"] == "TL"
 
 
 def test_normalize_name_strips_accents_and_case():

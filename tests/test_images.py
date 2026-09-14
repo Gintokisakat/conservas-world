@@ -1,3 +1,4 @@
+import json
 import re
 import time
 from unittest.mock import patch
@@ -198,6 +199,43 @@ def test_resolve_image_prioriza_off_por_nombre():
     wd.assert_not_called()
 
 
+def test_resolve_image_prueba_todos_los_aliases_antes_de_wikidata():
+    """Bug fix: wikidata_image no debe cortar el loop de candidates.
+
+    Si el nombre principal no da imagen pero un alias sí (en Commons u OFF),
+    se debe probar el alias ANTES de caer a Wikidata como último recurso.
+    """
+    from app.db import models
+
+    p = _product_refs([])
+    p.aliases = [models.ProductAlias(name="AliasConFoto", language="en")]
+    with (
+        patch.object(images, "off_name_image", return_value=None),
+        patch.object(images, "commons_image", side_effect=[None, "https://commons/from_alias.jpg"]) as commons,
+        patch.object(images, "wikidata_image", return_value=None) as wd,
+    ):
+        url = images.resolve_image(p, off_map={})
+    assert url == "https://commons/from_alias.jpg"
+    assert [c.args[0] for c in commons.call_args_list] == ["X", "AliasConFoto"]
+    wd.assert_not_called()
+
+
+def test_resolve_image_wikidata_solo_como_ultimo_recurso():
+    """Tras agotar nombre + aliases (Commons/OFF), Wikidata se usa una vez."""
+    from app.db import models
+
+    p = _product_refs([])
+    p.aliases = [models.ProductAlias(name="AliasSinFoto", language="en")]
+    with (
+        patch.object(images, "off_name_image", return_value=None),
+        patch.object(images, "commons_image", return_value=None),
+        patch.object(images, "wikidata_image", return_value="https://commons/from-wd.jpg") as wd,
+    ):
+        url = images.resolve_image(p, off_map={})
+    assert url == "https://commons/from-wd.jpg"
+    wd.assert_called_once_with(p)
+
+
 # ---------------------------------------------------------------------------
 # resolve_image: orden OFF -> Commons -> Wikidata
 # ---------------------------------------------------------------------------
@@ -323,3 +361,88 @@ def test_resolve_image_throttled_cae_a_none_sin_crash(monkeypatch):
 def test_off_barcode_regex_acepta_variantes():
     assert re.fullmatch(images._OFF_BARCODE_RE, "openfoodfacts.org/product/12345")
     assert not re.fullmatch(images._OFF_BARCODE_RE, "openfoodfacts.org/product/abc")
+
+
+# ---------------------------------------------------------------------------
+# _fetch_off_by_name: caché solo en éxito (bug fix)
+# ---------------------------------------------------------------------------
+
+
+class _FakeResp:
+    """Respuesta httpx mínima para simular la API legacy de OFF."""
+
+    def __init__(self, status_code, body=None, json_valid=True):
+        self.status_code = status_code
+        self._body = body
+        self._json_valid = json_valid
+
+    def json(self):
+        if self._json_valid:
+            return self._body or {"products": []}
+        raise ValueError("non-json")
+
+
+class _FakeClient:
+    def __init__(self, sequence):
+        self._seq = list(sequence)
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *a):
+        return False
+
+    def get(self, url, params=None):
+        return self._seq.pop(0)
+
+
+def _fast_net(monkeypatch):
+    """Evita los sleeps reales de pacing/backoff en las pruebas de red."""
+    monkeypatch.setattr(images, "_pace", lambda url: None)
+    monkeypatch.setattr(images, "_backoff", lambda resp, attempt: 0.0)
+
+
+def test_fetch_off_no_cachea_negativo_en_outage(tmp_path, monkeypatch):
+    """Outage total (503): respuesta vacía y NO se escribe caché."""
+    monkeypatch.setattr(images, "CACHE_DIR", tmp_path)
+    _fast_net(monkeypatch)
+    all_503 = [_FakeResp(503)] * 5
+    with patch("httpx.Client", lambda *a, **k: _FakeClient(all_503)):
+        data = images._fetch_off_by_name("kimchi")
+    assert data == {"products": []}
+    assert not (tmp_path / "off_name_kimchi.json").exists()
+
+
+def test_fetch_off_no_cachea_negativo_en_no_json(tmp_path, monkeypatch):
+    """Respuesta 200 no-JSON (rate-limit suave): tampoco se cachea negativo."""
+    monkeypatch.setattr(images, "CACHE_DIR", tmp_path)
+    _fast_net(monkeypatch)
+    only_non_json = [_FakeResp(200, json_valid=False)] * 5
+    with patch("httpx.Client", lambda *a, **k: _FakeClient(only_non_json)):
+        data = images._fetch_off_by_name("kimchi")
+    assert data == {"products": []}
+    assert not (tmp_path / "off_name_kimchi.json").exists()
+
+
+def test_fetch_off_cachea_cuando_alguno_responde(tmp_path, monkeypatch):
+    """Tras un 503, la petición que responde 200+JSON sí se cachea."""
+    monkeypatch.setattr(images, "CACHE_DIR", tmp_path)
+    _fast_net(monkeypatch)
+    mixed = [_FakeResp(503), _FakeResp(200, {"products": [{"image_front_url": "ok"}]})]
+    with patch("httpx.Client", lambda *a, **k: _FakeClient(mixed)):
+        data = images._fetch_off_by_name("miso")
+    assert data["products"][0]["image_front_url"] == "ok"
+    assert (tmp_path / "off_name_miso.json").exists()
+    assert json.loads((tmp_path / "off_name_miso.json").read_text())["products"][0]["image_front_url"] == "ok"
+
+
+def test_fetch_off_reusa_cache_valido(tmp_path, monkeypatch):
+    """Un caché existente con datos evita la red por completo."""
+    monkeypatch.setattr(images, "CACHE_DIR", tmp_path)
+    _fast_net(monkeypatch)
+    (tmp_path / "off_name_tempeh.json").write_text(
+        json.dumps({"products": [{"image_front_url": "cached"}]}), encoding="utf-8"
+    )
+    with patch("httpx.Client", lambda *a, **k: (_ for _ in ()).throw(AssertionError("no network"))):
+        data = images._fetch_off_by_name("tempeh")
+    assert data["products"][0]["image_front_url"] == "cached"

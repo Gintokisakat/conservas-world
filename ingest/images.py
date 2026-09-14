@@ -318,6 +318,10 @@ def _fetch_off_by_name(name: str) -> dict:
 
     La API legacy de OFF puede devolver cuerpo vacío / no-JSON bajo rate-limit;
     por eso se hace el parse defensivo aquí y no se lanza sobre `_get`.
+
+    La caché solo se escribe si alguna petición respondió HTTP 200 con JSON
+    válido: si TODOS los intentos fallan (outage/503), no se cachea el
+    negativo, para que un futuro run reintente en vez de asumir 0 resultados.
     """
     cache_key = f"off_name_{_slug(name)}"
     path = CACHE_DIR / f"{cache_key}.json"
@@ -331,7 +335,7 @@ def _fetch_off_by_name(name: str) -> dict:
         "json": 1,
         "fields": "code,product_name,image_front_url,image_front_small_url",
     }
-    payload: dict = {"products": []}
+    payload: dict | None = None
     with httpx.Client(timeout=60, headers=HEADERS) as client:
         for attempt in range(5):
             _pace(OFF_LEGACY_SEARCH)
@@ -347,10 +351,13 @@ def _fetch_off_by_name(name: str) -> dict:
                 data = resp.json()
             except ValueError:
                 # Cuerpo vacío o no-JSON (rate-limit suave de OFF): reintentar.
-                time.sleep(5 * (attempt + 1))
+                time.sleep(_backoff(resp, attempt))
                 continue
             payload = data
             break
+    if payload is None:
+        # Sin respuesta válida: no cachear el negativo.
+        return {"products": []}
     path.write_text(json.dumps(payload), encoding="utf-8")
     return payload
 
@@ -462,9 +469,8 @@ def resolve_image(
                 return url
             if _throttled():
                 return None
-            if not _throttled():
-                return wikidata_image(product)
-            return None
+        if not _throttled():
+            return wikidata_image(product)
         return None
     except RuntimeError:
         # El host se negó de forma persistente (rate-limit agotado): sin imagen,

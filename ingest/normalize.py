@@ -15,23 +15,21 @@ def normalize_name(name: str) -> str:
     return re.sub(r"\s+", " ", name).strip()
 
 
+# Claves SIEMPRE pre-normalizadas (minúsculas, sin acentos ni apóstrofes/
+# paréntesis; ver `normalize_name`). Una clave con acento o paréntesis nunca
+# coincidiría porque `resolve_country` normaliza la entrada antes de buscar.
+# Solo se listan aquí los nombres que pycountry NO resuelve por sí mismo.
 _COUNTRY_ALIASES = {
     "brasil": "BR",
     "colombia": "CO",
     "ecuador": "EC",
-    "perú": "PE",
-    "japón": "JP",
     "japon": "JP",
-    "camerún": "CM",
     "camerun": "CM",
-    "sudáfrica": "ZA",
     "sudafrica": "ZA",
     "republica democratica del congo": "CD",
     "camboya": "KH",
     "tailandia": "TH",
-    "türkiye": "TR",
     "turkey": "TR",
-    "iran (islamic republic of)": "IR",
     "iran": "IR",
     "republic of korea": "KR",
     "south korea": "KR",
@@ -44,14 +42,8 @@ _COUNTRY_ALIASES = {
     "vietnam": "VN",
     "united republic of tanzania": "TZ",
     "tanzania": "TZ",
-    "netherlands (kingdom of the)": "NL",
     "netherlands": "NL",
-    "venezuela (bolivarian republic of)": "VE",
-    "bolivia (plurinational state of)": "BO",
-    "lao people's democratic republic": "LA",
     "laos": "LA",
-    "côte d'ivoire": "CI",
-    "cote d'ivoire": "CI",
     "state of palestine": "PS",
     "palestine": "PS",
     "syrian arab republic": "SY",
@@ -68,7 +60,22 @@ _COUNTRY_ALIASES = {
     "brunei": "BN",
     "congo": "CG",
     "democratic republic of the congo": "CD",
-    "eswatini": "SZ",
+    # Nombres comunes en inglés / exónimos que pycountry no resuelve y que, sin
+    # alias, caen al nombre oficial o a CG por el token "congo" (p. ej. "DR Congo"
+    # resolvía por error a República del Congo).
+    "ivory coast": "CI",
+    "dr congo": "CD",
+    "d r congo": "CD",
+    "drc": "CD",
+    "congo kinshasa": "CD",
+    "congo brazzaville": "CG",
+    "kinshasa": "CD",
+    "burma": "MM",
+    "swaziland": "SZ",
+    "cape verde": "CV",
+    "holland": "NL",
+    "macedonia": "MK",
+    "east timor": "TL",
     "cabo verde": "CV",
     "gambia": "GM",
 }

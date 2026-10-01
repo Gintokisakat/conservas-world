@@ -1,6 +1,6 @@
 """Networking de productores artesanales (roadmap 4.6)."""
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -91,10 +91,17 @@ def get_producer(
 
 @router.post("/producers", response_model=ProducerOut, status_code=201)
 def create_producer(
+    request: Request,
     payload: ProducerCreate,
     user: models.User | None = Depends(get_optional_user),
     session: Session = Depends(get_session),
 ):
+    # Rate limiting para creación de productores
+    from app.api.public import check_rate_limit, rate_limit_key
+    key = f"producer_create:{rate_limit_key(request)}"
+    remaining = check_rate_limit(key)
+    if remaining <= 0:
+        raise HTTPException(status_code=429, detail="Demasiadas solicitudes. Intentá más tarde.")
     producer = models.Producer(
         user_id=user.id if user else None,
         name=payload.name.strip(),

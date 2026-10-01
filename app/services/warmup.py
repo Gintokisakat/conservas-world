@@ -13,6 +13,11 @@ from app.db.database import SessionLocal
 _done = threading.Event()
 
 
+import logging
+
+logger = logging.getLogger("conservas")
+
+
 def run_warmup() -> list[str]:
     """Precarga los cachés pesados. Devuelve los pasos que fallaron."""
     errors: list[str] = []
@@ -22,7 +27,8 @@ def run_warmup() -> list[str]:
         from app.services.semantic import _build_index
 
         _build_index(session)
-    except Exception:
+    except Exception as exc:
+        logger.error("Error en warmup semántico: %s", exc)
         errors.append("semantic")
     finally:
         session.close()
@@ -33,7 +39,8 @@ def run_warmup() -> list[str]:
 
         flavor_map_payload(session, detail=False)
         flavor_map_payload(session, detail=True)
-    except Exception:
+    except Exception as exc:
+        logger.error("Error en warmup de sabores: %s", exc)
         errors.append("flavor-map")
     finally:
         session.close()
@@ -42,7 +49,8 @@ def run_warmup() -> list[str]:
         from app.services.stats_service import warm_stats
 
         warm_stats()
-    except Exception:
+    except Exception as exc:
+        logger.error("Error en warmup de stats: %s", exc)
         errors.append("stats")
 
     if not errors:
@@ -62,8 +70,8 @@ def start_background_warmup() -> threading.Thread | None:
     def _job() -> None:
         try:
             run_warmup()
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.error("Error en warmup: %s", exc)
 
     thread = threading.Thread(target=_job, name="warmup", daemon=True)
     thread.start()

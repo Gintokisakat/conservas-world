@@ -31,6 +31,8 @@ def get_secret() -> str:
         return _SECRET_FILE.read_text().strip()
     secret = secrets.token_urlsafe(48)
     _SECRET_FILE.write_text(secret)
+    # Restringir permisos del archivo de secretos
+    os.chmod(_SECRET_FILE, 0o600)
     return secret
 
 

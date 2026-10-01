@@ -3,7 +3,7 @@ import time
 from collections import defaultdict, deque
 from time import monotonic
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request, HTTPException
 from sqlalchemy import text
 
 from app.api.routes import router as api_router
@@ -17,6 +17,8 @@ RATE_LIMIT_REQUESTS = 120
 RATE_LIMIT_WINDOW = 60.0
 
 _request_log: defaultdict[str, deque[float]] = defaultdict(deque)
+_last_cleanup = monotonic()
+_CLEANUP_INTERVAL = 300.0  # Limpiar entradas viejas cada 5 minutos
 
 # Roadmap 5.4 — monitoreo: uptime y estadísticas por ruta.
 _START_TS = time.time()
@@ -24,8 +26,24 @@ _SAMPLE_LIMIT = 200
 _by_path: defaultdict[str, deque[float]] = defaultdict(lambda: deque(maxlen=_SAMPLE_LIMIT))
 
 
+def _cleanup_stale_entries() -> None:
+    """Elimina entradas de IPs que no han hecho requests recientemente."""
+    global _last_cleanup
+    now = monotonic()
+    if now - _last_cleanup < _CLEANUP_INTERVAL:
+        return
+    _last_cleanup = now
+    stale_keys = [
+        key for key, window in _request_log.items()
+        if not window or now - window[-1] > RATE_LIMIT_WINDOW * 2
+    ]
+    for key in stale_keys:
+        del _request_log[key]
+
+
 def check_rate_limit(client_key: str) -> int:
     now = monotonic()
+    _cleanup_stale_entries()
     window = _request_log[client_key]
     while window and now - window[0] > RATE_LIMIT_WINDOW:
         window.popleft()
@@ -79,6 +97,14 @@ def api_root() -> dict:
         },
         "endpoints": sorted(endpoints, key=lambda e: (e["method"], e["path"])),
     }
+
+
+def rate_limit_key(request: Request) -> str:
+    """Genera una clave de rate limit basada en la IP del cliente."""
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        return forwarded.split(",")[0].strip()
+    return request.client.host if request.client else "unknown"
 
 
 @router.get("/health", response_model=None)

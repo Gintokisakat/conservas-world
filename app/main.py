@@ -1,4 +1,5 @@
 import logging
+import os
 import uuid
 from pathlib import Path
 from time import monotonic
@@ -21,6 +22,29 @@ from app.api.seo import router as seo_router
 from app.db.database import engine as _engine
 
 _access_logger = logging.getLogger("conservas.access")
+
+# Logging estructurado JSON
+class JSONFormatter(logging.Formatter):
+    def format(self, record):
+        import json
+        log_data = {
+            "timestamp": self.formatTime(record),
+            "level": record.levelname,
+            "logger": record.name,
+            "message": record.getMessage(),
+        }
+        if hasattr(record, "request_id"):
+            log_data["request_id"] = record.request_id
+        if record.exc_info:
+            log_data["exception"] = self.formatException(record.exc_info)
+        return json.dumps(log_data, ensure_ascii=False)
+
+# Configurar handler con formato JSON para producción
+if os.environ.get("CONSERVAS_ENV") == "production":
+    handler = logging.StreamHandler()
+    handler.setFormatter(JSONFormatter())
+    _access_logger.addHandler(handler)
+    _access_logger.setLevel(logging.INFO)
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 
@@ -60,9 +84,12 @@ def create_app() -> FastAPI:
         description="Base de datos mundial de conservas, fermentos y encurtidos",
         version="0.2.0",
     )
+    # CORS: en producción restringir a orígenes conocidos
+    _cors_origins = os.environ.get("CONSERVAS_CORS_ORIGINS", "*")
+    _origins = [o.strip() for o in _cors_origins.split(",")] if _cors_origins != "*" else ["*"]
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=_origins,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
@@ -102,11 +129,12 @@ def create_app() -> FastAPI:
             _models.Producer.__table__,
             _models.Brewery.__table__,
             _models.SourceVersion.__table__,
+            _models.ApiKey.__table__,
         ):
             assert isinstance(table, _SaTable)
             table.create(bind=_engine, checkfirst=True)
-    except Exception:
-        pass
+    except Exception as exc:
+        logging.getLogger("conservas").error("Error creando tablas: %s", exc)
 
 
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -185,8 +213,8 @@ def _start_warmup() -> None:
         from app.services.warmup import start_background_warmup
 
         start_background_warmup()
-    except Exception:
-        pass
+    except Exception as exc:
+        logging.getLogger("conservas").error("Error en warmup: %s", exc)
 
 
 _start_warmup()

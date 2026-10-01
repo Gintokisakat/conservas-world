@@ -1092,7 +1092,18 @@ function renderResults(items) {
         return;
     }
     const noDesc = state.lang === 'en' ? 'No description available.' : 'Sin descripción disponible.';
-    list.innerHTML = items.map((p, i) => productCardHtml(p, noDesc, i)).join("");
+    // Virtualización simple: renderizar solo los primeros 100 items
+    const MAX_RENDER = 100;
+    const toRender = items.slice(0, MAX_RENDER);
+    list.innerHTML = toRender.map((p, i) => productCardHtml(p, noDesc, i)).join("");
+    if (items.length > MAX_RENDER) {
+        const more = document.createElement("li");
+        more.className = "empty";
+        more.textContent = state.lang === 'en'
+            ? `Showing ${MAX_RENDER} of ${items.length} results. Use filters to narrow down.`
+            : `Mostrando ${MAX_RENDER} de ${items.length} resultados. Usá filtros para reducir.`;
+        list.appendChild(more);
+    }
 }
 
 function updatePagination(overridePages) {
@@ -1293,6 +1304,29 @@ async function openDetail(id) {
 function closeDetail(event) {
     if (event && event.target.id !== "detail" && !event.target.classList.contains("modal-close")) return;
     document.getElementById("detail").classList.add("hidden");
+    // Devolver el foco al elemento que abrió el modal
+    if (document.activeElement) document.activeElement.blur();
+}
+
+// Focus trapping para modales
+function trapFocus(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    first.focus();
+    function onKeydown(e) {
+        if (e.key !== 'Tab') return;
+        if (e.shiftKey) {
+            if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+            if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+    }
+    modal.addEventListener('keydown', onKeydown);
+    return () => modal.removeEventListener('keydown', onKeydown);
 }
 
 const NUTRITION_FIELDS = [

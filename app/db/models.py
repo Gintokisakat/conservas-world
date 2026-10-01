@@ -83,9 +83,9 @@ class Product(Base):
     name: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     description: Mapped[str | None] = mapped_column(Text)
     method: Mapped[str | None] = mapped_column(Text)
-    fermentation_time: Mapped[str | None] = mapped_column(String(100))
+    fermentation_time: Mapped[str | None] = mapped_column(String(100), index=True)
     storage_life: Mapped[str | None] = mapped_column(String(150))
-    status: Mapped[str] = mapped_column(String(20), default="imported")
+    status: Mapped[str] = mapped_column(String(20), default="imported", index=True)
     source_tag: Mapped[str | None] = mapped_column(String(50), index=True)
     substrate: Mapped[str | None] = mapped_column(String(150), index=True)
     image_url: Mapped[str | None] = mapped_column(String(500))
@@ -317,6 +317,7 @@ class User(Base):
     recipes: Mapped[list["Recipe"]] = relationship(back_populates="user")
     batches: Mapped[list["Batch"]] = relationship(back_populates="user")
     producers: Mapped[list["Producer"]] = relationship(back_populates="user")
+    api_keys: Mapped[list["ApiKey"]] = relationship(back_populates="user")
 
 
 class Batch(Base):
@@ -506,5 +507,23 @@ class SourceVersion(Base):
     records_count: Mapped[int] = mapped_column(default=0)
     checksum: Mapped[str | None] = mapped_column(String(100))
     status: Mapped[str] = mapped_column(String(20), default="active")
+
+
+class ApiKey(Base):
+    """Clave de API para acceso programático (roadmap 5.5)."""
+
+    __tablename__ = "api_keys"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), index=True
+    )
+    key: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    name: Mapped[str] = mapped_column(String(100))
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
+    last_used_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+
+    user: Mapped["User"] = relationship(back_populates="api_keys")
 
 

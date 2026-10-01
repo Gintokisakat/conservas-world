@@ -82,7 +82,18 @@ def _fts_matches(session: Session, term: str, limit: int = 1000) -> list[int] | 
     tokens = [t for t in term.split() if t]
     if not tokens:
         return []
-    match = " AND ".join(f'"{t}"*' for t in tokens)
+    # Sanitizar tokens: remover caracteres especiales de FTS5
+    import re
+    safe_tokens = []
+    for t in tokens:
+        # Solo permitir letras, números y espacios
+        cleaned = re.sub(r'[^\w\s-]', '', t, flags=re.UNICODE)
+        cleaned = cleaned.strip()
+        if cleaned:
+            safe_tokens.append(cleaned)
+    if not safe_tokens:
+        return []
+    match = " AND ".join(f'"{t}"*' for t in safe_tokens)
     try:
         rows = session.execute(
             text(
@@ -471,7 +482,9 @@ def list_products_geo(
     fermentation_time: str | None = None,
     diet: str | None = Query(default=None),
     gi: bool = Query(default=False, description="Solo productos con indicación geográfica"),
-    limit: int = Query(default=4000, ge=1, le=20000),
+    limit: int = Query(default=4000, ge=1, le=5000),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=1000, ge=1, le=5000),
     session: Session = Depends(get_session),
 ):
     query = select(models.Product).options(
@@ -485,9 +498,12 @@ def list_products_geo(
         ingredient=ingredient, source=source, fermentation_time=fermentation_time,
         diet=diet, status=None, gi=gi,
     )
-    rows = session.execute(
-        query.order_by(models.Product.name).limit(limit)
-    ).scalars().unique().all()
+    # Aplicar paginación
+    total = session.execute(
+        select(func.count()).select_from(query.subquery())
+    ).scalar_one()
+    query = query.order_by(models.Product.name).offset((page - 1) * page_size).limit(page_size)
+    rows = session.execute(query).scalars().unique().all()
 
     points: list[GeoPointOut] = []
     for p in rows:
@@ -1214,6 +1230,18 @@ def export_product(
             },
         )
 
+    if format == "pdf":
+        # Por ahora, devolver HTML con instrucciones de impresión
+        # En el futuro, implementar generación real de PDF
+        html_doc = _render_recipe_html(data, lang)
+        return Response(
+            content=html_doc,
+            media_type="text/html; charset=utf-8",
+            headers={
+                "Content-Disposition": f'inline; filename="producto-{product_id}.html"'
+            },
+        )
+    
     html_doc = _render_recipe_html(data, lang)
     return Response(
         content=html_doc,
@@ -1225,11 +1253,19 @@ def export_product(
 
 
 @router.get("/categories", response_model=list[CategoryOut])
-def list_categories(response: Response, session: Session = Depends(get_session)):
+def list_categories(
+    response: Response,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=100, ge=1, le=500),
+    session: Session = Depends(get_session),
+):
     response.headers["Cache-Control"] = "public, max-age=3600"
-    return session.execute(
-        select(models.Category).order_by(models.Category.name)
-    ).scalars().all()
+    query = select(models.Category).order_by(models.Category.name)
+    total = session.execute(select(func.count()).select_from(models.Category)).scalar_one()
+    query = query.offset((page - 1) * page_size).limit(page_size)
+    items = session.execute(query).scalars().all()
+    response.headers["X-Total-Count"] = str(total)
+    return items
 
 
 @router.get("/langual", response_model=LanguaLOut)
@@ -1278,13 +1314,21 @@ def langual_index(
 def list_countries(
     response: Response,
     continent: str | None = None,
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=100, ge=1, le=500),
     session: Session = Depends(get_session),
 ):
     response.headers["Cache-Control"] = "public, max-age=3600"
     query = select(models.Country).order_by(models.Country.name)
     if continent:
         query = query.where(models.Country.continent == continent)
-    return session.execute(query).scalars().all()
+    total = session.execute(
+        select(func.count()).select_from(query.subquery())
+    ).scalar_one()
+    query = query.offset((page - 1) * page_size).limit(page_size)
+    items = session.execute(query).scalars().all()
+    response.headers["X-Total-Count"] = str(total)
+    return items
 
 
 @router.get("/podcast", response_model=list[PodcastEpisodeOut])

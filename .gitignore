@@ -3,6 +3,7 @@ __pycache__/
 .venv/
 data/raw/*
 !data/raw/.gitkeep
+data/.jwt_secret
 .pytest_cache/
 review/_cache/
 

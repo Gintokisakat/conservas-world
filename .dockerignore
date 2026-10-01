@@ -1,0 +1,37 @@
+# Datos y archivos generados
+data/
+!data/.gitkeep
+*.db
+*.db-shm
+*.db-wal
+
+# Tests y desarrollo
+tests/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Documentación y review
+review/
+docs/
+
+# Ingest pipeline (no necesario en producción)
+ingest/
+
+# Git y CI
+.git/
+.github/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

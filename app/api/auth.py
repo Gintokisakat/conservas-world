@@ -124,6 +124,24 @@ def get_optional_user(
     return session.get(models.User, user_id)
 
 
+def get_api_key_user(
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+    session: Session = Depends(get_session),
+) -> models.User | None:
+    """Resuelve el usuario desde un header X-API-Key para acceso programático."""
+    if not x_api_key:
+        return None
+    # Buscar usuario con API key válida
+    from sqlalchemy import text
+    result = session.execute(
+        text("SELECT user_id FROM api_keys WHERE key = :key AND active = 1"),
+        {"key": x_api_key}
+    ).fetchone()
+    if result is None:
+        return None
+    return session.get(models.User, result[0])
+
+
 @router.get("/me", response_model=UserOut)
 def me(user: models.User = Depends(get_current_user)):
     return _user_out(user)

@@ -3,13 +3,28 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 from app.config import DB_URL
 
-engine = create_engine(DB_URL, connect_args={"check_same_thread": False})
+# Connection pooling para producción
+_connect_args = {"check_same_thread": False}
+if DB_URL.startswith("sqlite"):
+    # SQLite: usar WAL mode para mejor concurrencia
+    _connect_args["timeout"] = 30
+
+engine = create_engine(
+    DB_URL,
+    connect_args=_connect_args,
+    pool_pre_ping=True,
+    pool_size=5,
+    max_overflow=10,
+)
 
 
 @event.listens_for(engine, "connect")
 def _enable_sqlite_fk(dbapi_connection, connection_record):
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
+    if DB_URL.startswith("sqlite"):
+        cursor.execute("PRAGMA journal_mode=WAL")
+        cursor.execute("PRAGMA synchronous=NORMAL")
     cursor.close()
 
 

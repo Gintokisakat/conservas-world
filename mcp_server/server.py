@@ -194,6 +194,10 @@ def get_timer(session, product_id: int, temp_c: int = 21) -> dict | None:
 def lookup_barcode(barcode: str) -> dict | None:
     """Busca un código de barras en Open Food Facts y, si el producto está en
     nuestra BD, lo indica con su id."""
+    # Validar código de barras: solo números y letras, sin caracteres especiales
+    import re
+    if not barcode or not re.match(r'^[a-zA-Z0-9_-]{1,50}$', barcode):
+        return None
     url = f"https://world.openfoodfacts.org/api/v3/product/{barcode}.json"
     with httpx.Client(timeout=15, follow_redirects=True) as client:
         resp = client.get(url)

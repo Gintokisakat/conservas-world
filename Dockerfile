@@ -15,6 +15,10 @@ RUN uv sync --frozen --no-dev
 # Copiar código fuente
 COPY . .
 
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/health')" || exit 1
+
 # Si no existe data/build.db, el entrypoint genera la base de datos
 ENTRYPOINT ["./docker-entrypoint.sh"]
 

@@ -44,6 +44,27 @@ def hash_password(password: str) -> str:
     return f"scrypt$16384$8$1${salt.hex()}${digest.hex()}"
 
 
+# --- API keys --------------------------------------------------------------
+
+# 32 bytes aleatorios en urlsafe base64 (~43 caracteres).
+_API_KEY_PREFIX = "cdm_"
+
+
+def generate_api_key() -> str:
+    """Devuelve una API key nueva. El valor en claro no se vuelve a poder leer."""
+    return _API_KEY_PREFIX + secrets.token_urlsafe(32)
+
+
+def hash_api_key(key: str) -> str:
+    """SHA-256 de la clave, en hexadecimal.
+
+    Las API keys son de alta entropía (32 bytes aleatorios), así que un hash
+    rápido es suficiente: no hay diccionario que atacar y la búsqueda por
+    índice sigue siendo O(1).
+    """
+    return hashlib.sha256(key.encode()).hexdigest()
+
+
 def verify_password(password: str, stored: str) -> bool:
     try:
         scheme, n, r, p, salt_hex, digest_hex = stored.split("$")

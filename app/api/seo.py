@@ -6,6 +6,7 @@ canonical y JSON-LD Schema.org (Product/Recipe), enlazando a la SPA para humanos
 
 import html
 import json
+import os
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import HTMLResponse, PlainTextResponse, Response
@@ -17,8 +18,6 @@ from app.db.models import Product
 from app.services.flavors import flavor_profile
 
 router = APIRouter()
-
-import os
 
 SITE_URL = os.environ.get("CONSERVAS_SITE_URL", "https://conservas-del-mundo.onrender.com")
 SPA_BASE = "/"

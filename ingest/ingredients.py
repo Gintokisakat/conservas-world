@@ -1021,7 +1021,7 @@ def match_ingredients(text: str) -> list[dict]:
     if not spans:
         return []
     spans.sort(key=lambda s: (s[0], -(s[1] - s[0])))
-    kept = []
+    kept: list[tuple[int, int, dict]] = []
     for start, end, entry in spans:
         if kept and start < kept[-1][1]:
             continue
@@ -1080,9 +1080,9 @@ def match_ingredients_by_name(name: str) -> list[dict]:
 
 def pick_substrate(ingredients: list[dict]) -> str | None:
     best = None
-    best_priority = None
+    best_priority: int | None = None
     for item in ingredients:
-        priority = _SUBSTRATE_PRIORITY.get(item.get("category"))
+        priority = _SUBSTRATE_PRIORITY.get(str(item.get("category")))
         if priority is None:
             continue
         if best_priority is None or priority < best_priority:

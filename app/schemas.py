@@ -385,6 +385,30 @@ class UserOut(BaseModel):
     preferences: dict
 
 
+class ApiKeyCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+
+
+class ApiKeyOut(BaseModel):
+    id: int
+    name: str
+    active: bool
+    created_at: datetime
+    last_used_at: datetime | None = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ApiKeyCreated(ApiKeyOut):
+    """La clave en claro solo se incluye en la respuesta de creación."""
+
+    key: str
+
+
+class ApiKeysOut(BaseModel):
+    items: list[ApiKeyOut]
+
+
 class PreferencesUpdate(BaseModel):
     preferences: dict
 

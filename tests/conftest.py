@@ -13,6 +13,24 @@ from sqlalchemy.orm import sessionmaker  # noqa: E402
 TEST_DB_URL = "sqlite://"
 
 
+@pytest.fixture(autouse=True)
+def reset_rate_limiters():
+    """Limpia los contadores globales de rate limiting entre tests.
+
+    Sin esto, los tests que hacen varios register/login/ip-request desde la
+    misma IP agotan el presupuesto de otros tests y el resultado depende del
+    orden de ejecución.
+    """
+    from app.api import public
+    from app.services import auth as auth_service
+
+    auth_service._attempts.clear()
+    public._request_log.clear()
+    yield
+    auth_service._attempts.clear()
+    public._request_log.clear()
+
+
 @pytest.fixture()
 def session_factory(tmp_path):
     engine = create_engine(

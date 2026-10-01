@@ -248,6 +248,16 @@ def build_product_uses(session: Session) -> int:
         r"(?<![a-z0-9])(" + "|".join(re.escape(n) for n in names) + r")(?![a-z0-9])"
     )
 
+    # Pre-cargar las relaciones existentes evita el N+1: una consulta en vez de
+    # una por cada par candidato.
+    existing_pairs = {
+        (pid, used_id)
+        for pid, used_id in session.query(
+            models.ProductUse.product_id, models.ProductUse.used_product_id
+        )
+        if pid in active_ids and used_id in active_ids
+    }
+
     created = 0
     for product in active:
         text = normalize_name(
@@ -270,15 +280,10 @@ def build_product_uses(session: Session) -> int:
             if used.id != product.id:
                 mentioned.add(used.id)
         for used_id in mentioned:
-            existing = (
-                session.query(models.ProductUse)
-                .filter_by(product_id=product.id, used_product_id=used_id)
-                .first()
-            )
-            if existing is None:
-                session.add(
-                    models.ProductUse(product_id=product.id, used_product_id=used_id)
-                )
+            pair = (product.id, used_id)
+            if pair not in existing_pairs:
+                session.add(models.ProductUse(product_id=product.id, used_product_id=used_id))
+                existing_pairs.add(pair)
                 created += 1
     session.commit()
     return created

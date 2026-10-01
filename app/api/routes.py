@@ -2,6 +2,7 @@ import csv
 import html as html_mod
 import io
 import json
+from collections.abc import Sequence
 from datetime import datetime
 from pathlib import Path
 
@@ -95,7 +96,7 @@ def _fts_matches(session: Session, term: str, limit: int = 1000) -> list[int] | 
         return []
     match = " AND ".join(f'"{t}"*' for t in safe_tokens)
     try:
-        rows = session.execute(
+        rows: Sequence[int] = session.execute(
             text(
                 "SELECT rowid FROM products_fts "
                 "WHERE products_fts MATCH :t ORDER BY bm25(products_fts) LIMIT :limit"
@@ -211,14 +212,14 @@ def _diet_ids(session: Session, diet: str) -> list[int] | None:
         return None
     if diet == "spicy":
         required = REQUIRED[diet]
-        rows = session.execute(
+        rows: Sequence[int] = session.execute(
             select(models.product_ingredient.c.product_id)
             .join(models.Ingredient, models.Ingredient.id == models.product_ingredient.c.ingredient_id)
             .where(models.Ingredient.name.in_(required))
         ).scalars().all()
         return list(set(rows))
     blocked = VIOLATIONS[diet]
-    rows = session.execute(
+    blocked_rows: Sequence[int] = session.execute(
         select(models.Product.id).where(
             models.Product.id.in_(
                 select(models.product_ingredient.c.product_id)
@@ -227,7 +228,7 @@ def _diet_ids(session: Session, diet: str) -> list[int] | None:
             )
         )
     ).scalars().all()
-    blocked_ids = set(rows)
+    blocked_ids = set(blocked_rows)
     all_ids = session.execute(
         select(models.Product.id).where(models.Product.status != "discarded")
     ).scalars().all()
@@ -456,13 +457,13 @@ def list_products(
         method=method, diet=diet, status=status, gi=gi,
     )
 
-    total = session.execute(count_query).scalar_one()
+    total: int = session.execute(count_query).scalar_one()
     query = (
         query.order_by(models.Product.name)
         .offset((page - 1) * page_size)
         .limit(page_size)
     )
-    items = session.execute(query).scalars().unique().all()
+    items: Sequence[models.Product] = session.execute(query).scalars().unique().all()
     return PaginatedProducts(
         total=total,
         page=page,
@@ -473,6 +474,7 @@ def list_products(
 
 @router.get("/products/geo", response_model=list[GeoPointOut])
 def list_products_geo(
+    response: Response,
     q: str | None = None,
     category: str | None = Query(default=None, description="Código de categoría"),
     country: str | None = Query(default=None, description="Nombre o código ISO"),
@@ -482,11 +484,13 @@ def list_products_geo(
     fermentation_time: str | None = None,
     diet: str | None = Query(default=None),
     gi: bool = Query(default=False, description="Solo productos con indicación geográfica"),
-    limit: int = Query(default=4000, ge=1, le=5000),
+    limit: int = Query(default=4000, ge=1, le=20000, description="Tope máximo de filas"),
     page: int = Query(default=1, ge=1),
-    page_size: int = Query(default=1000, ge=1, le=5000),
+    page_size: int | None = Query(default=None, ge=1, le=20000),
     session: Session = Depends(get_session),
 ):
+    # `limit` actúa como techo de compatibilidad: page_size nunca puede superarlo.
+    effective_page_size = min(page_size or limit, limit)
     query = select(models.Product).options(
         selectinload(models.Product.categories),
         selectinload(models.Product.countries),
@@ -498,12 +502,16 @@ def list_products_geo(
         ingredient=ingredient, source=source, fermentation_time=fermentation_time,
         diet=diet, status=None, gi=gi,
     )
-    # Aplicar paginación
-    total = session.execute(
-        select(func.count()).select_from(query.subquery())
-    ).scalar_one()
-    query = query.order_by(models.Product.name).offset((page - 1) * page_size).limit(page_size)
-    rows = session.execute(query).scalars().unique().all()
+    total: int = session.execute(count_query).scalar_one()
+    query = (
+        query.order_by(models.Product.name)
+        .offset((page - 1) * effective_page_size)
+        .limit(effective_page_size)
+    )
+    rows: Sequence[models.Product] = session.execute(query).scalars().unique().all()
+    response.headers["X-Total-Count"] = str(total)
+    response.headers["X-Page"] = str(page)
+    response.headers["X-Page-Size"] = str(effective_page_size)
 
     points: list[GeoPointOut] = []
     for p in rows:
@@ -540,6 +548,7 @@ def search_suggest(
     ingredients: list[SuggestItem] = []
 
     fts_ids = _fts_matches(session, term, limit=50)
+    rows: Sequence[models.Product]
     if fts_ids is not None and fts_ids:
         rows = session.execute(
             select(models.Product)
@@ -557,8 +566,7 @@ def search_suggest(
                 selectinload(models.Product.categories),
                 selectinload(models.Product.countries),
             )
-            .where(
-                models.Product.status != "discarded",
+            .where(                models.Product.status != "discarded",
                 func.lower(models.Product.name).like(like),
             )
         ).scalars().all()
@@ -844,13 +852,13 @@ def list_dairy_products(
         query = query.where(models.Product.id.in_(class_query))
         count_query = count_query.where(models.Product.id.in_(class_query))
 
-    total = session.execute(count_query).scalar_one()
+    total: int = session.execute(count_query).scalar_one()
     query = (
         query.order_by(models.Product.name)
         .offset((page - 1) * page_size)
         .limit(page_size)
     )
-    items = session.execute(query).scalars().unique().all()
+    items: Sequence[models.Product] = session.execute(query).scalars().unique().all()
     return PaginatedProducts(
         total=total,
         page=page,
@@ -947,7 +955,7 @@ def product_pairings(
     if not target_ingredients:
         return PairingsOut(product_id=product.id, product_name=product.name, total=0, items=[])
 
-    candidate_ids = session.execute(
+    candidate_ids: Sequence[int] = session.execute(
         select(models.product_ingredient.c.product_id)
         .where(
             models.product_ingredient.c.ingredient_id.in_(target_ingredients),
@@ -1241,7 +1249,7 @@ def export_product(
                 "Content-Disposition": f'inline; filename="producto-{product_id}.html"'
             },
         )
-    
+
     html_doc = _render_recipe_html(data, lang)
     return Response(
         content=html_doc,

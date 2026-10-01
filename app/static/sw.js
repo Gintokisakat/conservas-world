@@ -1,7 +1,9 @@
-const CACHE_NAME = "conservas-world-v9";
+const CACHE_NAME = "conservas-world-v10";
 const ASSETS_TO_CACHE = [
   "/",
   "/static/style.css",
+  "/static/app-i18n.js",
+  "/static/app-utils.js",
   "/static/app.js",
   "/static/manifest.json",
   "/static/icons/icon-192.svg",

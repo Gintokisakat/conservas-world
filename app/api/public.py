@@ -3,7 +3,7 @@ import time
 from collections import defaultdict, deque
 from time import monotonic
 
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request
 from sqlalchemy import text
 
 from app.api.routes import router as api_router

@@ -4,17 +4,26 @@ from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from app.config import DB_URL
 
 # Connection pooling para producción
-_connect_args = {"check_same_thread": False}
+_connect_args: dict[str, object] = {"check_same_thread": False}
+_is_memory_sqlite = DB_URL.startswith("sqlite") and (
+    ":memory:" in DB_URL or DB_URL.rstrip("/").endswith("sqlite:")
+)
 if DB_URL.startswith("sqlite"):
     # SQLite: usar WAL mode para mejor concurrencia
     _connect_args["timeout"] = 30
 
+# Las bases SQLite en memoria usan SingletonThreadPool, que no admite
+# dimensionamiento de pool; solo lo aplicamos donde tiene efecto.
+_pool_kwargs: dict[str, object] = (
+    {}
+    if _is_memory_sqlite
+    else {"pool_pre_ping": True, "pool_size": 5, "max_overflow": 10}
+)
+
 engine = create_engine(
     DB_URL,
     connect_args=_connect_args,
-    pool_pre_ping=True,
-    pool_size=5,
-    max_overflow=10,
+    **_pool_kwargs,  # type: ignore[arg-type]
 )
 
 

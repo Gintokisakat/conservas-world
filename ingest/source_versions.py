@@ -42,6 +42,8 @@ def record_source_version(
 
 def get_source_versions(session: Session) -> list[models.SourceVersion]:
     """Retorna todas las versiones de fuentes registradas."""
-    return session.scalars(
-        select(models.SourceVersion).order_by(models.SourceVersion.source.asc())
-    ).all()
+    return list(
+        session.scalars(
+            select(models.SourceVersion).order_by(models.SourceVersion.source.asc())
+        ).all()
+    )

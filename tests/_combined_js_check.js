@@ -1,3 +1,373 @@
+// Módulo de internacionalización (i18n) para Conservas del Mundo
+// Extraído de app.js para mejor mantenibilidad
+
+const dietLabels = {
+    es: {
+        vegan: "Vegano",
+        vegetarian: "Vegetariano",
+        pescatarian: "Pescatariano",
+        gluten_free: "Sin gluten",
+        dairy_free: "Sin lácteos",
+        soy_free: "Sin soja",
+        nut_free: "Sin frutos secos",
+        egg_free: "Sin huevo",
+        spicy: "Picante"
+    },
+    en: {
+        vegan: "Vegan",
+        vegetarian: "Vegetarian",
+        pescatarian: "Pescatarian",
+        gluten_free: "Gluten-free",
+        dairy_free: "Dairy-free",
+        soy_free: "Soy-free",
+        nut_free: "Nut-free",
+        egg_free: "Egg-free",
+        spicy: "Spicy"
+    }
+};
+
+const i18n = {
+    es: {
+        header_sub: "Catálogo global de fermentos, encurtidos y recetas tradicionales",
+        pantry_title: "✨ Mi Despensa Interactiva",
+        pantry_desc: "Carga qué ingredientes o fermentados tienes a mano y te mostraremos qué puedes preparar.",
+        ing_label: "🥦 Sustratos e Ingredientes (repollo, leche, soja…)",
+        prod_label: "🧪 Fermentados que ya posees (miso, kimchi, kéfir…)",
+        add_btn: "+ Agregar",
+        export_btn: "💾 Guardar / Exportar",
+        import_btn: "📥 Cargar Despensa",
+        recommend_btn: "🔍 ¿Qué puedo preparar hoy?",
+        timers_title: "⏱️ Mis Fermentos en Proceso",
+        timers_desc: "Monitorea tus frascos en primera (F1) o segunda fermentación (F2).",
+        add_timer_btn: "+ Iniciar Frasco",
+        brine_calc_title: "🧮 Calculadora de Salinidad",
+        brine_calc_desc: "Gramos de sal para fermentación láctica segura.",
+        abv_calc_title: "🍺 Calculadora de Alcohol (% ABV)",
+        abv_calc_desc: "Estimación para hidromiel, sidra, kvas o cerveza.",
+        trouble_btn: "🚨 Diagnóstico de Problemas",
+        microbes_btn: "🔬 Microbios Fermentadores",
+        favs_btn: "❤️ Mis Favoritos",
+        search_btn: "Buscar",
+        random_btn: "🎲 Sorpréndeme",
+        ph_banner: "🛡️ <strong>Seguridad Alimentaria:</strong> Para fermentación láctica y acética, el pH objetivo de seguridad es <strong>&lt; 4.6</strong> para inhibir esporas de <em>Clostridium botulinum</em>.",
+        storage_title: "🧊 Conservación y almacenamiento:",
+        fermentation_time_title: "⏱️ Tiempo de fermentación:",
+        print_label_btn: "🏷️ Imprimir Etiqueta",
+        fav_saved: "❤️ Guardado",
+        fav_add: "🤍 Favorito",
+        shopping_title: "🛒 Lista de Compras Requerida",
+        shopping_desc: "Ingredientes necesarios para preparar las recetas seleccionadas:",
+        seasonal_title: "🌿 Qué fermentar este mes",
+        seasonal_desc: "Ingredientes de temporada y fermentos sugeridos.",
+        flavormap_title: "🗺️ Mapa de sabores del mundo",
+        flavormap_desc: "Perfil de sabor promedio por continente (clasificación heurística por ingredientes).",
+        skip_link: "Saltar al contenido principal",
+        semantic_filter: "🧠 Búsqueda semántica",
+        search_placeholder: "Buscar por nombre o descripción (ej. kimchi, sauerkraut, choucroute...)",
+        ing_placeholder: "Ej: repollo, zanahoria, sal...",
+        prod_placeholder: "Ej: miso, kimchi, masa madre...",
+        install_btn: "Instalar",
+        course_title: "Curso de Fermentación",
+        course_sub: "Cinco módulos desde la historia hasta recetas prácticas. Marca tu progreso y obtén tu certificado.",
+        timeline_title: "🏺 Cronología de la fermentación",
+        timeline_desc: "13.000 años de cerveza, queso, pan y conservas.",
+        timeline_loading: "Cargando…",
+        show_more: "Ver más",
+        nutrition_title: "🧪 Información Nutricional (por 100 g)",
+        nutrition_source: "Fuente: USDA FoodData Central (CC0)",
+        nutrition_none: "Sin datos de nutrición disponibles para este ingrediente.",
+        nutrition_calories: "Energía",
+        nutrition_protein: "Proteínas",
+        nutrition_fat: "Grasas",
+        nutrition_carbs: "Carbohidratos",
+        nutrition_fiber: "Fibra",
+        nutrition_sodium: "Sodio",
+        nutrition_potassium: "Potasio",
+        nutrition_vitamin_c: "Vitamina C",
+        nutrition_iron: "Hierro",
+        nutrition_calcium: "Calcio",
+        nutrition_zinc: "Zinc",
+        nutrition_products: "Fermentos que lo utilizan",
+        suggest_products: "Productos",
+        suggest_ingredients: "Ingredientes",
+        suggest_empty: "Sin coincidencias para «{q}»",
+        export_csv: "📄 CSV",
+        export_pdf: "🖨️ PDF",
+        glossary_btn: "📚 Glosario",
+        glossary_title: "Glosario de Fermentación",
+        glossary_sub: "Términos esenciales de fermentación y conservación, con definiciones breves.",
+        glossary_search: "Buscar un término…",
+        glossary_empty: "No hay términos que coincidan con «{q}».",
+        glossary_related: "Ver producto",
+        glossary_pronounced: "Glosario",
+        suggest_glossary: "Glosario",
+        view_list: "Lista",
+        view_map: "Mapa",
+        gi_filter: "Indicación geográfica",
+        map_loading: "Cargando mapa…",
+        map_empty: "Sin resultados para mostrar en el mapa.",
+        map_detail: "Ver detalle",
+        pairings_title: "Combina bien con…",
+        pairings_shared: "Comparte",
+        stats_loading: "Cargando estadísticas…",
+        charts_btn: "📊 Gráficos",
+        producers_btn: "🏭 Productores",
+        breweries_btn: "🍺 Cervecerías",
+        compare_btn: "⚖️ Comparar",
+        vin_calc_desc: "Dilución de ácido acético para salmueras de encurtido.",
+        alt_calc_desc: "Tiempos de procesamiento en conservas según la altitud (baño maría).",
+        ph_days_label: "Días de fermentación:",
+        filter_technique: "Técnica:",
+        filter_all_categories: "Todas las categorías",
+        diet_dairy_free: "Sin lácteos",
+        page_info: "Página 1",
+        microbes_desc: "Bacterias, hongos y levaduras involucrados en la fermentación tradicional:",
+        trouble_title: "🚨 Diagnóstico de Problemas en Fermentación",
+        trouble_desc: "Selecciona el síntoma visual o de olor que presenta tu frasco:",
+        label_preview: "Previsualización lista para imprimir o pegar en tu frasco:",
+        timer_desc: "Monitorea tus frascos en primera (F1) o segunda fermentación (F2) <span id=\"timer-sync-hint\" style=\"display:none; color:var(--color-primary); font-size:0.78rem\">· ☁️ sincronizado con tu cuenta</span>",
+        formula_tip: "🍺 Fórmula: (OG - FG) × 131.25",
+        ph_calc_desc: "Modelo simplificado de acidificación láctica (Q10).",
+        region_all: "Todos los continentes",
+        region_asia: "Asia",
+        region_europe: "Europa",
+        region_africa: "África",
+        region_americas: "América",
+        region_oceania: "Oceanía",
+        country_all: "Todos los países",
+    },
+    en: {
+        header_sub: "Global catalog of ferments, pickles, and traditional recipes",
+        pantry_title: "✨ My Interactive Pantry",
+        pantry_desc: "Load what ingredients or fermented foods you have on hand, and we'll show you what you can make.",
+        ing_label: "🥦 Substrates & Ingredients (cabbage, milk, soy…)",
+        prod_label: "🧪 Fermentations You Already Own (miso, kimchi, kefir…)",
+        add_btn: "+ Add",
+        export_btn: "💾 Save / Export",
+        import_btn: "📥 Load Pantry",
+        recommend_btn: "🔍 What can I make today?",
+        timers_title: "⏱️ My Active Ferments",
+        timers_desc: "Monitor your jars in first (F1) or second fermentation (F2).",
+        add_timer_btn: "+ Start Jar",
+        brine_calc_title: "🧮 Salinity Calculator",
+        brine_calc_desc: "Exact salt grams for safe lacto-fermentation.",
+        abv_calc_title: "🍺 Alcohol Calculator (% ABV)",
+        abv_calc_desc: "Estimate ABV for mead, cider, kvass, or beer.",
+        trouble_btn: "🚨 Troubleshooting Guide",
+        microbes_btn: "🔬 Fermenting Microbes",
+        favs_btn: "❤️ My Favorites",
+        search_btn: "Search",
+        random_btn: "🎲 Surprise Me",
+        ph_banner: "🛡️ <strong>Food Safety:</strong> Target safety pH for lactic and acetic fermentation is <strong>&lt; 4.6</strong> to inhibit <em>Clostridium botulinum</em> spores.",
+        storage_title: "🧊 Storage & Shelf Life:",
+        fermentation_time_title: "⏱️ Fermentation time:",
+        print_label_btn: "🏷️ Print Label",
+        fav_saved: "❤️ Saved",
+        fav_add: "🤍 Favorite",
+        shopping_title: "🛒 Shopping List",
+        shopping_desc: "Ingredients needed to prepare the recommended recipes:",
+        seasonal_title: "🌿 What to Ferment This Month",
+        seasonal_desc: "In-season ingredients and suggested ferments.",
+        flavormap_title: "🗺️ World flavor map",
+        flavormap_desc: "Average flavor profile by continent (heuristic classification by ingredients).",
+        skip_link: "Skip to main content",
+        semantic_filter: "🧠 Semantic search",
+        search_placeholder: "Search by name or description (e.g. kimchi, sauerkraut, choucroute...)",
+        ing_placeholder: "E.g. cabbage, carrot, salt...",
+        prod_placeholder: "E.g. miso, kimchi, sourdough...",
+        install_btn: "Install",
+        course_title: "Fermentation Course",
+        course_sub: "Five modules from history to practical recipes. Track your progress and earn your certificate.",
+        timeline_title: "🏺 A Timeline of Fermentation",
+        timeline_desc: "13,000 years of beer, cheese, bread and preserves.",
+        timeline_loading: "Loading…",
+        show_more: "Show more",
+        nutrition_title: "🧪 Nutrition Facts (per 100 g)",
+        nutrition_source: "Source: USDA FoodData Central (CC0)",
+        nutrition_none: "No nutrition data available for this ingredient.",
+        nutrition_calories: "Energy",
+        nutrition_protein: "Protein",
+        nutrition_fat: "Fat",
+        nutrition_carbs: "Carbohydrates",
+        nutrition_fiber: "Fiber",
+        nutrition_sodium: "Sodium",
+        nutrition_potassium: "Potassium",
+        nutrition_vitamin_c: "Vitamin C",
+        nutrition_iron: "Iron",
+        nutrition_calcium: "Calcium",
+        nutrition_zinc: "Zinc",
+        nutrition_products: "Ferments that use it",
+        suggest_products: "Products",
+        suggest_ingredients: "Ingredients",
+        suggest_empty: "No matches for \"{q}\"",
+        export_csv: "📄 CSV",
+        export_pdf: "🖨️ PDF",
+        glossary_btn: "📚 Glossary",
+        glossary_title: "Fermentation Glossary",
+        glossary_sub: "Essential terms of fermentation and preservation, with short definitions.",
+        glossary_search: "Search a term…",
+        glossary_empty: "No terms match \"{q}\".",
+        glossary_related: "View product",
+        glossary_pronounced: "Glossary",
+        suggest_glossary: "Glossary",
+        view_list: "List",
+        view_map: "Map",
+        gi_filter: "Geographical indication",
+        map_loading: "Loading map…",
+        map_empty: "No results to show on the map.",
+        map_detail: "View details",
+        pairings_title: "Pairs well with…",
+        pairings_shared: "Shares",
+        stats_loading: "Loading stats…",
+        charts_btn: "📊 Charts",
+        producers_btn: "🏭 Producers",
+        breweries_btn: "🍺 Breweries",
+        compare_btn: "⚖️ Compare",
+        vin_calc_desc: "Acetic acid dilution for pickling brines.",
+        alt_calc_desc: "Canning process times by altitude (water bath).",
+        ph_days_label: "Fermentation days:",
+        filter_technique: "Technique:",
+        filter_all_categories: "All categories",
+        diet_dairy_free: "Dairy-free",
+        page_info: "Page 1",
+        microbes_desc: "Bacteria, fungi and yeasts involved in traditional fermentation:",
+        trouble_title: "🚨 Troubleshooting Fermentation Problems",
+        trouble_desc: "Select the visual or odor symptom your jar shows:",
+        label_preview: "Preview ready to print and stick on your jar:",
+        timer_desc: "Track your jars in first (F1) or second fermentation (F2) <span id=\"timer-sync-hint\" style=\"display:none; color:var(--color-primary); font-size:0.78rem\">· ☁️ synced with your account</span>",
+        formula_tip: "🍺 Formula: (OG - FG) × 131.25",
+        ph_calc_desc: "Simplified lactic acidification model (Q10).",
+        region_all: "All continents",
+        region_asia: "Asia",
+        region_europe: "Europe",
+        region_africa: "Africa",
+        region_americas: "Americas",
+        region_oceania: "Oceania",
+        country_all: "All countries",
+    }
+};
+
+// Función para obtener traducción
+function t(key, lang = "es") {
+    return (i18n[lang] && i18n[lang][key]) || i18n.es[key] || key;
+}
+
+// Función para obtener etiqueta de dieta
+function dietLabel(tag, lang = "es") {
+    return (dietLabels[lang] && dietLabels[lang][tag]) || dietLabels.es[tag] || tag;
+}
+;
+// Módulo de utilidades para Conservas del Mundo
+// Extraído de app.js para mejor mantenibilidad
+
+// Escapar HTML para prevenir XSS
+function esc(text) {
+    const div = document.createElement("div");
+    div.textContent = text ?? "";
+    return div.innerHTML;
+}
+
+// Escapar atributos HTML
+function escAttr(text) {
+    return (text ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Mostrar toast
+function showToast(message, type = "ok", ms = 3200) {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+    const el = document.createElement("div");
+    el.className = `toast ${type === "err" ? "err" : type === "info" ? "info" : ""}`;
+    el.textContent = message;
+    container.appendChild(el);
+    setTimeout(() => {
+        el.classList.add("out");
+        setTimeout(() => el.remove(), 350);
+    }, ms);
+}
+
+// Debounce
+function debounce(fn, wait) {
+    let t;
+    return (...args) => {
+        clearTimeout(t);
+        t = setTimeout(() => fn(...args), wait);
+    };
+}
+
+// Crear tag
+function tag(text, cls = "") {
+    return `<span class="tag ${cls}">${esc(text)}</span>`;
+}
+
+// Badges de dieta
+function dietBadges(tags) {
+    const labels = dietLabels[state.lang] || dietLabels.es;
+    return (tags || []).map((t) => tag(labels[t] || t, "diet")).join("");
+}
+
+// Badge de indicación geográfica
+function giBadge(p) {
+    const label = state.lang === 'en' ? 'Geographical Indication' : 'Indicación geográfica';
+    return (p.geographical_indication || (p.dairy && p.dairy.geographical_indication))
+        ? tag(label, "gi")
+        : "";
+}
+
+// Focus trapping para modales
+function trapFocus(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    first.focus();
+    function onKeydown(e) {
+        if (e.key !== 'Tab') return;
+        if (e.shiftKey) {
+            if (document.activeElement === first) { e.preventDefault(); last.focus(); }
+        } else {
+            if (document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+    }
+    modal.addEventListener('keydown', onKeydown);
+    return () => modal.removeEventListener('keydown', onKeydown);
+}
+
+// Cerrar modal con foco
+function closeModalWithFocus(modalId, event) {
+    const modal = document.getElementById(modalId);
+    if (event && event.target.id !== modalId && !event.target.classList.contains("modal-close")) return;
+    modal.classList.add("hidden");
+    if (document.activeElement) document.activeElement.blur();
+}
+
+// Llamada a API
+async function api(path, opts) {
+    const headers = { ...(opts && opts.headers ? opts.headers : {}) };
+    const token = localStorage.getItem("pantry_auth_token");
+    if (token && !headers.Authorization) headers.Authorization = `Bearer ${token}`;
+    const resp = await fetch(path, { ...opts, headers });
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    return resp.json();
+}
+
+// Mostrar skeletons
+function showSkeletons(count = 8) {
+    const list = document.getElementById("product-list");
+    if (!list) return;
+    list.innerHTML = Array.from({ length: count }).map(() => `
+        <li class="product-card is-skeleton">
+            <div class="skeleton sk-img"></div>
+            <div style="flex:1">
+                <div class="skeleton sk-line" style="width:60%"></div>
+                <div class="skeleton sk-line" style="width:90%"></div>
+                <div class="skeleton sk-line" style="width:40%"></div>
+            </div>
+        </li>`).join("");
+}
+;
 const state = {
     q: "",
     category: "",

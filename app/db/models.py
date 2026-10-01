@@ -518,7 +518,8 @@ class ApiKey(Base):
     user_id: Mapped[int] = mapped_column(
         ForeignKey("users.id", ondelete="CASCADE"), index=True
     )
-    key: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    # SHA-256 de la clave; la clave en claro solo se devuelve al crearla.
+    key_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
     name: Mapped[str] = mapped_column(String(100))
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())

@@ -56,6 +56,7 @@ def test_appjs_has_install_prompt_logic():
 
 
 def test_install_i18n_keys_in_sync():
-    js = client.get("/static/app.js").text
+    # Las traducciones viven en el módulo app-i18n.js desde la extracción.
+    js = client.get("/static/app-i18n.js").text
     assert "install_btn: \"Instalar\"" in js
     assert "install_btn: \"Install\"" in js

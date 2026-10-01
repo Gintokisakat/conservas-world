@@ -64,11 +64,13 @@ def test_frontend_course_integration():
     assert 'id="course-modal"' in html
     js = client.get("/static/app.js").text
     for marker in ["openCourseModal", "renderCourseLesson", "showCourseCertificate",
-                   "pantry_course_progress", "course-next-btn", "course_title"]:
+                   "pantry_course_progress", "course-next-btn"]:
         assert marker in js, marker
+    # course_title es una clave de traducción y vive en el módulo i18n.
+    assert "course_title" in client.get("/static/app-i18n.js").text
 
 
 def test_course_i18n_keys_in_sync():
-    js = client.get("/static/app.js").text
+    js = client.get("/static/app-i18n.js").text
     assert 'course_title: "Curso de Fermentación"' in js
     assert 'course_title: "Fermentation Course"' in js

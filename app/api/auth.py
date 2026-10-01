@@ -1,12 +1,18 @@
-"""Endpoints de autenticación (roadmap 4.1)."""
+"""Endpoints de autenticación (roadmap 4.1) y API keys (roadmap 5.5)."""
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from datetime import UTC, datetime
+
+from fastapi import APIRouter, Depends, Header, HTTPException, Request, Response
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.db import models
 from app.db.database import get_session
 from app.schemas import (
+    ApiKeyCreate,
+    ApiKeyCreated,
+    ApiKeyOut,
+    ApiKeysOut,
     PreferencesUpdate,
     RefreshRequest,
     TokenPair,
@@ -19,6 +25,8 @@ from app.services.auth import (
     create_access_token,
     create_refresh_token,
     decode_token,
+    generate_api_key,
+    hash_api_key,
     hash_password,
     parse_preferences,
     verify_password,
@@ -128,18 +136,82 @@ def get_api_key_user(
     x_api_key: str | None = Header(default=None, alias="X-API-Key"),
     session: Session = Depends(get_session),
 ) -> models.User | None:
-    """Resuelve el usuario desde un header X-API-Key para acceso programático."""
+    """Resuelve el usuario desde un header `X-API-Key: <key>`.
+
+    Se almacena el hash de la clave, nunca el valor en claro: si la base se
+    filtra, las API keys no permiten autenticarse.
+    """
     if not x_api_key:
         return None
-    # Buscar usuario con API key válida
-    from sqlalchemy import text
-    result = session.execute(
-        text("SELECT user_id FROM api_keys WHERE key = :key AND active = 1"),
-        {"key": x_api_key}
-    ).fetchone()
-    if result is None:
+    record = session.execute(
+        select(models.ApiKey).where(
+            models.ApiKey.key_hash == hash_api_key(x_api_key),
+            models.ApiKey.active.is_(True),
+        )
+    ).scalar_one_or_none()
+    if record is None:
         return None
-    return session.get(models.User, result[0])
+    record.last_used_at = datetime.now(UTC)
+    session.commit()
+    return session.get(models.User, record.user_id)
+
+
+# --- API keys (roadmap 5.5) ------------------------------------------------
+
+
+@router.get("/api-keys", response_model=ApiKeysOut)
+def list_api_keys(
+    user: models.User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Lista las API keys del usuario. Nunca devuelve el valor en claro."""
+    records = session.execute(
+        select(models.ApiKey)
+        .where(models.ApiKey.user_id == user.id)
+        .order_by(models.ApiKey.created_at.desc())
+    ).scalars().all()
+    return ApiKeysOut(items=[ApiKeyOut.model_validate(r) for r in records])
+
+
+@router.post("/api-keys", response_model=ApiKeyCreated, status_code=201)
+def create_api_key(
+    body: ApiKeyCreate,
+    response: Response,
+    user: models.User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Crea una API key. La clave en claro se muestra una sola vez."""
+    plaintext = generate_api_key()
+    record = models.ApiKey(
+        user_id=user.id,
+        key_hash=hash_api_key(plaintext),
+        name=body.name.strip(),
+    )
+    session.add(record)
+    session.commit()
+    session.refresh(record)
+    response.headers["Cache-Control"] = "no-store"
+    return ApiKeyCreated(**ApiKeyOut.model_validate(record).model_dump(), key=plaintext)
+
+
+@router.delete("/api-keys/{key_id}", status_code=204)
+def revoke_api_key(
+    key_id: int,
+    user: models.User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+):
+    """Revoca una API key (soft delete: se conserva la fila para auditoría)."""
+    record = session.execute(
+        select(models.ApiKey).where(
+            models.ApiKey.id == key_id,
+            models.ApiKey.user_id == user.id,
+        )
+    ).scalar_one_or_none()
+    if record is None:
+        raise HTTPException(status_code=404, detail="API key no encontrada")
+    record.active = False
+    session.commit()
+    return Response(status_code=204)
 
 
 @router.get("/me", response_model=UserOut)

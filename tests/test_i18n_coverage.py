@@ -9,7 +9,8 @@ client = TestClient(app)
 
 
 def _extract():
-    js = client.get("/static/app.js").text
+    # Las traducciones viven en el módulo app-i18n.js desde la extracción.
+    js = client.get("/static/app-i18n.js").text
     es_block = js.split("const i18n = {")[1].split("    en: {")[0]
     en_block = js.split("const i18n = {")[1].split("    en: {")[1].split("};")[0]
     es = set(re.findall(r"^        ([a-z_]+):", es_block, re.M))

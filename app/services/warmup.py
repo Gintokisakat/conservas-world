@@ -6,16 +6,14 @@ de índices (~5-10 s). Este módulo precarga todo en un hilo de fondo justo
 tras el arranque, de modo que los visitantes lleguen a cachés calientes.
 """
 
+import logging
 import threading
 
 from app.db.database import SessionLocal
 
-_done = threading.Event()
-
-
-import logging
-
 logger = logging.getLogger("conservas")
+
+_done = threading.Event()
 
 
 def run_warmup() -> list[str]:

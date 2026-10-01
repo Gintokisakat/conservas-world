@@ -22,7 +22,7 @@ app/services → dominio: timers, sabores, seguridad, curso, podcasts, etimolog�
 ingest/      → pipeline de ingesta, normalización y curaduría
 mcp_server/  → servidor MCP para Claude y otros asistentes
 data/        → descargas raw, datos de referencia, build.db (generada)
-tests/       → suite pytest (322 tests)
+tests/       → suite pytest (512 tests)
 ```
 
 ## Comandos
@@ -37,6 +37,20 @@ uv run ruff check . && uv run mypy app     # lint y tipos
 ```
 
 Si `uv` no se encuentra: `export PATH="$HOME/.local/bin:$PATH"`.
+
+### Migraciones de base de datos (Alembic)
+
+El schema se versiona con Alembic. Después de tocar `app/db/models.py`:
+
+```bash
+uv run alembic revision --autogenerate -m "qué cambió"   # generar migración
+uv run alembic upgrade head                                # aplicarla
+uv run alembic check                                      # ¿modelos y BD coinciden?
+```
+
+`docker-entrypoint.sh` aplica `alembic upgrade head` antes de levantar el
+servidor. Las bases anteriores a Alembic se sellan en `head` automáticamente:
+no se re-crean ni se pierden datos. Ver [`alembic/README`](alembic/README).
 
 Docs interactivas de la API: `http://localhost:8000/docs` · API pública documentada: [`docs/API.md`](docs/API.md)
 
@@ -149,7 +163,7 @@ Las descargas remotas se cachean en `data/raw/` respetando rate-limits con reint
 
 ## Desarrollo
 
-- **Tests**: `uv run pytest` — 322 tests (API, servicios, frontend servido, ingesta)
+- **Tests**: `uv run pytest` — 512 tests (API, servicios, frontend servido, ingesta, migraciones)
 - **Lint**: `ruff check .` · **Tipos**: `mypy app`
 - **CI**: GitHub Actions corre pytest + ruff + mypy en cada push a `main`
 

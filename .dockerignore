@@ -22,6 +22,12 @@ ingest/
 .git/
 .github/
 
+# La imagen no corre migraciones: eso lo hace el entrypoint en runtime.
+alembic/versions/__pycache__/
+
+# La imagen no corre migraciones al construirse: eso lo hace el entrypoint
+# en runtime contra la BD real, no la de build.
+
 # Python
 __pycache__/
 *.pyc

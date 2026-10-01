@@ -13,4 +13,9 @@ if [ ! -s "$DB_PATH" ]; then
   fi
 fi
 
+# Roadmap 5.1 — aplicar migraciones antes de levantar el servidor. Es
+# idempotente: si la base ya está en head, no hace nada.
+echo ">>> Aplicando migraciones (alembic upgrade head)..."
+uv run alembic upgrade head || echo ">>> Migraciones omitidas; continuando."
+
 exec uv run uvicorn app.main:app --host 0.0.0.0 --port "${PORT:-8000}"

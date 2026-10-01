@@ -10,7 +10,7 @@
 - **Integración AI**: Servidor MCP (`app/mcp_server.py`) con 5 herramientas
 - **Ingesta**: Pipeline automatizado desde 6 fuentes (FermDB, Wikipedia, Open Food Facts, Wikidata, FDF-DB, Curados Regionales)
 - **Despliegue**: Docker + Render, GitHub Actions CI (pytest)
-- **Tests**: 192 tests pasando al 100% (API, dietas, exportación, FDF-DB, geo, glosario, imágenes, ingredientes, MCP, metacheese, normalización, nutrición, pairings, sugerencias, timeline, vinagres, wikidata)
+- **Tests**: 512 tests, cobertura de `app` al **94%** (API, dietas, exportación, FDF-DB, geo, glosario, imágenes, ingredientes, MCP, metacheese, normalización, nutrición, pairings, sugerencias, timeline, vinagres, wikidata, migraciones, caché HTTP)
 
 ### Datos actuales
 - **6,152 productos activos** (247 descartados por curaduría)
@@ -608,13 +608,20 @@
 
 > Fundamento necesario conforme crecen datos (Fase 2) y usuarios (Fase 3-4). Sin esto, cada nueva feature incrementa el riesgo técnico.
 
-#### 5.1 Migraciones de BD (Alembic)
-- **Qué hacer**:
-  - Integrar Alembic con SQLAlchemy (hoy la BD se crea desde cero en cada build)
-  - Flujo: `alembic revision --autogenerate` + migración en CI
-  - El pipeline de ingesta no debe crear tablas directamente; usa migraciones
+#### 5.1 Migraciones de BD (Alembic) [✅ COMPLETADO]
+- **Fuente**: roadmap interno
+- **Hecho**:
+  - Alembic 1.20 integrado con `alembic/env.py` que toma la URL de `app.config.DB_URL` (una sola fuente de verdad para dev, tests y producción)
+  - Migración `baseline` con las 30 tablas y 51 índices del schema actual
+  - `app.db.database.init_db()` corre `alembic upgrade head`; si la base ya existía sin versionar, la **sella en head** en vez de re-correr el baseline (no se pierden datos)
+  - `docker-entrypoint.sh` aplica migraciones antes de levantar uvicorn
+  - Job `migrations` en CI: `alembic upgrade head` + `alembic check` falla si los modelos cambiaron sin migración
+  - `render_as_batch=True` en `env.py` porque SQLite no soporta `ALTER COLUMN`
+  - `init_db(use_alembic=False)` conserva el `create_all` como camino de escape y para tests
+  - `tests/test_migrations.py`: 10 tests (idempotencia, equivalencia con create_all, sellado de bases preexistentes, fallback)
+- **Flujo**: `alembic revision --autogenerate -m "..."` → revisar a mano → `alembic upgrade head`
+- **Comandos**: `alembic current`, `history`, `downgrade -1`, `stamp head`, `check`
 - **Dependencias**: alembic (~500KB)
-- **Riesgo**: Reestructurar `ingest/loader.py` para separar schema de datos
 
 #### 5.2 Refresh programado de fuentes (pipeline pull) [✅ COMPLETADO]
 - **Qué hacer**:
@@ -646,7 +653,7 @@
 
 #### 5.5 Tests y calidad continua [✅ COMPLETADO]
 - **Hecho**:
-  - Suite en **450 tests** con cobertura de `app` al **95.00%** (umbral CI > 85%)
+  - Suite en **512 tests** con cobertura de `app` al **94%** (umbral CI > 85%)
   - `pytest-cov` en dependencias dev; gate de cobertura en CI: `uv run pytest --cov=app --cov-fail-under=85`
   - `tests/test_data_integrity.py`: pisos de cobertura de datos (≥4.000 productos activos, ingredientes ≥90%, categoría ≥95%, país ≥50%, imagen ≥40%), integridad referencial de todas las tablas puente (0 filas huérfanas) y nombres de producto únicos
   - `tests/test_quality.py`: warmup reentrante sin errores, respeto de `CONSERVAS_WARMUP` y lanzamiento de hilo de fondo

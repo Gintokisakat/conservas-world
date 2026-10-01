@@ -1,0 +1,47 @@
+« Migraciones de base de datos con Alembic.
+
+Flujo de trabajo
+----------------
+
+1. Cambiá los modelos en `app/db/models.py`.
+
+2. Generá la migración:
+
+       alembic revision --autogenerate -m "descripción"
+
+   Revisala a mano antes de commitear: el autogenerate no detecta renombres
+   de columna ni cambios de tipo con pérdida de datos.
+
+3. Aplicá en local:
+
+       alembic upgrade head
+
+4. Verificá que los modelos y la base coincidan:
+
+       alembic check
+
+
+Cómo se aplica en la app
+------------------------
+
+- `docker-entrypoint.sh` corre `alembic upgrade head` antes de uvicorn.
+- `app.db.database.init_db()` también lo hace, y sella en `head` las bases
+  creadas antes de adoptar Alembic para no volver a correr el baseline.
+
+Comandos útiles
+---------------
+
+    alembic upgrade head          # aplicar todo
+    alembic downgrade -1          # deshacer la última
+    alembic current               # revisión aplicada
+    alembic history               # historial
+    alembic stamp head            # marcar sin ejecutar (bases existentes)
+    alembic check                 # ¿hay cambios sin migrar?
+
+Sobre SQLite
+------------
+
+SQLite no soporta `ALTER COLUMN`. Por eso `env.py` usa
+`render_as_batch=True`: Alembic reconstruye la tabla en una temporal para
+simular la modificación de columnas. Conviene indexar el `batch_alter_table`
+en migraciones que renombren columnas o cambien tipos sobre tablas grandes.

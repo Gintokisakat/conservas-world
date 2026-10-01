@@ -2,8 +2,6 @@
 import hashlib
 
 import pytest
-from app.main import app
-from fastapi.testclient import TestClient
 
 
 @pytest.fixture()
@@ -55,9 +53,7 @@ def test_etag_is_hash_of_body(c):
 def test_etag_varies_with_content(c):
     """Productos distintos no pueden compartir ETag."""
     products = c.get("/products?page_size=5").json()["items"]
-    etags = {
-        c.get(f"/products/{p['id']}").headers["ETag"] for p in products[:3]
-    }
+    etags = {c.get(f"/products/{p['id']}").headers["ETag"] for p in products[:3]}
     assert len(etags) == len(products[:3])
 
 

@@ -1,3 +1,4 @@
+import hashlib
 import logging
 import os
 import uuid
@@ -6,7 +7,7 @@ from time import monotonic
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from app.api.auth import router as auth_router
@@ -153,9 +154,17 @@ def create_app() -> FastAPI:
 
     @app.middleware("http")
     async def cache_control_middleware(request, call_next):
+        """Cache-Control (5.3) + ETag condicional.
+
+        El ETag se calcula sobre los bytes de la respuesta: si el cliente
+        revalida y nada cambió, se devuelve 304 y se ahorra todo el trabajo
+        de SQLite más el JSON. Solo aplica a respuestas públicas y GET/HEAD.
+        """
         response = await call_next(request)
-        if request.method in ("GET", "HEAD") and "Cache-Control" not in response.headers:
-            path = request.url.path
+        if request.method not in ("GET", "HEAD"):
+            return response
+        path = request.url.path
+        if "Cache-Control" not in response.headers:
             if path in ("/", ""):
                 # El shell del SPA es pequeño pero cambia con cada deploy;
                 # mejor revalidarlo siempre para no servir un app.js viejo.
@@ -170,6 +179,39 @@ def create_app() -> FastAPI:
                     break
             else:
                 response.headers["Cache-Control"] = _DEFAULT_CACHE
+
+        cache_control = response.headers.get("Cache-Control", "")
+        is_public = "public" in cache_control and "no-store" not in cache_control
+        if not is_public or response.status_code >= 400:
+            return response
+
+        # BaseHTTPMiddleware entrega un response sin `body` sino con un
+        # iterador asíncrono, así que hay que materializar el cuerpo una vez.
+        body = getattr(response, "body", None)
+        if body is None:
+            body = b"".join([chunk async for chunk in response.body_iterator])
+            headers = dict(response.headers)
+            response = Response(
+                content=body,
+                status_code=response.status_code,
+                headers=headers,
+                media_type=response.headers.get("content-type"),
+            )
+        if not body:
+            return response
+
+        etag = '"' + hashlib.sha256(body).hexdigest()[:32] + '"'
+        response.headers["ETag"] = etag
+        response.headers.setdefault("Vary", "Accept-Encoding")
+
+        # Petición condicional: si el cliente ya tiene esta versión, 304.
+        if_none_match = request.headers.get("If-None-Match")
+        if if_none_match and (
+            if_none_match == etag
+            or if_none_match == "*"
+            or etag in [tag.strip() for tag in if_none_match.split(",")]
+        ):
+            return Response(status_code=304, headers=dict(response.headers))
         return response
 
     @app.middleware("http")

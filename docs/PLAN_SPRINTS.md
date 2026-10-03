@@ -42,6 +42,29 @@ monolítico en una plataforma con identidad, datos y reglas**. Y con 5,6 h/seman
 la comunidad es un programa de años, no de meses. Este plan cubre la fundación (≈7 meses) y
 luego se bifurca.
 
+
+---
+
+## FASE 0 — Aprendizaje y preparación (antes de Sprint 0)
+
+**Regla de oro:** No se escribe código para migraciones críticas hasta cerrar esta fase. Cada tema exige un **ADR de 1 página** + artefacto verificable.
+
+**Duración estimada:** 5–6 h/semana durante 3–4 semanas (~15–20 h).
+
+| # | Tema | Por qué es bloqueante | Qué investigar/aprender | Recursos | Criterio de hecho |
+|---|---|---|---|---|---|
+| **0A** | **Licenciamiento de bases de datos (ODbL, CC)** | Bloquea vía comercial (razón 2 del abogado del diablo) | Diferencia entre obra derivada vs base de datos derivada (ODbL Art. 2/4), CC BY-NC-ND: ¿qué cuenta como «adaptación» al indexar/meter en embeddings? Compatibilidad entre licencias y *share-alike*. | [ODbL 1.0](https://opendatacommons.org/licenses/odbl/1-0/), [CC Legal](https://creativecommons.org/licenses/), [Open Knowledge](https://opendefinition.org/) | ADR firmado con matriz de casos (mezcla, indexado, búsqueda, export, API pública) |
+| **0B** | **PostgreSQL FTS: tsvector + GIN vs pg_trgm** | Necesario para migrar sin romper relevancia (razón 1) | Configuraciones de idioma (`pg_catalog.spanish`, `simple`), `ts_rank`/`ts_rank_cd`, pesos, sinónimos, acentos (`unaccent`), equivalencia con `bm25(products_fts)`. Cuándo usar `pg_trgm` para fuzzy. | [Postgres FTS](https://www.postgresql.org/docs/current/textsearch.html), [pg_trgm](https://www.postgresql.org/docs/current/pgtrgm.html) | Documento con 10–15 queries de prueba + ranking esperado vs SQLite |
+| **0C** | **Feature flags y rollout seguro** | Desacopla migraciones críticas | Flags por request/env, read-through, logging, rollback instantáneo. Evitar *flag explosion* y caducidad obligatoria. | [Martin Fowler - Feature Toggles](https://martinfowler.com/articles/feature-toggles.html) | Especificación de flags + política de caducidad (eliminar tras promover) |
+| **0D** | **Migración de datos con coexistencia (dual-read/merge)** | Evita pérdida irreversible de `localStorage` (razón 3) | Last-write-wins vs CRDT ligero, `updated_at` cliente/servidor, resolución de conflictos, casos borde multi-pestaña/sin conexión. | [Data Migration Patterns](https://martinfowler.com/articles/data-migration-patterns.html) | Diagrama de flujo (login→sync→consolidate) + matriz de conflictos |
+| **0E** | **Seguridad de identidad (tokens)** | Crítico para Sprint 4 | Refresh token rotation + reuse detection, jti/blocklist, verificación por email con one-time token (no JWT), rate limiting por IP+cuenta. | [OWASP Auth Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html), [RFC 6819](https://datatracker.ietf.org/doc/html/rfc6819) | Checklist de amenazas + decisión Redis blocklist vs BD |
+| **0F** | **Moderación operativa y abuso** | Requisito para primer usuario externo | Cola de reportes, estados, auditoría inmutable, SLA ligero, prevención de represalias, spam básico. | [Discourse Moderation Guidelines](https://meta.discourse.org/t/moderation-guidelines) | Política de moderación (anexo a ToS) |
+| **0G** | **PWA: Push API, SW y sincronización offline** | Completa 4.7 (push/cámara) y N11 | VAPID, payload, background sync/periodic sync, invalidación con `CACHE_NAME` versionado, cache-first vs stale-while-revalidate. | [MDN Push API](https://developer.mozilla.org/en-US/docs/Web/API/Push_API), [Workbox](https://developer.chrome.com/docs/workbox/) | Prototipo mínimo (suscripción + notificación) + decisión Workbox vs SW propio |
+| **0H** | **Derecho de datos (GDPR/LOPD)** | Export/borrado (Sprint 5) | Acceso, rectificación, supresión, portabilidad, retención, cascada de borrado (reviews, batches, imágenes). | [GDPR Art. 17/20](https://gdpr-info.eu/art-17-gdpr/), [AEPD](https://www.aepd.es/es) | Matriz de datos por entidad + procedimiento de borrado verificable |
+| **0I** | **Costes y operación (Postgres gestionado + Redis)** | Evita sorpresas en Sprint 3 | PITR, backups, límites, conexiones, réplicas, cold start, coste mensual (Render/Neon/Supabase). | [Neon Docs](https://neon.tech/docs/), [Supabase](https://supabase.com/docs/), [Render Postgres](https://render.com/docs/databases) | Comparativa con umbral aceptable + criterio de cambio |
+| **0J** | **Testing E2E resistente (Playwright)** | Crítico para dev solo (M6/N6) | Fixtures con auth, DB seed aislado, retries, flakiness, screenshots, aislamiento vs paralelismo. | [Playwright Best Practices](https://playwright.dev/docs/best-practices) | Guía E2E (evitar sleeps, usar locators accesibles) |
+
+**DoD FASE 0:** Todos 0A–0J cerrados con ADR + artefacto. No pasar a Fase 0b.
 ---
 
 ## 1. Matriz MoSCoW
@@ -246,6 +269,45 @@ del Sprint 14, en la bifurcación de la sección 4.
 
 Ningún sprint empieza con un Must sin cerrar.
 
+
+---
+
+## FASE 0b — Blindaje preventivo (Pre-Sprints P0)
+
+**Objetivo:** romper el triple acoplamiento (búsqueda + licencias + datos locales) antes de migraciones. Basado en el análisis del abogado del diablo.
+
+**Esfuerzo estimado:** ~49 h (dividido en 2 pre-sprints de 11+11 h + holgura para integración).
+
+### Pre-Sprint P0-1 (11 h) — Búsqueda + Licencias (P0-1–P0-8)
+
+| Tarea | Horas | Notas |
+|---|---|---|
+| **[P0-1]** Feature flag `SEARCH_BACKEND = sqlite\|pg\|like` | 2 h | Añadir en `app/config.py` y enrutar en `app/api/routes.py`. Rollback instantáneo |
+| **[P0-2]** Suite de relevancia canónica (`tests/data/search_queries.json`, ≥20 queries) + umbral Jaccard/Kendall | 4 h | Comparación top-10 entre backends. Bloqueante en CI |
+| **[P0-3]** Dual-read de búsqueda en staging (log-only) + validación de umbral | 2 h | Exigir igualdad dentro del umbral antes de promover |
+| **[P0-4]** Adaptador `SearchRepo` (`SqliteFtsRepo`, `PgTsvectorRepo`, `LikeRepo`) | 3 h | Desacopla SQL de los endpoints |
+
+### Pre-Sprint P0-2 (11 h) — Datos locales + Operación (P0-9–P0-16)
+
+| Tarea | Horas | Notas |
+|---|---|---|
+| **[P0-9]** Coexistencia lectura dual (localStorage + servidor) | 3 h | Nunca sobrescribir en silencio. Mostrar origen |
+| **[P0-10]** Merge con resolución de conflictos (`updated_at` + bitácora) | 4 h | UI para resolver duplicados antes de consolidar |
+| **[P0-11]** Migración `localStorage` con `--dry-run` + backup JSON | 2 h | Exige `--confirm`. Bloqueante |
+| **[P0-12]** Pre-check de conflictos + gate en sync | 2 h | Bloquea migración si hay conflictos sin resolver |
+
+### Tareas adicionales obligatorias (previas a producción)
+
+| Tarea | Horas | Cuándo |
+|---|---|---|
+| **[P0-5–P0-8]** Trazabilidad de licencias (por fila), license firewall, gate ODbL, aislamiento NC-ND | 14 h | Integrar en Sprint 0 (no posponer). Crear `scripts/check_license_compat.py` en CI |
+| **[P0-13]** Redis para rate limits + refresh tokens revocados | 4 h | Antes de múltiples réplicas (Sprint 4/Sprint 8) |
+| **[P0-14]** Checkpoint de migración BD + rollback ensayado | 2 h | Antes de tocar producción (Sprint 3) |
+| **[P0-15–P0-16]** DoD crítico + `docs/RISK_LOG.md` | 2 h | Al cerrar Fase 0b |
+
+**DoD FASE 0b:** Gates CI activos (`license-check`, `search-relevance-threshold`, `migration-dry-run`), feature flags con fecha de caducidad definida, rollback probado. Solo entonces pasar a Sprint 0.
+
+
 ### Sprint 0 — Licencias (11 h) · BLOQUEANTE
 - **Objetivo**: decidir qué datos pueden sostener un negocio, por escrito.
 - Inventario de fuentes con licencia real y URL de la licencia (3 h)
@@ -324,14 +386,22 @@ Ningún sprint empieza con un Must sin cerrar.
 - CORS cerrado, límites en auth y cabeceras de seguridad (2 h)
 - **Definido hecho**: un fix de CSS llega a un usuario con la app instalada sin tocar nada.
 
-### Sprint 9 — Lotes fuera del navegador (11 h)
+### Sprint 9a — Lotes fuera del navegador: coexistencia + dry-run (11 h) · ANTES de Sprint 3
 - **Objetivo**: que el dato del usuario viva en su cuenta.
-- Antes de empezar: **exportar `localStorage` a un archivo** (30 min, irrecuperable si se omite)
-- Importador `pantry_timers` / `pantry_prod` → `/me/batches` (4 h)
-- Tests del importador, incluidos datos corruptos (2 h)
-- Export del registro de lote en CSV (2,5 h)
-- Indicación en la UI de cuál es la fuente de verdad (2 h)
-- **Definido hecho**: un lote creado sin cuenta aparece en la cuenta al iniciar sesión.
+- **[P0-9/P0-10/P0-11/P0-12]** Lectura dual, resolución de conflictos, dry-run + backup JSON y pre-check de migración (6 h)
+- Antes de consolidar: **exportar `localStorage` a un archivo** (30 min, irrecuperable si se omite)
+- Importador `pantry_timers` / `pantry_prod` → `/me/batches` (modo lectura dual) (3 h)
+- Export del registro de lote en CSV (1,5 h)
+- Indicación en la UI de origen (`local|server|merged`) (1 h)
+- **Definido hecho**: dry-run sin pérdidas, conflictos detectados y lectura dual activa.
+
+### Sprint 9b — Lotes fuera del navegador: consolidación tras migración (11 h)
+- **Objetivo**: consolidar tras la migración a Postgres (Sprint 3).
+- Ejecutar migración con `--confirm` tras pasar gates (3 h)
+- Resolver conflictos detectados en 9a vía UI (4 h)
+- Tests E2E de migración (2 h)
+- Validar integridad y limpiar datos temporales (2 h)
+- **Definido hecho**: migración exitosa con rollback probado.
 
 ### Sprint 10 — Contenido de comunidad (11 h)
 - **Objetivo**: que un usuario tenga algo que compartir.
@@ -411,7 +481,10 @@ sin necesidad de facturar desde el día uno.
 6. **Toda decisión de más de 4 h se escribe antes de empezar** (ADR de una página). Si no está
    escrita, a las tres horas se ha olvidado el porqué.
 7. **El trabajo de comunidad tiene hora.** Si no cabe en el sprint, se aplaza una semana
-   declarada. Sin esto, los usuarios se comen el roadmap.
+7. **El trabajo de comunidad tiene hora.** Si no cabe en el sprint, se aplaza una semana declarada. Sin esto, los usuarios se comen el roadmap.
+8. **Sin flags temporales sin fecha de caducidad.** Todo feature flag debe tener fecha de caducidad y eliminarse tras promover.
+9. **Rollback probado.** Toda migración crítica debe tener script de rollback ensayado en staging.
+10. **Gates obligatorios.** `license-check`, `search-relevance-threshold` y `migration-dry-run` deben pasar en CI antes de promover.
 
 ---
 

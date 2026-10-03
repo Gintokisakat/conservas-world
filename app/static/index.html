@@ -86,6 +86,134 @@
     </header>
 
     <main class="app-container" id="main-content">
+        <!-- Barra de Búsqueda y Filtros -->
+        <section class="filters-card">
+            <!-- Píldoras de Filtrado Rápido -->
+            <div class="filter-pills-bar" id="category-pills-bar">
+                <button type="button" class="filter-pill active" onclick="filterByPill('')">🌐 Todos</button>
+                <button type="button" class="filter-pill" onclick="filterByPill('fermento_lactico')">🧀 Lácteos</button>
+                <button type="button" class="filter-pill" onclick="filterByPill('fermento_alcoholico')">🍺 Alcohólicos</button>
+                <button type="button" class="filter-pill" onclick="filterByPill('fermento_koji')">🍄 Koji</button>
+                <button type="button" class="filter-pill" onclick="filterByPill('encurtido_fermentado')">🥒 Encurtidos</button>
+                <button type="button" class="filter-pill" onclick="filterByPill('fermento_acetico')">🧪 Vinagres</button>
+                <button type="button" class="filter-pill" onclick="filterByPill('ark_of_taste')">🏛️ Arca del Gusto</button>
+                <button type="button" class="filter-pill" onclick="openProducersModal()">🏭 Productores</button>
+                <button type="button" class="filter-pill" onclick="openBreweriesModal()">🍺 Cervecerías</button>
+            </div>
+
+            <form id="search-form" class="filters-form" role="search" aria-label="Búsqueda de fermentos">
+
+                <div class="search-input-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="search" id="q" aria-label="Buscar fermentos y conservas" placeholder="Buscar por nombre o descripción (ej. kimchi, sauerkraut, choucroute...)" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest-box" aria-autocomplete="list" data-i18n-placeholder="search_placeholder">
+                    <div id="suggest-box" class="suggest-box hidden" role="listbox"></div>
+                </div>
+                <div class="method-chips-wrapper" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.6rem; margin-bottom:0.6rem; align-items:center">
+                    <span style="font-size:0.85rem; font-weight:600; color:var(--text-secondary)" data-i18n="filter_technique">Técnica:</span>
+                    <button type="button" class="btn btn-sm btn-outline method-chip active" data-method="">Todas</button>
+                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="lacto">🥬 Lacto</button>
+                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="acética">🍶 Vinagres</button>
+                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="alcohólica">🍹 Bebidas Vivas</button>
+                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="koji">🧫 Koji / Umami</button>
+                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="encurtido">🥒 Encurtidos</button>
+                </div>
+                <div class="selects-group">
+                    <select id="category" aria-label="Categoría" data-i18n-aria="filter_aria_category">
+                        <option value="" data-i18n="filter_all_categories">Todas las categorías</option>
+                    </select>
+                    <select id="continent" aria-label="Continente" data-i18n-aria="filter_aria_continent">
+                        <option value="" data-i18n="region_all">Todos los continentes</option>
+                        <option value="Asia" data-i18n="region_asia">Asia</option>
+                        <option value="Europe" data-i18n="region_europe">Europa</option>
+                        <option value="Africa" data-i18n="region_africa">África</option>
+                        <option value="Americas" data-i18n="region_americas">América</option>
+                        <option value="Oceania" data-i18n="region_oceania">Oceanía</option>
+                    </select>
+                    <select id="country" aria-label="País" data-i18n-aria="filter_aria_country">
+                        <option value="" data-i18n="country_all">Todos los países</option>
+                    </select>
+                    <select id="source" aria-label="Fuente de datos" data-i18n-aria="filter_aria_source">
+                        <option value="">Todas las fuentes</option>
+                        <option value="fermdb">FermDB</option>
+                        <option value="wikipedia">Wikipedia</option>
+                        <option value="openfoodfacts">Open Food Facts</option>
+                        <option value="wikidata">Wikidata</option>
+                        <option value="fdfdb">FDF-DB</option>
+                        <option value="regional">Regional</option>
+                        <option value="vinegar_curated">Vinagres & Bebidas</option>
+                        <option value="ark_of_taste">🏛️ Arca del Gusto</option>
+                    </select>
+                    <label class="gi-filter">
+                        <input type="checkbox" id="gi">
+                        <span data-i18n="gi_filter">Indicación geográfica</span>
+                    </label>
+                    <label class="gi-filter" title="Similitud por texto e ingredientes (TF-IDF)">
+                        <input type="checkbox" id="semantic">
+                        <span data-i18n="semantic_filter">🧠 Búsqueda semántica</span>
+                    </label>
+                    <select id="diet" aria-label="Dieta o restricción" data-i18n-aria="filter_aria_diet">
+                        <option value="">Todas las dietas</option>
+                        <option value="vegan">Vegano</option>
+                        <option value="vegetarian">Vegetariano</option>
+                        <option value="pescatarian">Pescatariano</option>
+                        <option value="gluten_free">Sin gluten</option>
+                        <option value="dairy_free" data-i18n="diet_dairy_free">Sin lácteos</option>
+                        <option value="soy_free">Sin soja</option>
+                        <option value="nut_free">Sin frutos secos</option>
+                        <option value="egg_free">Sin huevo</option>
+                        <option value="spicy">Picante</option>
+                    </select>
+                </div>
+                <div class="filters-status">
+                    <span class="filters-status-label" data-i18n="filters_active">Filtros activos:</span>
+                    <div id="active-filters" class="active-filters" aria-live="polite"></div>
+                    <button type="button" id="clear-filters" class="btn btn-sm btn-outline" hidden data-i18n="clear_filters">✕ Limpiar todo</button>
+                </div>
+                <div class="form-actions">
+                    <div class="form-actions-secondary">
+                        <button type="button" id="guide-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">📖 Manual del Fermentador</button>
+                        <button type="button" id="course-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">🎓 Curso</button>
+                        <button type="button" id="podcast-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">🎙️ Podcast</button>
+                        <button type="button" id="recipes-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43">👨‍🍳 Recetas</button>
+                        <button type="button" id="glossary-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">📚 Glosario</button>
+                        <button type="button" id="trouble-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43" data-i18n="trouble_btn">🚨 Diagnóstico</button>
+                        <button type="button" id="microbes-btn" class="btn btn-outline">🔬 Microbios</button>
+                        <button type="button" id="fav-filter-btn" class="btn btn-outline">❤️ Favoritos (<span id="fav-count">0</span>)</button>
+                    </div>
+                    <div class="form-actions-primary">
+                        <button type="submit" class="btn btn-primary">Buscar</button>
+                        <button type="button" id="random-btn" class="btn btn-accent" data-i18n="random_btn">🎲 Sorpréndeme</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+
+        <!-- Lista de Resultados -->
+        <section id="results" class="results-section">
+            <div class="results-head">
+                <span id="count" class="count-badge" aria-live="polite">Cargando resultados...</span>
+                <div style="display:flex; gap:0.4rem; align-items:center">
+                    <button type="button" id="view-list-btn" class="btn btn-sm view-toggle active">☰ <span data-i18n="view_list">Lista</span></button>
+                    <button type="button" id="view-map-btn" class="btn btn-sm view-toggle">🗺️ <span data-i18n="view_map">Mapa</span></button>
+                </div>
+                <div class="pagination">
+                    <button id="prev-btn" class="btn btn-sm" disabled>← Anterior</button>
+                    <span id="page-info" class="page-indicator" data-i18n="page_info">Página 1</span>
+                    <button id="next-btn" class="btn btn-sm" disabled>Siguiente →</button>
+                </div>
+            </div>
+            <ul id="product-list" class="products-grid"></ul>
+            <div id="map-view" class="hidden">
+                <div id="map"></div>
+                <div id="map-loading" class="hidden" role="status" aria-live="polite"></div>
+            </div>
+        </section>
+
+        <!-- Divisor: catálogo (arriba) vs. herramientas (abajo) -->
+        <div class="zone-divider" role="separator" aria-hidden="true">
+            <span data-i18n="tools_zone">Herramientas del taller</span>
+        </div>
+
         <!-- Sección Mi Despensa -->
         <section class="pantry-card" id="dashboard">
             <div class="pantry-header">
@@ -338,119 +466,6 @@
             </div>
         </section>
 
-        <!-- Barra de Búsqueda y Filtros -->
-        <section class="filters-card">
-            <!-- Píldoras de Filtrado Rápido -->
-            <div class="filter-pills-bar" id="category-pills-bar">
-                <button type="button" class="filter-pill active" onclick="filterByPill('')">🌐 Todos</button>
-                <button type="button" class="filter-pill" onclick="filterByPill('fermento_lactico')">🧀 Lácteos</button>
-                <button type="button" class="filter-pill" onclick="filterByPill('fermento_alcoholico')">🍺 Alcohólicos</button>
-                <button type="button" class="filter-pill" onclick="filterByPill('fermento_koji')">🍄 Koji</button>
-                <button type="button" class="filter-pill" onclick="filterByPill('encurtido_fermentado')">🥒 Encurtidos</button>
-                <button type="button" class="filter-pill" onclick="filterByPill('fermento_acetico')">🧪 Vinagres</button>
-                <button type="button" class="filter-pill" onclick="filterByPill('ark_of_taste')">🏛️ Arca del Gusto</button>
-                <button type="button" class="filter-pill" onclick="openProducersModal()">🏭 Productores</button>
-                <button type="button" class="filter-pill" onclick="openBreweriesModal()">🍺 Cervecerías</button>
-            </div>
-
-            <form id="search-form" class="filters-form" role="search" aria-label="Búsqueda de fermentos">
-
-                <div class="search-input-wrapper">
-                    <span class="search-icon">🔍</span>
-                    <input type="search" id="q" aria-label="Buscar fermentos y conservas" placeholder="Buscar por nombre o descripción (ej. kimchi, sauerkraut, choucroute...)" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="suggest-box" aria-autocomplete="list" data-i18n-placeholder="search_placeholder">
-                    <div id="suggest-box" class="suggest-box hidden" role="listbox"></div>
-                </div>
-                <div class="method-chips-wrapper" style="display:flex; flex-wrap:wrap; gap:0.4rem; margin-top:0.6rem; margin-bottom:0.6rem; align-items:center">
-                    <span style="font-size:0.85rem; font-weight:600; color:var(--text-secondary)" data-i18n="filter_technique">Técnica:</span>
-                    <button type="button" class="btn btn-sm btn-outline method-chip active" data-method="">Todas</button>
-                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="lacto">🥬 Lacto</button>
-                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="acética">🍶 Vinagres</button>
-                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="alcohólica">🍹 Bebidas Vivas</button>
-                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="koji">🧫 Koji / Umami</button>
-                    <button type="button" class="btn btn-sm btn-outline method-chip" data-method="encurtido">🥒 Encurtidos</button>
-                </div>
-                <div class="selects-group">
-                    <select id="category">
-                        <option value="" data-i18n="filter_all_categories">Todas las categorías</option>
-                    </select>
-                    <select id="continent">
-                        <option value="" data-i18n="region_all">Todos los continentes</option>
-                        <option value="Asia" data-i18n="region_asia">Asia</option>
-                        <option value="Europe" data-i18n="region_europe">Europa</option>
-                        <option value="Africa" data-i18n="region_africa">África</option>
-                        <option value="Americas" data-i18n="region_americas">América</option>
-                        <option value="Oceania" data-i18n="region_oceania">Oceanía</option>
-                    </select>
-                    <select id="country">
-                        <option value="" data-i18n="country_all">Todos los países</option>
-                    </select>
-                    <select id="source">
-                        <option value="">Todas las fuentes</option>
-                        <option value="fermdb">FermDB</option>
-                        <option value="wikipedia">Wikipedia</option>
-                        <option value="openfoodfacts">Open Food Facts</option>
-                        <option value="wikidata">Wikidata</option>
-                        <option value="fdfdb">FDF-DB</option>
-                        <option value="regional">Regional</option>
-                        <option value="vinegar_curated">Vinagres & Bebidas</option>
-                        <option value="ark_of_taste">🏛️ Arca del Gusto</option>
-                    </select>
-                    <label class="gi-filter">
-                        <input type="checkbox" id="gi">
-                        <span data-i18n="gi_filter">Indicación geográfica</span>
-                    </label>
-                    <label class="gi-filter" title="Similitud por texto e ingredientes (TF-IDF)">
-                        <input type="checkbox" id="semantic">
-                        <span data-i18n="semantic_filter">🧠 Búsqueda semántica</span>
-                    </label>
-                    <select id="diet">
-                        <option value="">Todas las dietas</option>
-                        <option value="vegan">Vegano</option>
-                        <option value="vegetarian">Vegetariano</option>
-                        <option value="pescatarian">Pescatariano</option>
-                        <option value="gluten_free">Sin gluten</option>
-                        <option value="dairy_free" data-i18n="diet_dairy_free">Sin lácteos</option>
-                        <option value="soy_free">Sin soja</option>
-                        <option value="nut_free">Sin frutos secos</option>
-                        <option value="egg_free">Sin huevo</option>
-                        <option value="spicy">Picante</option>
-                    </select>
-                </div>
-                <div class="form-actions">
-                    <button type="button" id="guide-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">📖 Manual del Fermentador</button>
-                    <button type="button" id="course-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">🎓 Curso</button>
-                    <button type="button" id="podcast-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">🎙️ Podcast</button>
-                    <button type="button" id="recipes-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43">👨‍🍳 Recetas</button>
-                    <button type="button" id="glossary-btn" class="btn btn-outline" style="border-color:#2d5a3f; color:#2d5a3f">📚 Glosario</button>
-                    <button type="button" id="trouble-btn" class="btn btn-outline" style="border-color:#d96b43; color:#d96b43" data-i18n="trouble_btn">🚨 Diagnóstico de Problemas</button>
-                    <button type="button" id="microbes-btn" class="btn btn-outline">🔬 Microbios Fermentadores</button>
-                    <button type="button" id="fav-filter-btn" class="btn btn-outline">❤️ Mis Favoritos (<span id="fav-count">0</span>)</button>
-                    <button type="submit" class="btn btn-primary">Buscar</button>
-                    <button type="button" id="random-btn" class="btn btn-accent" data-i18n="random_btn">🎲 Sorpréndeme</button>
-                </div>
-            </form>
-        </section>
-
-        <!-- Lista de Resultados -->
-        <section id="results" class="results-section">
-            <div class="results-head">
-                <span id="count" class="count-badge" aria-live="polite">Cargando resultados...</span>
-                <div style="display:flex; gap:0.4rem; align-items:center">
-                    <button type="button" id="view-list-btn" class="btn btn-sm view-toggle active">☰ <span data-i18n="view_list">Lista</span></button>
-                    <button type="button" id="view-map-btn" class="btn btn-sm view-toggle">🗺️ <span data-i18n="view_map">Mapa</span></button>
-                </div>
-                <div class="pagination">
-                    <button id="prev-btn" class="btn btn-sm" disabled>← Anterior</button>
-                    <span id="page-info" class="page-indicator" data-i18n="page_info">Página 1</span>
-                    <button id="next-btn" class="btn btn-sm" disabled>Siguiente →</button>
-                </div>
-            </div>
-            <ul id="product-list" class="products-grid"></ul>
-            <div id="map-view" class="hidden">
-                <div id="map"></div>
-                <div id="map-loading" class="hidden" role="status" aria-live="polite"></div>
-            </div>
-        </section>
     </main>
 
     <!-- Modal Detalle del Producto -->

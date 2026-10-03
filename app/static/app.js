@@ -638,9 +638,89 @@ function applyFromUrl() {
     return true;
 }
 
+const FILTER_SELECTS = ["category", "continent", "country", "source", "diet"];
+
+function activeFilterChips() {
+    const t = i18n[state.lang] || i18n.es;
+    const chips = [];
+    const q = (document.getElementById("q")?.value || "").trim();
+    if (q) chips.push({ key: "q", label: q });
+    for (const key of FILTER_SELECTS) {
+        const el = document.getElementById(key);
+        if (!el || !el.value) continue;
+        const opt = el.options[el.selectedIndex];
+        chips.push({ key, label: opt ? opt.textContent.trim() : el.value });
+    }
+    if (state.gi) chips.push({ key: "gi", label: t.gi_filter });
+    if (state.semantic) chips.push({ key: "semantic", label: t.semantic_filter });
+    if (state.method) chips.push({ key: "method", label: state.method });
+    if (state.onlyFavs) chips.push({ key: "onlyFavs", label: t.chip_favs });
+    return chips;
+}
+
+function renderActiveFilters() {
+    const box = document.getElementById("active-filters");
+    const clearBtn = document.getElementById("clear-filters");
+    const status = document.querySelector(".filters-status");
+    if (!box) return;
+    const chips = activeFilterChips();
+    box.innerHTML = chips
+        .map((c) => `<button type="button" class="filter-chip" data-chip="${c.key}">${esc(c.label)}<span aria-hidden="true">✕</span></button>`)
+        .join("");
+    if (status) status.classList.toggle("is-empty", chips.length === 0);
+    if (clearBtn) clearBtn.hidden = chips.length === 0;
+}
+
+document.getElementById("active-filters")?.addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-chip]");
+    if (!btn) return;
+    const key = btn.dataset.chip;
+    if (FILTER_SELECTS.includes(key)) {
+        const el = document.getElementById(key);
+        el.value = "";
+        state[key] = "";
+    } else if (key === "q") {
+        document.getElementById("q").value = "";
+        state.q = "";
+    } else if (key === "gi") {
+        document.getElementById("gi").checked = false;
+        state.gi = false;
+    } else if (key === "semantic") {
+        document.getElementById("semantic").checked = false;
+        state.semantic = false;
+    } else if (key === "method") {
+        state.method = "";
+        document.querySelectorAll(".method-chip").forEach((b) => b.classList.remove("active"));
+    } else if (key === "onlyFavs") {
+        state.onlyFavs = false;
+        document.getElementById("fav-filter-btn").classList.remove("active");
+    }
+    search(1);
+});
+
+document.getElementById("clear-filters")?.addEventListener("click", () => {
+    for (const key of FILTER_SELECTS) {
+        const el = document.getElementById(key);
+        if (el) el.value = "";
+        state[key] = "";
+    }
+    document.getElementById("q").value = "";
+    state.q = "";
+    document.getElementById("gi").checked = false;
+    state.gi = false;
+    document.getElementById("semantic").checked = false;
+    state.semantic = false;
+    state.method = "";
+    state.onlyFavs = false;
+    document.querySelectorAll(".method-chip").forEach((b) => b.classList.remove("active"));
+    document.getElementById("fav-filter-btn").classList.remove("active");
+    search(1);
+});
+
 async function search(page = 1) {
     state.onlyFavs = false;
     document.getElementById("fav-filter-btn").classList.remove("active");
+    renderActiveFilters();
     state.page = page;
     const list = document.getElementById("product-list");
     const q = document.getElementById("q").value.trim();
@@ -710,6 +790,7 @@ function renderSemanticResults(hits) {
 async function renderFavorites() {
     state.onlyFavs = true;
     document.getElementById("fav-filter-btn").classList.add("active");
+    renderActiveFilters();
     const list = document.getElementById("product-list");
     const favIds = Array.from(favorites);
     if (!favIds.length) {
@@ -3245,6 +3326,13 @@ function updateLanguageUI() {
         const key = el.dataset.i18nPlaceholder;
         if (t[key]) el.placeholder = t[key];
     });
+
+    document.querySelectorAll("[data-i18n-aria]").forEach((el) => {
+        const key = el.dataset.i18nAria;
+        if (t[key]) el.setAttribute("aria-label", t[key]);
+    });
+
+    renderActiveFilters();
 
     loadStats();
     loadCategories();

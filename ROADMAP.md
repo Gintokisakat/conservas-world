@@ -1,5 +1,11 @@
 # Roadmap: Conservas del Mundo
 
+> **Antes de planificar sobre este documento, lee [`docs/PLAN_LANZAMIENTO.md`](docs/PLAN_LANZAMIENTO.md).**
+> Contiene la auditoría de dirección de proyecto (2026-10-03) con los bloqueantes técnicos que
+> este roadmap no cubre: persistencia de datos en producción, invalidación de caché del PWA,
+> propiedad intelectual del dataset, verificación del frontend en navegador y cierre de CORS.
+> Resumen en la sección «Fase 0» más abajo.
+
 ## Estado Actual
 
 **Conservas del Mundo** es una plataforma de catálogo y descubrimiento de fermentos, encurtidos y conservas tradicionales del mundo.
@@ -147,6 +153,56 @@
 | **FoodKG** | github.com/foodkg | Knowledge graph semántico, 67M triples RDF, endpoint SPARQL | Consultas de relaciones ingredientes-recetas |
 | **FoodOn** | foodon.org | Ontología farm-to-fork, 9,600+ categorías, OBO Foundry | Estandarización de taxonomía |
 | **FlavorDB** | flavordb.foodviz.org | 720 compuestos de sabor en 690 alimentos (descargable, open) | Pairing granular por compuestos químicos (mejora 3.3) |
+
+---
+
+## FASE 0 — Bloqueantes de lanzamiento (previa a cualquier fase)
+
+> Extraído de [`docs/PLAN_LANZAMIENTO.md`](docs/PLAN_LANZAMIENTO.md). Nada de las fases siguientes
+> tiene sentido hasta que estos puntos estén resueltos, porque afectan a la Fase 4 completa
+> (auth, lotes, reseñas, recetas) y a la distribución de datos.
+
+#### 0.1 Persistencia de datos en producción
+- **Estado**: 🔴 no resuelto. `render.yaml` usa `plan: free` sin `disk`, y la BD se restaura desde
+  un artefacto del último release de GitHub (`ingest/restore.py`).
+- **Impacto**: cada reinicio borra `users`, `batches`, `reviews`, `recipes`, `producers` y
+  `api_keys`; el secreto JWT se regenera y todas las sesiones mueren.
+- **Qué hacer**: decidir disco persistente o PostgreSQL; separar la BD de catálogo (artefacto
+  descargable, solo lectura) de la BD de usuario (nunca del release); backup y restore ensayados.
+
+#### 0.2 Invalidación de caché del PWA
+- **Estado**: 🔴 automatizada a mano. `sw.js` sirve cache-first para todos los GET y solo se
+  invalida subiendo `CACHE_NAME` a mano (`conservas-world-v10`).
+- **Impacto**: los usuarios con la PWA instalada pueden recibir assets de despliegues anteriores.
+  Ocurrió con los commits `0bd4091` y `57d8c83` y no lo detectó ninguna verificación.
+- **Qué hacer**: versionar `CACHE_NAME` con el hash del build; checklist de release; estrategia
+  network-first para `/api/*`.
+
+#### 0.3 Propiedad intelectual del dataset
+- **Estado**: 🔴 sin decidir (preguntas 8 y 12 del roadmap, sin respuesta). La API pública y el
+  servidor MCP ya redistribuyen datos ODbL, CC BY-SA, CC BY y CC BY-NC-ND.
+- **Qué hacer**: matriz de compatibilidad de licencias; decidir carácter comercial; generar
+  `ATTRIBUTION.md`; excluir lo que sea NC-ND (2.4 FermFooDb).
+
+#### 0.4 Seguridad de producción
+- **Estado**: 🔴 `CORS allow_origins="*"` con `allow_credentials=True` en `app/main.py`, sin
+  `CONSERVAS_CORS_ORIGINS` en `render.yaml`. Rate limiting solo en memoria y sin límites propios
+  en `/auth/login`, `/auth/register`, `/recipes` o `/reviews`.
+- **Qué hacer**: restringir orígenes; límites por endpoint sensible; `SECURITY.md`;
+  Dependabot/CodeQL; cabeceras de seguridad (CSP).
+
+#### 0.5 Verificación real del frontend
+- **Estado**: 🔴 inexistente. ~187KB de `app.js` y 68KB de CSS se validan con aserciones de texto
+  sobre el código fuente; no hay navegador ni E2E. Un selector mal escrito rompe los 20 modales
+  y CI pasa.
+- **Qué hacer**: Playwright con los 5 flujos críticos; axe-core en CI; regresión visual en ambos
+  temas; matriz de versiones de Python y `pip-audit`.
+
+#### 0.6 Corregir las cifras de este roadmap
+- **Estado**: 🔴 obsoleto. «6.152 productos activos» (línea 16) no se reproduce:
+  `/api/v1/stats` en producción devuelve 4.259 y `data/build.db` tiene 4.259 filas no descartadas
+  de 10.415 totales. También «512 tests» (líneas 13 y 656) frente a los 600 actuales.
+- **Qué hacer**: regenerar el bloque «Datos actuales» desde `/api/v1/stats` y automatizarlo en CI.
 
 ---
 

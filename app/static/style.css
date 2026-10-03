@@ -377,7 +377,7 @@ body {
     border-radius: var(--radius-lg);
     overflow: hidden;
     box-shadow: var(--shadow-lg);
-    background: linear-gradient(135deg, #1b3827 0%, #d96b43 100%);
+    background: linear-gradient(135deg, #1b3827 0%, var(--color-accent) 100%);
     aspect-ratio: 4 / 3;
 }
 

@@ -4,7 +4,8 @@
 > Contiene la auditoría de dirección de proyecto (2026-10-03) con los bloqueantes técnicos que
 > este roadmap no cubre: persistencia de datos en producción, invalidación de caché del PWA,
 > propiedad intelectual del dataset, verificación del frontend en navegador y cierre de CORS.
-> Resumen en la sección «Fase 0» más abajo.
+> Resumen en la sección «Fase 0» más abajo. La ejecución priorizada por MoSCoW y el plan
+> por sprints están en [`docs/PLAN_SPRINTS.md`](docs/PLAN_SPRINTS.md).
 
 ## Estado Actual
 

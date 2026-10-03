@@ -5,6 +5,10 @@ Fecha: 2026-10-03. Alcance: qué falta antes de tratar el proyecto como lanzable
 
 > Este documento **no sustituye** al roadmap: lo ordena. El roadmap dice qué construir;
 > este dice qué impide que eso sobreviva al uso real.
+>
+> La ejecución posterior (MoSCoW, cuellos de botella y sprints) está en
+> [`PLAN_SPRINTS.md`](PLAN_SPRINTS.md), con los parámetros de trabajo acordados:
+> 5-6 h/semana en solitario, MVP = herramienta personal de fermentación.
 
 ---
 

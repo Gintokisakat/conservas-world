@@ -1,0 +1,16 @@
+name: search-relevance-check
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  relevance:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Check canonical queries exist
+        run: |
+          test -f tests/data/search_queries.json
+          echo "ok"

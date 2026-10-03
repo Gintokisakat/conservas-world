@@ -382,6 +382,21 @@ def _apply_filters(query, count_query, session, *, q, category, country, contine
 
     if q:
         fts_ids = _fts_matches(session, q.strip())
+        # Dual-read log-only (P0-3)
+        try:
+            from app import config
+            if getattr(config, "FEATURE_SEARCH_PG_ROLLOUT", False) and q:
+                try:
+                    from app.services.search_repo import PgTsvectorRepo
+                    pg = PgTsvectorRepo()
+                    _ = pg.matches(session, q.strip(), limit=1000)
+                    # Log-only: nunca alterar flujo principal
+                    # print/log opcional - evitar I/O excesivo
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
         if fts_ids is not None and fts_ids:
             query = query.where(models.Product.id.in_(fts_ids))
             count_query = count_query.where(models.Product.id.in_(fts_ids))

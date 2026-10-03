@@ -1863,6 +1863,8 @@ async function loadRecipesIntoList() {
     const T = recipesI18nT();
     const isEn = state.lang === 'en';
     loadingEl.classList.remove("hidden");
+    // Los skeletons son decorativos (aria-hidden); el texto keeps announcing.
+    loadingEl.innerHTML = `<span class="sr-only">${isEn ? 'Loading…' : 'Cargando…'}</span>${articleSkeletons(3)}`;
     listEl.innerHTML = "";
     const params = new URLSearchParams({
         sort: recipesFilter.sort,

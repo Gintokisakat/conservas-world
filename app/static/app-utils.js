@@ -94,6 +94,22 @@ async function api(path, opts) {
     return resp.json();
 }
 
+// Skeleton de artículo: imagen destacada + 3 líneas de texto.
+// Se usa mientras llegan los datos reales para que la pantalla no salte.
+function articleSkeletons(count = 3) {
+    return Array.from({ length: count }).map(() => `
+        <div class="skeleton-article" aria-hidden="true">
+            <div class="skeleton sk-media"></div>
+            <div class="sk-meta">
+                <div class="skeleton"></div>
+                <div class="skeleton"></div>
+            </div>
+            <div class="skeleton sk-line is-title"></div>
+            <div class="skeleton sk-line is-text"></div>
+            <div class="skeleton sk-line is-text-short"></div>
+        </div>`).join("");
+}
+
 // Mostrar skeletons
 function showSkeletons(count = 8) {
     const list = document.getElementById("product-list");

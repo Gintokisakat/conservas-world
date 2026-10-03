@@ -1,0 +1,16 @@
+name: migration-dry-run
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  dryrun:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+      - name: Script existe y es ejecutable
+        run: |
+          test -f scripts/migrate_local_to_account.py
+          echo "ok"

@@ -3332,7 +3332,13 @@ function updateLanguageUI() {
         if (t[key]) el.setAttribute("aria-label", t[key]);
     });
 
+    document.querySelectorAll("[data-i18n-alt]").forEach((el) => {
+        const key = el.dataset.i18nAlt;
+        if (t[key]) el.alt = t[key];
+    });
+
     renderActiveFilters();
+    setNavMenu(document.querySelector(".nav-links")?.classList.contains("is-open") ?? false);
 
     loadStats();
     loadCategories();
@@ -3376,6 +3382,8 @@ if (semanticToggle) {
 }
 
 updateFavBadge();
+initNavMenu();
+initHeroCta();
 updateBrineCalculator();
 updateABVCalculator();
 updateSaltConverter();
@@ -3529,6 +3537,62 @@ window.addEventListener("keydown", (e) => {
         }
     }
 });
+
+// ===== UX: navbar responsive + CTA del hero =====
+function setNavMenu(open) {
+    const menu = document.querySelector(".nav-links");
+    const toggle = document.getElementById("nav-toggle");
+    if (!menu || !toggle) return;
+    menu.classList.toggle("is-open", open);
+    toggle.classList.toggle("is-open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+    const t = i18n[state.lang] || i18n.es;
+    toggle.setAttribute("aria-label", open ? t.nav_toggle_close : t.nav_toggle_open);
+}
+
+function toggleNavMenu() {
+    const menu = document.querySelector(".nav-links");
+    if (menu) setNavMenu(!menu.classList.contains("is-open"));
+}
+
+function initNavMenu() {
+    const menu = document.querySelector(".nav-links");
+    const toggle = document.getElementById("nav-toggle");
+    if (!menu || !toggle) return;
+
+    toggle.addEventListener("click", toggleNavMenu);
+
+    // Un enlace navegado siempre cierra el cajón.
+    menu.querySelectorAll("a").forEach((a) => {
+        a.addEventListener("click", () => setNavMenu(false));
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && menu.classList.contains("is-open")) {
+            setNavMenu(false);
+            toggle.focus();
+        }
+    });
+
+    // Al volver a escritorio el cajón debe quedar cerrado.
+    window.addEventListener("resize", () => {
+        if (window.innerWidth > 900) setNavMenu(false);
+    });
+}
+
+function initHeroCta() {
+    const cta = document.getElementById("hero-cta");
+    const input = document.getElementById("q");
+    if (!cta || !input) return;
+    cta.addEventListener("click", () => {
+        const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const catalog = document.querySelector(".filters-card");
+        if (catalog) {
+            catalog.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
+        }
+        input.focus({ preventScroll: true });
+    });
+}
 
 // ===== UX: barra de filtros sticky al hacer scroll =====
 (function() {

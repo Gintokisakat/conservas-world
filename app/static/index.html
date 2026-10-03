@@ -57,37 +57,69 @@
 <body>
     <a href="#main-content" class="skip-link" data-i18n="skip_link">Saltar al contenido principal</a>
     <header class="site-header">
-        <div class="header-container">
-            <div class="brand">
+        <nav class="navbar" aria-label="Navegación principal">
+            <a class="brand" href="#main-content">
                 <span class="brand-icon">🏺</span>
-                <div>
-                    <h1>Conservas del Mundo</h1>
-                    <p class="subtitle" data-i18n="header_sub">Catálogo global de fermentos, encurtidos y recetas tradicionales</p>
-                </div>
-            </div>
-            <div style="display:flex; align-items:center; gap:0.8rem">
-                <div id="stats" class="stats-grid" onclick="openChartsModal()" style="cursor:pointer" title="Ver gráficos detallados">
-                    <div class="stat-skeleton" data-i18n="stats_loading">Cargando estadísticas…</div>
-                </div>
-                <button type="button" class="btn btn-sm btn-outline" onclick="openChartsModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="charts_btn">📊 Gráficos</button>
-                <button type="button" class="btn btn-sm btn-outline" onclick="openProducersModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="producers_btn">🏭 Productores</button>
-                <button type="button" class="btn btn-sm btn-outline" onclick="openBreweriesModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="breweries_btn">🍺 Cervecerías</button>
-                <button type="button" class="btn btn-sm btn-outline" id="compare-btn" onclick="openCompareModal()" style="border-color:rgba(255,255,255,0.4); color:#fff"><span data-i18n="compare_btn">⚖️ Comparar</span> <span id="compare-count" class="tag" style="background:var(--color-accent); color:#fff; font-size:0.75rem; margin-left:0.2rem">0</span></button>
-                <select id="lang-select" class="lang-picker" title="Cambiar idioma" aria-label="Cambiar idioma">
+                <h1 class="brand-name">Conservas del Mundo</h1>
+            </a>
 
+            <ul class="nav-links">
+                <li><a href="#catalog" data-i18n="nav_catalog">Catálogo</a></li>
+                <li><a href="#tools" data-i18n="nav_tools">Herramientas</a></li>
+                <li><a href="#flavormap-card" data-i18n="nav_flavors">Mapa de sabores</a></li>
+                <li><a href="#seasonal-card" data-i18n="nav_seasonal">Temporada</a></li>
+                <li><a href="#timeline-card" data-i18n="nav_timeline">Línea de tiempo</a></li>
+            </ul>
+
+            <div class="nav-actions">
+                <select id="lang-select" class="lang-picker" title="Cambiar idioma" aria-label="Cambiar idioma">
                     <option value="es">🇪🇸 Español</option>
                     <option value="en">🇬🇧 English</option>
                 </select>
-                <button type="button" id="install-btn" class="btn btn-sm btn-outline" hidden style="border-color:rgba(255,255,255,0.4); color:#fff">⬇️ <span data-i18n="install_btn">Instalar</span></button>
-                <div id="auth-area" style="display:flex; align-items:center; gap:0.5rem"></div>
                 <button type="button" id="theme-toggle" class="theme-toggle" title="Cambiar tema" aria-label="Cambiar tema">🌙</button>
+                <div id="auth-area" class="nav-auth"></div>
+                <button type="button" id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="nav-links" aria-label="Abrir menú" data-i18n-aria="nav_toggle_open">
+                    <span class="nav-toggle-bar"></span>
+                    <span class="nav-toggle-bar"></span>
+                    <span class="nav-toggle-bar"></span>
+                </button>
             </div>
+        </nav>
+
+        <div class="header-toolbar">
+            <div id="stats" class="stats-grid" onclick="openChartsModal()" style="cursor:pointer" title="Ver gráficos detallados">
+                <div class="stat-skeleton" data-i18n="stats_loading">Cargando estadísticas…</div>
+            </div>
+            <button type="button" class="btn btn-sm btn-outline" onclick="openChartsModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="charts_btn">📊 Gráficos</button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="openProducersModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="producers_btn">🏭 Productores</button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="openBreweriesModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="breweries_btn">🍺 Cervecerías</button>
+            <button type="button" class="btn btn-sm btn-outline" id="compare-btn" onclick="openCompareModal()" style="border-color:rgba(255,255,255,0.4); color:#fff"><span data-i18n="compare_btn">⚖️ Comparar</span> <span id="compare-count" class="tag" style="background:var(--color-accent); color:#fff; font-size:0.75rem; margin-left:0.2rem">0</span></button>
+            <button type="button" id="install-btn" class="btn btn-sm btn-outline" hidden style="border-color:rgba(255,255,255,0.4); color:#fff">⬇️ <span data-i18n="install_btn">Instalar</span></button>
         </div>
     </header>
 
     <main class="app-container" id="main-content">
+        <!-- Hero: primera vista -->
+        <section class="hero" aria-labelledby="hero-title">
+            <div class="hero-copy">
+                <p class="hero-eyebrow" data-i18n="hero_eyebrow">Fermentos y conservas del mundo</p>
+                <h2 class="hero-title" id="hero-title" data-i18n="hero_title">Milenios de fermentación, en un solo catálogo</h2>
+                <p class="hero-sub" data-i18n="hero_sub">Kimbel, chucrut, koji, vinagre de arroz: explora qué se fermenta en cada región, cómo se hace y qué puedes preparar con ello.</p>
+                <div class="hero-cta">
+                    <button type="button" id="hero-cta" class="btn-hero">
+                        <span data-i18n="hero_cta">Explorar el catálogo</span>
+                        <span class="btn-hero-arrow" aria-hidden="true">→</span>
+                    </button>
+                    <a class="btn-hero-ghost" href="#tools" data-i18n="hero_cta_secondary">Ver herramientas</a>
+                </div>
+            </div>
+            <div class="hero-media">
+                <img src="/static/img/og-default.png" alt="" data-i18n-alt="hero_img_alt" loading="lazy" decoding="async" width="1200" height="630">
+            </div>
+        </section>
+
         <!-- Barra de Búsqueda y Filtros -->
-        <section class="filters-card">
+        <section class="filters-card" id="catalog">
             <!-- Píldoras de Filtrado Rápido -->
             <div class="filter-pills-bar" id="category-pills-bar">
                 <button type="button" class="filter-pill active" onclick="filterByPill('')">🌐 Todos</button>
@@ -210,7 +242,7 @@
         </section>
 
         <!-- Divisor: catálogo (arriba) vs. herramientas (abajo) -->
-        <div class="zone-divider" role="separator" aria-hidden="true">
+        <div class="zone-divider" id="tools" role="separator" aria-hidden="true">
             <span data-i18n="tools_zone">Herramientas del taller</span>
         </div>
 

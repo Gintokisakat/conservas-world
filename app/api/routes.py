@@ -9,7 +9,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Query, Response
 from ingest.ingredients import CANONICAL_INGREDIENTS, match_ingredients
 from ingest.normalize import normalize_name
-from sqlalchemy import ColumnElement, func, select, text
+from sqlalchemy import ColumnElement, func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.db import models

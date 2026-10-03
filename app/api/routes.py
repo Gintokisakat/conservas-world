@@ -80,34 +80,10 @@ _SUBSTRATE_NAMES = {
 
 
 def _fts_matches(session: Session, term: str, limit: int = 1000) -> list[int] | None:
-    tokens = [t for t in term.split() if t]
-    if not tokens:
-        return []
-    # Sanitizar tokens: remover caracteres especiales de FTS5
-    import re
-    safe_tokens = []
-    for t in tokens:
-        # Solo permitir letras, números y espacios
-        cleaned = re.sub(r'[^\w\s-]', '', t, flags=re.UNICODE)
-        cleaned = cleaned.strip()
-        if cleaned:
-            safe_tokens.append(cleaned)
-    if not safe_tokens:
-        return []
-    match = " AND ".join(f'"{t}"*' for t in safe_tokens)
-    try:
-        rows: Sequence[int] = session.execute(
-            text(
-                "SELECT rowid FROM products_fts "
-                "WHERE products_fts MATCH :t ORDER BY bm25(products_fts) LIMIT :limit"
-            ),
-            {"t": match, "limit": limit},
-        ).scalars().all()
-        return list(rows)
-    except Exception:
-        return None
+    from app.services.search_repo import get_search_repo
 
-
+    repo = get_search_repo()
+    return repo.matches(session, term, limit)
 def _load_product(session: Session, product_id: int) -> models.Product:
     product = session.execute(
         select(models.Product)

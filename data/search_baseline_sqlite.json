@@ -1,0 +1,260 @@
+{
+  "meta": {
+    "backend": "sqlite-baseline"
+  },
+  "results": [
+    {
+      "query": "kimchi",
+      "desc": "exacto nombre coreano",
+      "top10": [
+        3432,
+        3431,
+        1638,
+        1681,
+        1611,
+        1624,
+        1648,
+        1650,
+        1675,
+        1678
+      ]
+    },
+    {
+      "query": "sauerkraut",
+      "desc": "chucrut alem\u00e1n",
+      "top10": [
+        9778,
+        3879,
+        3868,
+        3869,
+        3852,
+        3821,
+        3878,
+        3889,
+        1579,
+        3829
+      ]
+    },
+    {
+      "query": "escabeche",
+      "desc": "con acento",
+      "top10": [
+        6155
+      ]
+    },
+    {
+      "query": "morcilla",
+      "desc": "con acento",
+      "top10": [
+        6369
+      ]
+    },
+    {
+      "query": "morcila",
+      "desc": "sin acento",
+      "top10": []
+    },
+    {
+      "query": "ferment",
+      "desc": "parcial",
+      "top10": [
+        608,
+        2165,
+        4078,
+        10331,
+        2012,
+        4037,
+        10277,
+        2164,
+        10349,
+        10389
+      ]
+    },
+    {
+      "query": "choucroute",
+      "desc": "sin\u00f3nimo franc\u00e9s",
+      "top10": [
+        3851,
+        3819,
+        3880,
+        3861,
+        3836,
+        3844,
+        3846,
+        3845,
+        3823,
+        3894
+      ]
+    },
+    {
+      "query": "chucrut",
+      "desc": "espa\u00f1olizado",
+      "top10": [
+        1568,
+        1665,
+        1580,
+        1549,
+        1585,
+        1555,
+        1569,
+        1577,
+        1598,
+        1550
+      ]
+    },
+    {
+      "query": "kombucha",
+      "desc": "t\u00e9 fermentado",
+      "top10": [
+        1955,
+        1959,
+        1947,
+        1915,
+        1973,
+        4013,
+        1965,
+        1981,
+        1939,
+        1914
+      ]
+    },
+    {
+      "query": "kefir",
+      "desc": "l\u00e1cteo fermentado",
+      "top10": [
+        2080,
+        2169,
+        857,
+        2161,
+        2066,
+        2154,
+        842,
+        2097,
+        2121,
+        2009
+      ]
+    },
+    {
+      "query": "yogurt",
+      "desc": "yogur",
+      "top10": [
+        1214,
+        10136,
+        7665,
+        10020,
+        4059,
+        6191,
+        4044,
+        6181,
+        4062,
+        4052
+      ]
+    },
+    {
+      "query": "misopaste",
+      "desc": "pasta fermentada asi\u00e1tica",
+      "top10": [
+        1749,
+        1731,
+        3952,
+        1751
+      ]
+    },
+    {
+      "query": "natto",
+      "desc": "soja fermentada",
+      "top10": [
+        1896,
+        4008,
+        378,
+        1897,
+        214,
+        1894
+      ]
+    },
+    {
+      "query": "tempeh",
+      "desc": "soja fermentada indonesia",
+      "top10": [
+        1825,
+        1867,
+        1868,
+        1871,
+        1793,
+        1789,
+        1864,
+        1808,
+        3991,
+        3994
+      ]
+    },
+    {
+      "query": "miso",
+      "desc": "miso japon\u00e9s",
+      "top10": [
+        1716,
+        1749,
+        1719,
+        1736,
+        1759,
+        1768,
+        3958,
+        3942,
+        1737,
+        1763
+      ]
+    },
+    {
+      "query": "doenjang",
+      "desc": "pasta coreana",
+      "top10": [
+        144,
+        613
+      ]
+    },
+    {
+      "query": "gochujang",
+      "desc": "pasta picante coreana",
+      "top10": [
+        195,
+        613
+      ]
+    },
+    {
+      "query": "fish sauce",
+      "desc": "multi-palabra",
+      "top10": [
+        7077,
+        9759,
+        7076,
+        7078,
+        7079,
+        10004,
+        4290,
+        4299,
+        3920,
+        6200
+      ]
+    },
+    {
+      "query": "pisco sour",
+      "desc": "multi-palabra no fermentado? control",
+      "top10": []
+    },
+    {
+      "query": "queso azul",
+      "desc": "multi-palabra l\u00e1cteo",
+      "top10": [
+        618,
+        6413,
+        98,
+        1020,
+        179,
+        61,
+        136,
+        512,
+        1014
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+name: license-check
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  license:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Basic license presence
+        run: |
+          test -f docs/adr/ADR-0001-licenciamiento-bases-datos.md
+          echo "ok"

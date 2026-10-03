@@ -5,9 +5,8 @@ Revises: bc8b230c4d88
 Create Date: 2026-10-03 20:20:00
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '001_tsvector'

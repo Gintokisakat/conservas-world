@@ -75,13 +75,6 @@ class LikeRepo(SearchRepo):
             return None
 
 
-class PgTsvectorRepo(SearchRepo):
-    def matches(self, session: Session, term: str, limit: int = 1000) -> list[int] | None:
-        # Placeholder: requiere esquema Postgres (tsvector). Devuelve None para degradar.
-        try:
-            return None
-        except Exception:
-            return None
 
 
 def get_search_repo() -> SearchRepo:
@@ -91,3 +84,28 @@ def get_search_repo() -> SearchRepo:
     if backend == "like":
         return LikeRepo()
     return SqliteFtsRepo()
+
+
+class PgTsvectorRepo(SearchRepo):
+    def matches(self, session: Session, term: str, limit: int = 1000) -> list[int] | None:
+        safe_tokens = _sanitize_fts_tokens(term)
+        if not safe_tokens:
+            return []
+        # Usar websearch_to_tsquery para comportamiento natural
+        qtext = " ".join(safe_tokens)
+        try:
+            sql = text(
+                """
+                SELECT id
+                FROM products
+                WHERE to_tsvector('simple', coalesce(name,'')) @@ websearch_to_tsquery('simple', :q)
+                ORDER BY ts_rank(to_tsvector('simple', coalesce(name,'')), websearch_to_tsquery('simple', :q)) DESC
+                LIMIT :limit
+                """
+            )
+            rows: Sequence[int] = (
+                session.execute(sql, {"q": qtext, "limit": limit}).scalars().all()
+            )
+            return list(rows)
+        except Exception:
+            return None

@@ -8,7 +8,8 @@ Fecha: 2026-10-03. Alcance: qué falta antes de tratar el proyecto como lanzable
 >
 > La ejecución posterior (MoSCoW, cuellos de botella y sprints) está en
 > [`PLAN_SPRINTS.md`](PLAN_SPRINTS.md), con los parámetros de trabajo acordados:
-> 5-6 h/semana en solitario, MVP = herramienta personal de fermentación.
+> 5-6 h/semana en solitario y objetivo de convertir el proyecto en algo comunitario
+> y comercial, con una PWA como vehículo de app.
 
 ---
 

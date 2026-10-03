@@ -781,7 +781,7 @@ function renderSemanticResults(hits) {
             </div>
             <div class="tags">
                 ${h.source_tag ? tag(h.source_tag, "source") : ""}
-                <span class="tag" style="background:rgba(139,92,246,0.12); color:#8b5cf6; border:1px solid rgba(139,92,246,0.3)">🧠 ${state.lang === 'en' ? 'semantic' : 'semántico'}</span>
+                <span class="tag tag-semantic">🧠 ${state.lang === 'en' ? 'semantic' : 'semántico'}</span>
             </div>
         </li>`;
     }).join("");
@@ -831,9 +831,9 @@ function productCardHtml(p, noDesc, index) {
             <p class="desc">${esc(p.description || noDesc)}</p>
         </div>
         <div class="tags">
-            ${p.source_tag === "ark_of_taste" ? `<span class="tag" style="background:rgba(217,119,6,0.15); color:#b45309; border:1px solid rgba(217,119,6,0.3); font-weight:600">🏛️ Arca del Gusto</span>` : ""}
+            ${p.source_tag === "ark_of_taste" ? `<span class="tag tag-ark">🏛️ Arca del Gusto</span>` : ""}
             ${p.fermentation_time ? `<span class="tag" style="background:rgba(45,90,63,0.12); color:var(--color-primary); border:1px solid rgba(45,90,63,0.25)">⏱️ ${esc(p.fermentation_time)}</span>` : ""}
-            ${p.storage_life ? `<span class="tag" style="background:rgba(217,107,67,0.12); color:#d96b43; border:1px solid rgba(217,107,67,0.25)">🧊 ${esc(p.storage_life)}</span>` : ""}
+            ${p.storage_life ? `<span class="tag tag-shelf">🧊 ${esc(p.storage_life)}</span>` : ""}
             ${p.substrate ? tag(p.substrate, "substrate") : ""}
             ${p.categories.map((c) => tag(c.name)).join("")}
             ${p.countries.map((c) => tag(c.name, "country")).join("")}
@@ -956,10 +956,10 @@ async function openDetail(id) {
             <div class="detail-section safety-card">
                 <h4>🛡️ ${state.lang === 'en' ? 'Safety & pH' : 'Seguridad y pH'}</h4>
                 <div class="safety-risk" style="display:flex; align-items:center; gap:0.6rem; margin-bottom:0.5rem">
-                    <span class="tag" style="${safety.risk === 'medio' ? "background:rgba(217,119,6,0.15); color:#b45309; border:1px solid rgba(217,119,6,0.35)" : "background:rgba(45,90,63,0.12); color:var(--color-primary); border:1px solid rgba(45,90,63,0.25)"}">
+                    <span class="tag ${safety.risk === 'medio' ? "tag-safety-med" : "tag-safety-low"}">
                         ${state.lang === 'en' ? 'Risk:' : 'Riesgo:'} ${esc(safety.category)}
                     </span>
-                    <span class="tag" style="background:rgba(139,92,246,0.12); color:#8b5cf6; border:1px solid rgba(139,92,246,0.3)">${safety.ph_requirement}</span>
+                    <span class="tag tag-semantic">${safety.ph_requirement}</span>
                 </div>
                 <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:0.4rem; font-size:0.85rem; margin-bottom:0.6rem">
                     <span><strong>pH:</strong> ${safety.ph_min}–${safety.ph_max}</span>
@@ -1065,9 +1065,8 @@ async function openDetail(id) {
 
 function closeDetail(event) {
     if (event && event.target.id !== "detail" && !event.target.classList.contains("modal-close")) return;
+    // El foco lo devuelve initOverlayA11y() al observar la clase .hidden
     document.getElementById("detail").classList.add("hidden");
-    // Devolver el foco al elemento que abrió el modal
-    if (document.activeElement) document.activeElement.blur();
 }
 
 // Focus trapping para modales
@@ -1122,7 +1121,7 @@ async function openIngredient(id, name) {
             moleculesHtml = `
                 <h3 style="margin-top:0.4rem">🧪 ${isEnM ? 'Flavor molecules' : 'Moléculas de sabor'}</h3>
                 <div style="display:flex; gap:0.35rem; flex-wrap:wrap; margin-top:0.4rem">
-                    ${molecules.items.map((m) => `<span class="tag" title="${escAttr(m.pubchem_id ? 'PubChem ' + m.pubchem_id : '')}" style="background:rgba(59,130,246,0.1); color:#3b82f6; border:1px solid rgba(59,130,246,0.25); font-size:0.75rem">${esc(m.name)}</span>`).join("")}
+                    ${molecules.items.map((m) => `<span class="tag" title="${escAttr(m.pubchem_id ? 'PubChem ' + m.pubchem_id : '')}" class="tag tag-molecule">${esc(m.name)}</span>`).join("")}
                     ${molecules.total > molecules.items.length ? `<span style="font-size:0.75rem; color:var(--text-muted); align-self:center">+${molecules.total - molecules.items.length}</span>` : ""}
                 </div>`;
         }
@@ -1216,7 +1215,7 @@ function renderGuideList() {
         <p style="color:var(--text-secondary); margin-bottom:1.2rem">${isEn ? 'Interactive fermentation recipes with steps, timings and temperatures.' : 'Recetas interactivas de fermentación con pasos, tiempos y temperaturas.'}</p>
         <div id="guide-list" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(260px, 1fr)); gap:1rem">
             ${guidesCache.map((g) => `
-                <button type="button" class="guide-card" data-slug="${escAttr(g.slug)}" style="text-align:left; cursor:pointer; background:var(--bg-page); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem">
+                <button type="button" class="guide-card" data-slug="${escAttr(g.slug)}" style="text-align:left; cursor:pointer; background:var(--bg-page); border:1px solid var(--border-input); border-radius:var(--radius-md); padding:1rem">
                     <div style="font-size:0.78rem; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.04em">${esc(g.category)} · ${esc(g.difficulty)}</div>
                     <h3 style="margin:0.3rem 0 0.4rem; color:var(--color-primary)">${esc(g.title)}</h3>
                     <p style="font-size:0.88rem; color:var(--text-secondary); margin:0 0 0.5rem">${esc(g.intro)}</p>
@@ -1259,7 +1258,7 @@ function renderGuideStep() {
     const step = g.steps[guideState.index];
     const pct = Math.round(((guideState.index + 1) / g.steps.length) * 100);
 
-    const safetyHtml = step.safety ? `<p style="margin-top:0.8rem; padding:0.6rem 0.8rem; border-radius:var(--radius-sm); background:rgba(217,119,6,0.12); border:1px solid rgba(217,119,6,0.3); color:#b45309; font-size:0.88rem">⚠️ ${isEn ? 'Safety check: never taste if the brine smells foul or has black mold.' : 'Control de inocuidad: nunca pruebes si la salmuera huele mal o tiene moho negro.'}</p>` : "";
+    const safetyHtml = step.safety ? `<p class="safety-note">⚠️ ${isEn ? 'Safety check: never taste if the brine smells foul or has black mold.' : 'Control de inocuidad: nunca pruebes si la salmuera huele mal o tiene moho negro.'}</p>` : "";
 
     body.innerHTML = `
         <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.6rem; margin-bottom:0.6rem">
@@ -1275,7 +1274,7 @@ function renderGuideStep() {
             <span>${guideTimerLabel(step)}</span>
         </div>
         <h3 style="color:var(--color-primary); margin:0 0 0.6rem">${step.number}. ${esc(step.title)}</h3>
-        <p style="line-height:1.6; color:var(--text-color)">${esc(step.body)}</p>
+        <p style="line-height:1.6; color:var(--text-primary)">${esc(step.body)}</p>
         ${safetyHtml}
         <div style="display:flex; gap:0.6rem; margin-top:1.2rem; flex-wrap:wrap">
             ${step.duration_min ? `<button type="button" class="btn btn-secondary" id="guide-timer-btn">⏱️ ${isEn ? 'Start timer' : 'Iniciar temporizador'} (${step.duration_min} min)</button>` : ""}
@@ -1507,11 +1506,11 @@ function renderPodcastList() {
         <h2>🎙️ ${isEn ? 'Fermentation Podcasts' : 'Podcasts de fermentación'}</h2>
         <p style="color:var(--text-secondary); margin-bottom:1rem">${isEn ? 'Curated episodes from FermUp and Ferment Radio. External links — no audio is embedded.' : 'Episodios seleccionados de FermUp y Ferment Radio. Enlaces externos: no se incrusta audio.'}</p>
         <div style="display:flex; gap:0.6rem; flex-wrap:wrap; margin-bottom:1rem">
-            <select id="podcast-topic-filter" class="lang-picker" style="padding:0.45rem 0.7rem; border-radius:var(--radius-sm); border:1px solid var(--border-color)">
+            <select id="podcast-topic-filter" class="lang-picker" style="padding:0.45rem 0.7rem; border-radius:var(--radius-sm); border:1px solid var(--border-input)">
                 <option value="">${isEn ? 'All topics' : 'Todos los temas'}</option>
                 ${podcastTopics.topics.map((t) => `<option value="${escAttr(t.key)}">${esc(t.label)}</option>`).join("")}
             </select>
-            <select id="podcast-ferment-filter" class="lang-picker" style="padding:0.45rem 0.7rem; border-radius:var(--radius-sm); border:1px solid var(--border-color)">
+            <select id="podcast-ferment-filter" class="lang-picker" style="padding:0.45rem 0.7rem; border-radius:var(--radius-sm); border:1px solid var(--border-input)">
                 <option value="">${isEn ? 'All ferments' : 'Todos los fermentos'}</option>
                 ${podcastTopics.ferments.map((f) => `<option value="${escAttr(f)}">${esc(f)}</option>`).join("")}
             </select>
@@ -1562,7 +1561,7 @@ async function renderPodcastEpisodes() {
             <h3 style="margin:0 0 0.3rem; color:var(--color-primary)">${esc(e.title)}</h3>
             <p style="font-size:0.88rem; color:var(--text-secondary); margin:0 0 0.6rem; flex:1">${esc(e.summary)}</p>
             <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.8rem">
-                ${e.ferments.map((f) => `<button type="button" class="podcast-ferment-tag tag" data-ferment="${escAttr(f)}" style="background:rgba(217,107,67,0.12); color:#d96b43; border:1px solid rgba(217,107,67,0.3); cursor:pointer">#${esc(f)}</button>`).join("")}
+                ${e.ferments.map((f) => `<button type="button" class="podcast-ferment-tag tag tag-shelf" data-ferment="${escAttr(f)}">#${esc(f)}</button>`).join("")}
             </div>
             <a class="btn btn-sm btn-outline" href="${escAttr(e.url)}" target="_blank" rel="noopener noreferrer" style="text-align:center">${isEn ? 'Listen on the source site ↗' : 'Escuchar en el sitio de origen ↗'}</a>
         </div>`).join("") || `<p style="color:var(--text-muted)">${isEn ? 'No episodes found.' : 'No hay episodios para esos filtros.'}</p>`;
@@ -1626,6 +1625,13 @@ function reviewsI18n() {
         del: isEn ? 'Delete' : 'Eliminar',
         cancel: isEn ? 'Cancel' : 'Cancelar',
         you: isEn ? 'You' : 'Tú',
+        ratingLabel: isEn ? 'Your rating' : 'Tu valoración',
+        ratingHelp: isEn
+            ? 'Use the arrow keys, Home and End to choose a rating from 0 to 5 stars.'
+            : 'Usa las flechas, Inicio y Fin para elegir una valoración de 0 a 5 estrellas.',
+        ratingText: (v) => (v
+            ? (isEn ? `${v} of 5 stars` : `${v} de 5 estrellas`)
+            : (isEn ? 'Not rated' : 'Sin valorar')),
     };
 }
 
@@ -1647,7 +1653,7 @@ async function loadProductReviews(pid, editingId) {
             ${data.items.map((r) => `
                 <div style="border:1px solid var(--border-color); border-radius:var(--radius-sm); padding:0.6rem 0.8rem">
                     <div style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem">
-                        <span style="color:#e8b45a; letter-spacing:1px">${starsText(r.rating)}</span>
+                        <span class="stars" style="letter-spacing:1px">${starsText(r.rating)}</span>
                         <span style="font-size:0.78rem; color:var(--text-muted)">
                             ${r.mine ? T.you : "👤"} · ${(r.created_at || "").slice(0, 10)}
                             ${r.mine ? `
@@ -1661,19 +1667,24 @@ async function loadProductReviews(pid, editingId) {
         : `<p style="color:var(--text-muted); font-size:0.85rem; margin-top:0.4rem">${T.none}</p>`;
 
     const avgHtml = data.average != null
-        ? `<span style="color:#e8b45a; font-weight:600">★ ${data.average}</span><span style="color:var(--text-muted); font-size:0.82rem"> · ${data.total} ${isEn ? (data.total === 1 ? 'review' : 'reviews') : (data.total === 1 ? 'reseña' : 'reseñas')}</span>`
+        ? `<span class="stars" style="font-weight:600">★ ${data.average}</span><span style="color:var(--text-muted); font-size:0.82rem"> · ${data.total} ${isEn ? (data.total === 1 ? 'review' : 'reviews') : (data.total === 1 ? 'reseña' : 'reseñas')}</span>`
         : "";
 
     const formHtml = !currentUser
         ? `<button type="button" id="review-login-btn" class="btn btn-sm btn-outline" style="margin-top:0.6rem">🔐 ${T.loginFirst}</button>`
         : (!mine || editing)
             ? `<div style="margin-top:0.7rem">
-                <div id="review-stars" style="display:flex; gap:0.15rem; font-size:1.3rem; cursor:pointer; color:#e8b45a" data-value="${editing ? editing.rating : 0}">
-                    ${[1, 2, 3, 4, 5].map((v) => `<span data-star="${v}">☆</span>`).join("")}
+                <div id="review-stars" class="stars-big" role="slider" tabindex="0"
+                    aria-label="${T.ratingLabel}" aria-valuemin="0" aria-valuemax="5"
+                    aria-valuenow="${editing ? editing.rating : 0}" aria-valuetext="${T.ratingText(editing ? editing.rating : 0)}"
+                    aria-describedby="review-stars-help"
+                    style="display:flex; gap:0.15rem; cursor:pointer" data-value="${editing ? editing.rating : 0}">
+                    ${[1, 2, 3, 4, 5].map((v) => `<span data-star="${v}" aria-hidden="true">☆</span>`).join("")}
                 </div>
+                <p id="review-stars-help" class="sr-only">${T.ratingHelp}</p>
                 <textarea id="review-text" maxlength="4000" rows="2" placeholder="${T.placeholder}"
-                    style="width:100%; margin-top:0.4rem; border:1px solid var(--border-color); border-radius:var(--radius-sm); background:var(--bg-page); color:var(--text-color); padding:0.5rem; font-family:inherit"></textarea>
-                <p id="review-error" style="color:#d96b43; font-size:0.8rem; min-height:1rem; margin:0.2rem 0"></p>
+                    style="width:100%; margin-top:0.4rem; border:1px solid var(--border-input); border-radius:var(--radius-sm); background:var(--bg-page); color:var(--text-primary); padding:0.5rem; font-family:inherit"></textarea>
+                <p id="review-error" class="form-error" style="font-size:0.8rem; min-height:1rem; margin:0.2rem 0"></p>
                 <div style="display:flex; gap:0.5rem">
                     <button type="button" id="review-submit-btn" class="btn btn-sm btn-primary" data-editing="${editing ? editing.id : ""}">${editing ? T.update : T.submit}</button>
                     ${editing ? `<button type="button" id="review-cancel-btn" class="btn btn-sm btn-outline">${T.cancel}</button>` : ""}
@@ -1704,11 +1715,26 @@ function bindReviewEvents(pid) {
 
     const stars = document.getElementById("review-stars");
     if (stars) {
+        const setRating = (value) => {
+            const v = Math.min(5, Math.max(0, Number(value) || 0));
+            stars.dataset.value = String(v);
+            stars.setAttribute("aria-valuenow", String(v));
+            stars.setAttribute("aria-valuetext", reviewsI18n().ratingText(v));
+            paintStars(v);
+        };
         stars.querySelectorAll("[data-star]").forEach((el) => {
-            el.addEventListener("click", () => {
-                stars.dataset.value = el.dataset.star;
-                paintStars(Number(el.dataset.star));
-            });
+            el.addEventListener("click", () => setRating(el.dataset.star));
+        });
+        stars.addEventListener("keydown", (e) => {
+            const current = Number(stars.dataset.value) || 0;
+            const keys = {
+                ArrowRight: current + 1, ArrowUp: current + 1,
+                ArrowLeft: current - 1, ArrowDown: current - 1,
+                Home: 1, End: 5,
+            };
+            if (!(e.key in keys)) return;
+            e.preventDefault();
+            setRating(keys[e.key]);
         });
         if (Number(stars.dataset.value)) paintStars(Number(stars.dataset.value));
     }
@@ -1882,7 +1908,7 @@ async function loadRecipesIntoList() {
     listEl.innerHTML = data.items.map((r) => `
         <div class="guide-card" style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem; display:flex; flex-direction:column">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem">
-                <span class="tag" style="background:rgba(217,107,67,0.12); color:#d96b43; border:1px solid rgba(217,107,67,0.3)">${difficultyLabel(r.difficulty)}</span>
+                <span class="tag tag-shelf">${difficultyLabel(r.difficulty)}</span>
                 ${r.prep_time_min ? `<span style="font-size:0.8rem; color:var(--text-muted)">⏱️ ${r.prep_time_min} ${T.min}</span>` : ""}
             </div>
             <h3 style="margin:0 0 0.3rem; color:var(--color-primary); cursor:pointer" data-recipe-open="${r.id}">${esc(r.title)}</h3>
@@ -1894,7 +1920,7 @@ async function loadRecipesIntoList() {
                 </button>
                 ${r.mine ? `
                     <button type="button" class="btn btn-sm btn-outline" data-recipe-edit="${r.id}">${T.edit}</button>
-                    <button type="button" class="btn btn-sm btn-outline" data-recipe-del="${r.id}" style="color:#d96b43">${T.del}</button>` : ""}
+                    <button type="button" class="btn btn-sm btn-outline delete-recipe">${T.del}</button>` : ""}
             </div>
         </div>`).join("")
         || `<p style="color:var(--text-muted)">${T.empty}</p>`;
@@ -1961,7 +1987,7 @@ function renderRecipeDetail(r) {
         <button type="button" class="btn btn-sm btn-outline" id="recipe-back-btn">← ${T.back}</button>
         <h2 style="margin-top:0.8rem">${esc(r.title)}</h2>
         <div style="display:flex; gap:0.6rem; flex-wrap:wrap; align-items:center; margin-bottom:0.6rem">
-            <span class="tag" style="background:rgba(217,107,67,0.12); color:#d96b43; border:1px solid rgba(217,107,67,0.3)">${difficultyLabel(r.difficulty)}</span>
+            <span class="tag tag-shelf">${difficultyLabel(r.difficulty)}</span>
             ${r.prep_time_min ? `<span class="tag">⏱️ ${r.prep_time_min} ${T.min}</span>` : ""}
             <button type="button" class="btn btn-sm btn-outline" data-recipe-vote="${r.id}" data-voted="${r.voted ? 1 : 0}">${r.voted ? "▲" : "△"} ${r.votes} ${T.votes}</button>
             <span style="font-size:0.8rem; color:var(--text-muted)">${T.by} @${esc(r.author.username)}</span>
@@ -1998,7 +2024,7 @@ function renderRecipeForm(existing) {
         <button type="button" class="btn btn-sm btn-outline" id="recipe-back-btn">← ${T.back}</button>
         <form id="recipe-form" style="margin-top:0.9rem; display:flex; flex-direction:column; gap:0.7rem; max-width:560px">
             <input type="text" id="rf-title" class="search-input" required minlength="3" maxlength="200" placeholder="${T.fTitle}" value="${existing ? escAttr(existing.title) : ""}" style="width:100%">
-            <textarea id="rf-desc" rows="2" maxlength="4000" placeholder="${T.fDesc}" style="border:1px solid var(--border-color); border-radius:var(--radius-sm); background:var(--bg-page); color:var(--text-color); padding:0.5rem; font-family:inherit">${existing && existing.description ? esc(existing.description) : ""}</textarea>
+            <textarea id="rf-desc" rows="2" maxlength="4000" placeholder="${T.fDesc}" style="border:1px solid var(--border-input); border-radius:var(--radius-sm); background:var(--bg-page); color:var(--text-primary); padding:0.5rem; font-family:inherit">${existing && existing.description ? esc(existing.description) : ""}</textarea>
             <div style="display:flex; gap:0.7rem; flex-wrap:wrap">
                 <select id="rf-difficulty" class="lang-picker">
                     <option value="facil"${existing && existing.difficulty === "facil" ? " selected" : ""}>${T.easy}</option>
@@ -2013,7 +2039,7 @@ function renderRecipeForm(existing) {
             <textarea id="rf-ing" rows="4" placeholder="repollo\nsal marina\n...">${existing ? esc(existing.ingredients.join("\n")) : ""}</textarea>
             <label style="font-size:0.82rem; color:var(--text-muted)">${T.fSteps}</label>
             <textarea id="rf-steps" rows="5" placeholder="1. ...\n2. ...">${existing ? esc(existing.steps.join("\n")) : ""}</textarea>
-            <p id="rf-error" style="color:#d96b43; font-size:0.83rem; min-height:1rem; margin:0"></p>
+            <p id="rf-error" class="form-error" style="font-size:0.83rem; min-height:1rem; margin:0"></p>
             <button type="submit" class="btn btn-primary">${existing ? T.save : T.publish}</button>
         </form>`;
     document.getElementById("recipe-back-btn").addEventListener("click", renderRecipesFeed);
@@ -2171,7 +2197,7 @@ function renderCharts(s) {
     Object.values(chartInstances).forEach((c) => c && c.destroy());
     chartInstances = {};
 
-    const tickColor = document.documentElement.classList.contains("dark") ? "#a9b6ad" : "#666";
+    const tickColor = getComputedStyle(document.documentElement).getPropertyValue("--text-secondary").trim() || "#566359";
     const legendLabels = { color: tickColor };
 
     const contCtx = document.getElementById("chart-continent");
@@ -2182,7 +2208,7 @@ function renderCharts(s) {
                 labels: Object.keys(s.by_continent),
                 datasets: [{
                     data: Object.values(s.by_continent),
-                    backgroundColor: ["#2d5a3f", "#c98836", "#d96b43", "#214e78", "#592e78"]
+                    backgroundColor: ["#2d5a3f", "#996729", "#b05736", "#214e78", "#592e78"]
                 }]
             },
             options: {
@@ -2240,19 +2266,10 @@ function renderCharts(s) {
     }
 }
 
+// El cierre con Escape de los diálogos lo gestiona initOverlayA11y() para no
+// cerrar dos modales a la vez; aquí solo el autocompletado del buscador.
 document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") {
-        document.getElementById("detail").classList.add("hidden");
-        document.getElementById("ingredient-modal").classList.add("hidden");
-        document.getElementById("shopping-modal").classList.add("hidden");
-        document.getElementById("microbes-modal").classList.add("hidden");
-        document.getElementById("trouble-modal").classList.add("hidden");
-        document.getElementById("label-modal").classList.add("hidden");
-        document.getElementById("charts-modal").classList.add("hidden");
-        document.getElementById("guide-modal").classList.add("hidden");
-        document.getElementById("glossary-modal").classList.add("hidden");
-        closeSuggest();
-    }
+    if (e.key === "Escape") closeSuggest();
 });
 
 const guideBtn = document.getElementById("guide-btn");
@@ -2786,7 +2803,7 @@ async function renderCheckpoints() {
                 <span style="color:var(--text-secondary); flex:1; text-align:right">${c.notes ? esc(c.notes) : ''}</span>
             </div>`).join("");
     } catch (e) {
-        listEl.innerHTML = `<p style="color:#b91c1c; font-size:0.9rem">${isEn ? 'Could not load journal.' : 'No se pudo cargar el registro.'}</p>`;
+        listEl.innerHTML = `<p class="form-error" style="font-size:0.9rem">${isEn ? 'Could not load journal.' : 'No se pudo cargar el registro.'}</p>`;
     }
 }
 
@@ -2967,6 +2984,8 @@ function setView(view) {
     if (pagEl) pagEl.style.display = view === "map" ? "none" : "";
     listBtn.classList.toggle("active", view === "list");
     mapBtn.classList.toggle("active", view === "map");
+    listBtn.setAttribute("aria-pressed", String(view === "list"));
+    mapBtn.setAttribute("aria-pressed", String(view === "map"));
     if (view === "map") {
         loadMap();
     } else if (mapInstance) {
@@ -3385,6 +3404,7 @@ if (semanticToggle) {
 
 updateFavBadge();
 initNavMenu();
+initOverlayA11y();
 initHeroCta();
 updateBrineCalculator();
 updateABVCalculator();
@@ -3531,13 +3551,8 @@ window.addEventListener("keydown", (e) => {
         closePalette();
         return;
     }
-    // ===== UX: Esc cierra el modal abierto más reciente =====
-    if (e.key === "Escape") {
-        const openModals = Array.from(document.querySelectorAll(".modal-overlay:not(.hidden)"));
-        if (openModals.length) {
-            openModals[openModals.length - 1].classList.add("hidden");
-        }
-    }
+    // El cierre con Escape de los diálogos vive en initOverlayA11y(), que
+    // además atrapa el Tab y devuelve el foco al elemento que abrió el modal.
 });
 
 // ===== UX: navbar responsive + CTA del hero =====
@@ -3654,7 +3669,7 @@ async function fetchAndRenderProducers() {
             <div style="background:var(--bg-page); border:1px solid var(--border-color); border-radius:var(--radius-md); padding:1rem">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem">
                     <strong style="font-size:1.05rem; color:var(--color-primary)">${esc(p.name)}</strong>
-                    ${p.verified ? '<span class="tag" style="background:#e6f4ea; color:#137333">✓ Verificado</span>' : ''}
+                    ${p.verified ? '<span class="tag tag-verified">✓ Verificado</span>' : ''}
                 </div>
                 <p style="font-size:0.85rem; color:var(--text-muted); margin:0 0 0.4rem">📍 ${esc(p.country)}${p.city ? ' · ' + esc(p.city) : ''}</p>
                 ${p.products_offered ? `<p style="font-size:0.88rem; color:var(--text-secondary); margin:0 0 0.5rem">🏺 <em>${esc(p.products_offered)}</em></p>` : ''}
@@ -3666,7 +3681,7 @@ async function fetchAndRenderProducers() {
             </div>
         `).join("");
     } catch (err) {
-        container.innerHTML = `<p style="color:#d96b43">Error al cargar la lista de productores.</p>`;
+        container.innerHTML = `<p class="form-error">Error al cargar la lista de productores.</p>`;
     }
 }
 
@@ -3757,7 +3772,7 @@ async function fetchAndRenderBreweries() {
             </div>
         `).join("");
     } catch (err) {
-        container.innerHTML = `<p style="color:#d96b43">Error al cargar las cervecerías.</p>`;
+        container.innerHTML = `<p class="form-error">Error al cargar las cervecerías.</p>`;
     }
 }
 

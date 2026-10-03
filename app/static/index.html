@@ -59,11 +59,11 @@
     <header class="site-header">
         <nav class="navbar" aria-label="Navegación principal">
             <a class="brand" href="#main-content">
-                <span class="brand-icon">🏺</span>
+                <span class="brand-icon" aria-hidden="true">🏺</span>
                 <h1 class="brand-name">Conservas del Mundo</h1>
             </a>
 
-            <ul class="nav-links">
+            <ul class="nav-links" id="nav-links">
                 <li><a href="#catalog" data-i18n="nav_catalog">Catálogo</a></li>
                 <li><a href="#tools" data-i18n="nav_tools">Herramientas</a></li>
                 <li><a href="#flavormap-card" data-i18n="nav_flavors">Mapa de sabores</a></li>
@@ -87,14 +87,14 @@
         </nav>
 
         <div class="header-toolbar">
-            <div id="stats" class="stats-grid" onclick="openChartsModal()" style="cursor:pointer" title="Ver gráficos detallados">
+            <div id="stats" class="stats-grid">
                 <div class="stat-skeleton" data-i18n="stats_loading">Cargando estadísticas…</div>
             </div>
-            <button type="button" class="btn btn-sm btn-outline" onclick="openChartsModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="charts_btn">📊 Gráficos</button>
-            <button type="button" class="btn btn-sm btn-outline" onclick="openProducersModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="producers_btn">🏭 Productores</button>
-            <button type="button" class="btn btn-sm btn-outline" onclick="openBreweriesModal()" style="border-color:rgba(255,255,255,0.4); color:#fff" data-i18n="breweries_btn">🍺 Cervecerías</button>
-            <button type="button" class="btn btn-sm btn-outline" id="compare-btn" onclick="openCompareModal()" style="border-color:rgba(255,255,255,0.4); color:#fff"><span data-i18n="compare_btn">⚖️ Comparar</span> <span id="compare-count" class="tag" style="background:var(--color-accent); color:#fff; font-size:0.75rem; margin-left:0.2rem">0</span></button>
-            <button type="button" id="install-btn" class="btn btn-sm btn-outline" hidden style="border-color:rgba(255,255,255,0.4); color:#fff">⬇️ <span data-i18n="install_btn">Instalar</span></button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="openChartsModal()" style="border-color:rgba(255,255,255,0.62); color:#fff" data-i18n="charts_btn">📊 Gráficos</button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="openProducersModal()" style="border-color:rgba(255,255,255,0.62); color:#fff" data-i18n="producers_btn">🏭 Productores</button>
+            <button type="button" class="btn btn-sm btn-outline" onclick="openBreweriesModal()" style="border-color:rgba(255,255,255,0.62); color:#fff" data-i18n="breweries_btn">🍺 Cervecerías</button>
+            <button type="button" class="btn btn-sm btn-outline" id="compare-btn" onclick="openCompareModal()" style="border-color:rgba(255,255,255,0.62); color:#fff"><span data-i18n="compare_btn">⚖️ Comparar</span> <span id="compare-count" class="tag" style="background:var(--color-accent); color:#fff; font-size:0.75rem; margin-left:0.2rem">0</span></button>
+            <button type="button" id="install-btn" class="btn btn-sm btn-outline" hidden style="border-color:rgba(255,255,255,0.62); color:#fff">⬇️ <span data-i18n="install_btn">Instalar</span></button>
         </div>
     </header>
 
@@ -225,8 +225,8 @@
             <div class="results-head">
                 <span id="count" class="count-badge" aria-live="polite">Cargando resultados...</span>
                 <div style="display:flex; gap:0.4rem; align-items:center">
-                    <button type="button" id="view-list-btn" class="btn btn-sm view-toggle active">☰ <span data-i18n="view_list">Lista</span></button>
-                    <button type="button" id="view-map-btn" class="btn btn-sm view-toggle">🗺️ <span data-i18n="view_map">Mapa</span></button>
+                    <button type="button" id="view-list-btn" class="btn btn-sm view-toggle active" aria-pressed="true">☰ <span data-i18n="view_list">Lista</span></button>
+                    <button type="button" id="view-map-btn" class="btn btn-sm view-toggle" aria-pressed="false">🗺️ <span data-i18n="view_map">Mapa</span></button>
                 </div>
                 <div class="pagination">
                     <button id="prev-btn" class="btn btn-sm" disabled>← Anterior</button>
@@ -242,7 +242,7 @@
         </section>
 
         <!-- Divisor: catálogo (arriba) vs. herramientas (abajo) -->
-        <div class="zone-divider" id="tools" role="separator" aria-hidden="true">
+        <div class="zone-divider" id="tools" aria-hidden="true">
             <span data-i18n="tools_zone">Herramientas del taller</span>
         </div>
 

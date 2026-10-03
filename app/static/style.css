@@ -6,17 +6,19 @@
     --bg-page: #f8f6f0;
     --bg-card: #ffffff;
     --border-color: #e5ded2;
+    /* Bordes que identifican un control interactivo: 3:1 (WCAG 1.4.11) */
+    --border-input: #84807a;
     --border-focus: #4a6b47;
     
     --text-primary: #1f2721;
     --text-secondary: #566359;
-    --text-muted: #88968b;
+    --text-muted: #69746b;
     
     --color-primary: #2d5a3f;
     --color-primary-hover: #224530;
-    --color-accent: #d96b43;
-    --color-accent-hover: #be5832;
-    --color-gold: #c98836;
+    --color-accent: #b05736;
+    --color-accent-hover: #8f4529;
+    --color-gold: #996729;
     --color-gold-bg: #fff8eb;
     
     --tag-cat-bg: #eaf2eb;
@@ -48,11 +50,12 @@ html.dark {
     --bg-page: #11151a;
     --bg-card: #1a2026;
     --border-color: #2c353d;
+    --border-input: #7d8890;
     --border-focus: #6ba07f;
 
     --text-primary: #e6ebe8;
     --text-secondary: #a9b6ad;
-    --text-muted: #7c8a80;
+    --text-muted: #8f9c92;
 
     --color-primary: #6ba07f;
     --color-primary-hover: #7fb892;
@@ -593,7 +596,7 @@ html.dark .chip {
 input[type="search"] {
     width: 100%;
     padding: 0.8rem 1rem 0.8rem 2.8rem;
-    border: 1.5px solid var(--border-color);
+    border: 1.5px solid var(--border-input);
     border-radius: var(--radius-sm);
     font-family: inherit;
     font-size: 1rem;
@@ -737,7 +740,7 @@ input[type="search"]:focus {
 }
 
 .view-toggle {
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-input);
     background: var(--bg-card);
     color: var(--text-secondary);
     cursor: pointer;
@@ -804,7 +807,7 @@ input[type="text"], input[type="number"], input[type="email"], input[type="passw
     align-items: center;
     gap: 0.4rem;
     padding: 0.65rem 0.8rem;
-    border: 1.5px solid var(--border-color);
+    border: 1.5px solid var(--border-input);
     border-radius: var(--radius-sm);
     background-color: var(--bg-card);
     font-size: 0.9rem;
@@ -820,7 +823,7 @@ input[type="text"], input[type="number"], input[type="email"], input[type="passw
 
 select {
     padding: 0.65rem 0.8rem;
-    border: 1.5px solid var(--border-color);
+    border: 1.5px solid var(--border-input);
     border-radius: var(--radius-sm);
     background-color: var(--bg-card);
     font-family: inherit;
@@ -975,7 +978,7 @@ select:focus {
 .btn-secondary {
     background-color: #ebf2ec;
     color: var(--color-primary);
-    border: 1px solid #d2e3d5;
+    border: 1px solid var(--border-input);
 }
 
 .btn-secondary:hover {
@@ -985,7 +988,7 @@ select:focus {
 html.dark .btn-secondary {
     background-color: #243229;
     color: #8fc9a4;
-    border-color: #34503d;
+    border-color: var(--border-input);
 }
 
 html.dark .btn-secondary:hover {
@@ -1128,6 +1131,42 @@ html.dark .btn-secondary:hover {
     background: var(--tag-cat-bg);
     color: var(--tag-cat-text);
 }
+
+/* ===== Variantes cromáticas con contraste verificado (WCAG 1.4.3) =====
+   Antes eran estilos inline con rgba() fijos: fallaban 4.5:1 en claro y
+   ~(2.5:1) en oscuro. Ahora cada par texto/fondo está medido y las clases
+   se adaptan al tema. */
+.tag-ark { background: #fdf0dd; color: #8a4f0c; font-weight: 600; }
+.tag-shelf { background: #fbe9e2; color: #97451f; }
+.tag-semantic { background: #f1ebfe; color: #5b21b6; }
+.tag-molecule { background: #e8f0fe; color: #1d4ed8; font-size: 0.75rem; }
+.tag-verified { background: #e6f4ea; color: #0f6b34; }
+.tag-safety-low { background: #e6ebe8; color: #2d5a3f; }
+.tag-safety-med { background: #fdf0dd; color: #8a4f0c; border: 1px solid #e6c9a0; }
+.safety-note {
+    margin-top: 0.8rem;
+    padding: 0.6rem 0.8rem;
+    border-radius: var(--radius-sm);
+    background: #fdf0dd;
+    border: 1px solid #e6c9a0;
+    color: #8a4f0c;
+    font-size: 0.88rem;
+}
+.stars { color: #8a6410; }
+.stars-big { color: #8a6410; font-size: 1.3rem; }
+.form-error { color: #b3261e; }
+
+html.dark .tag-ark { background: #33280f; color: #e8b45a; }
+html.dark .tag-shelf { background: #3a2318; color: #f0a077; }
+html.dark .tag-semantic { background: #2a2140; color: #c4a5fd; }
+html.dark .tag-molecule { background: #14294a; color: #8ab8f8; }
+html.dark .tag-verified { background: #12301f; color: #7fd4a0; }
+html.dark .tag-safety-low { background: #1c2a21; color: #8fc9a4; border-color: #2c3f33; }
+html.dark .tag-safety-med { background: #33280f; color: #e8b45a; border-color: #4a381a; }
+html.dark .safety-note { background: #33280f; border-color: #4a381a; color: #e8b45a; }
+html.dark .stars { color: #e8b45a; }
+html.dark .stars-big { color: #e8b45a; }
+html.dark .form-error { color: #f0a097; }
 
 .tag.country {
     background: var(--tag-country-bg);
@@ -1836,10 +1875,10 @@ html.dark .trouble-outcome-box.danger {
 
 .flavormap-controls select {
     padding: 0.45rem 0.7rem;
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-input);
     border-radius: var(--radius-sm);
     background: var(--bg-page);
-    color: var(--text-color);
+    color: var(--text-primary);
     font-size: 0.95rem;
 }
 
@@ -1876,7 +1915,7 @@ html.dark .trouble-outcome-box.danger {
 .flavormap-continent-head h3 {
     margin: 0;
     font-size: 1.05rem;
-    color: var(--text-color);
+    color: var(--text-primary);
 }
 
 .flavormap-count {
@@ -1922,7 +1961,7 @@ html.dark .trouble-outcome-box.danger {
 
 .flavormap-val {
     font-variant-numeric: tabular-nums;
-    color: var(--text-color);
+    color: var(--text-primary);
 }
 
 .flavormap-detail {
@@ -2554,11 +2593,20 @@ html.dark .skeleton::after {
 #palette-input {
     width: 100%;
     padding: 0.9rem 1rem;
-    border: none; outline: none;
+    border: none;
     font-size: 1rem;
     background: transparent;
-    color: var(--text-color);
-    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    border-bottom: 2px solid var(--border-input);
+}
+
+/* El input de la paleta no puede depender de un outline por defecto:
+   sin este anillo el usuario de teclado no sabe dónde está escribiendo. */
+#palette-input:focus,
+#palette-input:focus-visible {
+    outline: 3px solid var(--border-focus);
+    outline-offset: -3px;
+    border-bottom-color: var(--border-focus);
 }
 #palette-results { max-height: 50vh; overflow-y: auto; }
 .palette-item {
@@ -2882,7 +2930,7 @@ img.card-img, .detail-img { animation: imgIn 0.4s ease both; }
     padding: 0.45rem 0.9rem;
     border-radius: 9999px;
     background: var(--bg-card);
-    border: 1px solid var(--border-color);
+    border: 1px solid var(--border-input);
     color: var(--text-secondary);
     font-size: 0.85rem;
     font-weight: 500;

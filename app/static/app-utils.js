@@ -55,25 +55,104 @@ function giBadge(p) {
         : "";
 }
 
-// Focus trapping para modales
-function trapFocus(modalId) {
-    const modal = document.getElementById(modalId);
+// ===== Overlays accesibles (WCAG 2.1: 2.1.1, 2.4.3, 2.4.7) =====
+const OVERLAY_SELECTOR = ".modal-overlay, #palette-overlay";
+const _focusBeforeOverlay = new WeakMap();
+
+function focusablesIn(root) {
+    if (!root) return [];
+    return Array.from(root.querySelectorAll(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]),' +
+        ' textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter((el) => el.offsetParent !== null || el === document.activeElement);
+}
+
+/**
+ * Mantiene el foco dentro del overlay (2.4.3) y opcionalmente lo entra.
+ * Sin `event` enfoca el primer control; con un evento Tab devuelven el foco
+ * al borde correspondiente para que nunca escape del diálogo.
+ */
+function trapFocus(overlay, event) {
+    const modal = typeof overlay === "string" ? document.getElementById(overlay) : overlay;
     if (!modal) return;
-    const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-    if (!focusable.length) return;
+    const focusable = focusablesIn(modal);
+    if (!focusable.length) {
+        if (event) return;
+        const card = modal.querySelector(".modal-card") || modal;
+        if (!card.hasAttribute("tabindex")) card.setAttribute("tabindex", "-1");
+        card.focus({ preventScroll: true });
+        return;
+    }
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
-    first.focus();
-    function onKeydown(e) {
-        if (e.key !== 'Tab') return;
-        if (e.shiftKey) {
-            if (document.activeElement === first) { e.preventDefault(); last.focus(); }
-        } else {
-            if (document.activeElement === last) { e.preventDefault(); first.focus(); }
-        }
+    if (!event) {
+        first.focus({ preventScroll: true });
+        return;
     }
-    modal.addEventListener('keydown', onKeydown);
-    return () => modal.removeEventListener('keydown', onKeydown);
+    if (event.shiftKey && (document.activeElement === first || !modal.contains(document.activeElement))) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+    }
+}
+
+/** Cierra el overlay usando su propio botón para respetar su lógica. */
+function closeOverlay(overlay) {
+    if (!overlay) return;
+    const closer = overlay.querySelector(".modal-close");
+    if (closer) closer.click();
+    else overlay.classList.add("hidden");
+}
+
+function visibleOverlays() {
+    return Array.from(document.querySelectorAll(OVERLAY_SELECTOR))
+        .filter((o) => !o.classList.contains("hidden"));
+}
+
+/**
+ * Un solo punto de control para los ~20 diálogos: quien abra un overlay
+ * qualquer (cualquiera de los onclick del HTML o de app.js) recibe entrada
+ * de foco, trampa de Tab, cierre con Escape y restauración del foco al
+ * elemento que lo abrió.
+ */
+function initOverlayA11y() {
+    document.addEventListener("keydown", (e) => {
+        const open = visibleOverlays();
+        if (!open.length) return;
+        const top = open[open.length - 1];
+        if (e.key === "Escape") {
+            e.preventDefault();
+            closeOverlay(top);
+            return;
+        }
+        if (e.key === "Tab") trapFocus(top, e);
+    });
+
+    // Observar la clase `hidden` cubre todos los modales sin tocar sus
+    // funciones de apertura: si aparece, entra el foco; si desaparece, vuelve.
+    const observer = new MutationObserver((records) => {
+        for (const record of records) {
+            const el = record.target;
+            if (!el.matches || !el.matches(OVERLAY_SELECTOR)) continue;
+            if (!el.classList.contains("hidden")) {
+                if (el.dataset.a11yReady === "1") continue;
+                el.dataset.a11yReady = "1";
+                _focusBeforeOverlay.set(el, document.activeElement);
+                setTimeout(() => {
+                    if (!el.classList.contains("hidden")) trapFocus(el);
+                }, 0);
+            } else if (el.dataset.a11yReady === "1") {
+                delete el.dataset.a11yReady;
+                const back = _focusBeforeOverlay.get(el);
+                if (back && document.contains(back) && typeof back.focus === "function") {
+                    back.focus({ preventScroll: true });
+                }
+            }
+        }
+    });
+    observer.observe(document.body, { attributes: true, attributeFilter: ["class"], subtree: true });
 }
 
 // Cerrar modal con foco

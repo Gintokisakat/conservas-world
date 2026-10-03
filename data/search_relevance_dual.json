@@ -1,0 +1,167 @@
+{
+  "meta": {
+    "queries": 20
+  },
+  "results": [
+    {
+      "query": "kimchi",
+      "desc": "exacto nombre coreano",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "sauerkraut",
+      "desc": "chucrut alem\u00e1n",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "escabeche",
+      "desc": "con acento",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "morcilla",
+      "desc": "con acento",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "morcila",
+      "desc": "sin acento",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "ferment",
+      "desc": "parcial",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "choucroute",
+      "desc": "sin\u00f3nimo franc\u00e9s",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "chucrut",
+      "desc": "espa\u00f1olizado",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "kombucha",
+      "desc": "t\u00e9 fermentado",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "kefir",
+      "desc": "l\u00e1cteo fermentado",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "yogurt",
+      "desc": "yogur",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "misopaste",
+      "desc": "pasta fermentada asi\u00e1tica",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "natto",
+      "desc": "soja fermentada",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "tempeh",
+      "desc": "soja fermentada indonesia",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "miso",
+      "desc": "miso japon\u00e9s",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "doenjang",
+      "desc": "pasta coreana",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "gochujang",
+      "desc": "pasta picante coreana",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "fish sauce",
+      "desc": "multi-palabra",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "pisco sour",
+      "desc": "multi-palabra no fermentado? control",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    },
+    {
+      "query": "queso azul",
+      "desc": "multi-palabra l\u00e1cteo",
+      "sqlite_top10": [],
+      "pg_top10": [],
+      "jaccard@10": null,
+      "kendall@10": null
+    }
+  ]
+}

@@ -50,3 +50,8 @@ Recopilar precios reales (octubre 2026) para plan mínimo viable con PITR.
 - Render Postgres: https://render.com/docs/databases
 - docs/PLAN_SPRINTS.md FASE 0 - 0I, Sprint 3
 - docs/DEVIL_ADVOCATE_TASKS.md P0-13,P0-14
+
+## Notas implementación (P0-13)
+- Rate limiting compartido entre réplicas → Redis
+- Blocklist refresh tokens + reuse detection → Redis (TTL automático)
+- Verificar conexión con retry/backpressure

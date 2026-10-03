@@ -1,0 +1,22 @@
+[
+  {"query": "kimchi", "desc": "exacto nombre coreano"},
+  {"query": "sauerkraut", "desc": "chucrut alemán"},
+  {"query": "escabeche", "desc": "con acento"},
+  {"query": "morcilla", "desc": "con acento"},
+  {"query": "morcila", "desc": "sin acento"},
+  {"query": "ferment", "desc": "parcial"},
+  {"query": "choucroute", "desc": "sinónimo francés"},
+  {"query": "chucrut", "desc": "españolizado"},
+  {"query": "kombucha", "desc": "té fermentado"},
+  {"query": "kefir", "desc": "lácteo fermentado"},
+  {"query": "yogurt", "desc": "yogur"},
+  {"query": "misopaste", "desc": "pasta fermentada asiática"},
+  {"query": "natto", "desc": "soja fermentada"},
+  {"query": "tempeh", "desc": "soja fermentada indonesia"},
+  {"query": "miso", "desc": "miso japonés"},
+  {"query": "doenjang", "desc": "pasta coreana"},
+  {"query": "gochujang", "desc": "pasta picante coreana"},
+  {"query": "fish sauce", "desc": "multi-palabra"},
+  {"query": "pisco sour", "desc": "multi-palabra no fermentado? control"},
+  {"query": "queso azul", "desc": "multi-palabra lácteo"}
+]

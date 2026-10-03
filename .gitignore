@@ -9,3 +9,4 @@ review/_cache/
 
 .coverage
 htmlcov/
+tests/_combined_js_check.js

@@ -1,0 +1,13 @@
+[wait] 2026-08-16 21:09:04 esperando a que termine el pipeline de imágenes...
+[run] 2026-08-24 12:47:24 pipeline de imágenes terminado; ejecutando metacheese...
+Ingiriendo fuente: metacheese ...
+Metagenomas MetaCheeseDB vinculados: 0
+
+Filas por fuente: {'metacheese': 0}
+Duplicados saltados: 0
+Productos insertados: 0
+Ingredientes enriquecidos: 85 (+0 sustratos)
+Vinculos de uso entre productos: 41
+Base de datos lista en data/build.db
+[done] 2026-08-24 12:49:44 ingesta metacheese finalizada (exit 0)
+cheese_metagenomes: 267 filas

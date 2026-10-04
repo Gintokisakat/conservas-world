@@ -318,6 +318,12 @@ class User(Base):
     batches: Mapped[list["Batch"]] = relationship(back_populates="user")
     producers: Mapped[list["Producer"]] = relationship(back_populates="user")
     api_keys: Mapped[list["ApiKey"]] = relationship(back_populates="user")
+    email_verified_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    email_verification_token_hash: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    email_verification_expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    password_reset_token_hash: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    password_reset_expires_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    password_reset_used_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
 
 
 class Batch(Base):

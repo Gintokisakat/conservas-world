@@ -2,8 +2,13 @@ import os
 from pathlib import Path
 
 _DEFAULT_DB = Path(__file__).resolve().parent.parent / "data" / "build.db"
-DB_PATH = Path(os.environ.get("CONSERVAS_DB", str(_DEFAULT_DB)))
-DB_URL = f"sqlite:///{DB_PATH}"
+_db = os.environ.get("CONSERVAS_DB") or os.environ.get("DATABASE_URL") or str(_DEFAULT_DB)
+if _db.startswith("postgresql://") or _db.startswith("postgresql+psycopg2://") or _db.startswith("postgres://"):
+    DB_URL = _db.replace("postgres://", "postgresql://", 1)
+    DB_PATH = Path(".")
+else:
+    DB_PATH = Path(_db)
+    DB_URL = f"sqlite:///{DB_PATH}"
 
 # Configuración de sitio
 SITE_URL = os.environ.get("CONSERVAS_SITE_URL", "https://conservas-del-mundo.onrender.com")
